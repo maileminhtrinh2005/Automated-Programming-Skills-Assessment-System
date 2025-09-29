@@ -1,0 +1,6 @@
+@APSAS_HostAddress = http://localhost:5261
+
+GET {{APSAS_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
