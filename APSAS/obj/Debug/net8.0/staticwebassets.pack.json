@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\wwwroot\\SubmissionPage.html",
+      "PackagePath": "staticwebassets\\SubmissionPage.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.APSAS.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.APSAS.props",
+      "PackagePath": "build\\APSAS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.APSAS.props",
+      "PackagePath": "buildMultiTargeting\\APSAS.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.APSAS.props",
+      "PackagePath": "buildTransitive\\APSAS.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

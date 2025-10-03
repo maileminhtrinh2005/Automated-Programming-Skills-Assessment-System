@@ -433,11 +433,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\APSAS\\APSAS\\UserService\\UserService.csproj",
+      "projectUniqueName": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\UserService\\UserService.csproj",
       "projectName": "UserService",
-      "projectPath": "D:\\APSAS\\APSAS\\UserService\\UserService.csproj",
+      "projectPath": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\UserService\\UserService.csproj",
       "packagesPath": "C:\\Users\\gacon\\.nuget\\packages\\",
-      "outputPath": "D:\\APSAS\\APSAS\\UserService\\obj\\",
+      "outputPath": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\UserService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\gacon\\AppData\\Roaming\\NuGet\\NuGet.Config",

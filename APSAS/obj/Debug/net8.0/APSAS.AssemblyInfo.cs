@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("APSAS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da69a184c9391f1afe9d1951708762500747c868")]
 [assembly: System.Reflection.AssemblyProductAttribute("APSAS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("APSAS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

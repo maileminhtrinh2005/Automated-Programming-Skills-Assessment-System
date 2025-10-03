@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\APSAS\\APSAS\\APSAS\\APSAS.csproj": {}
+    "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\APSAS.csproj": {}
   },
   "projects": {
-    "D:\\APSAS\\APSAS\\APSAS\\APSAS.csproj": {
+    "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\APSAS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\APSAS\\APSAS\\APSAS\\APSAS.csproj",
+        "projectUniqueName": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\APSAS.csproj",
         "projectName": "APSAS",
-        "projectPath": "D:\\APSAS\\APSAS\\APSAS\\APSAS.csproj",
+        "projectPath": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\APSAS.csproj",
         "packagesPath": "C:\\Users\\gacon\\.nuget\\packages\\",
-        "outputPath": "D:\\APSAS\\APSAS\\APSAS\\obj\\",
+        "outputPath": "D:\\APSAS\\toila1conchongu\\APSAS\\Automated-Programming-Skills-Assessment-System\\APSAS\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\gacon\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -45,6 +45,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Ocelot": {
+              "target": "Package",
+              "version": "[18.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.4.0, )"
