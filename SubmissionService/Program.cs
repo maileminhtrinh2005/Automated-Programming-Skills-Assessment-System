@@ -1,5 +1,7 @@
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
+using Microsoft.EntityFrameworkCore;
+using SubmissionService.Application.Interface;
+using SubmissionService.Application;
+using SubmissionService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddJsonFile("Gateway/SubmissionOcelot.json", optional: false, reloadOnChange: true);// submission
 
-builder.Services.AddOcelot();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHttpClient<Submit>();
+
+builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
+builder.Services.AddScoped<ISubmit, Submit>();
+builder.Services.AddScoped<Sub>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,10 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.UseStaticFiles();
-
 
 app.MapControllers();
-await app.UseOcelot();
 
 app.Run();

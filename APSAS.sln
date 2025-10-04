@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APSAS", "APSAS\APSAS.csproj", "{6CFD081C-7F24-462D-A4A8-50EFA9DC5E0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "APSAS", "APSAS\APSAS.csproj", "{6CFD081C-7F24-462D-A4A8-50EFA9DC5E0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "UserService\UserService.csproj", "{5C90700C-D97B-4199-8129-AF2520831252}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "UserService\UserService.csproj", "{5C90700C-D97B-4199-8129-AF2520831252}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubmissionService", "SubmissionService\SubmissionService.csproj", "{459D7349-0F45-46D5-B98C-55ACA30D168A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5C90700C-D97B-4199-8129-AF2520831252}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C90700C-D97B-4199-8129-AF2520831252}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C90700C-D97B-4199-8129-AF2520831252}.Release|Any CPU.Build.0 = Release|Any CPU
+		{459D7349-0F45-46D5-B98C-55ACA30D168A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{459D7349-0F45-46D5-B98C-55ACA30D168A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{459D7349-0F45-46D5-B98C-55ACA30D168A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{459D7349-0F45-46D5-B98C-55ACA30D168A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
