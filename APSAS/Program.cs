@@ -11,6 +11,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Configuration.AddJsonFile("Gateway/SubmissionOcelot.json", optional: false, reloadOnChange: true);// submission
+builder.Configuration.AddJsonFile("Gateway/CourseOcelot.json", optional: false, reloadOnChange: true);// course
+
 
 builder.Services.AddOcelot();
 var app = builder.Build();

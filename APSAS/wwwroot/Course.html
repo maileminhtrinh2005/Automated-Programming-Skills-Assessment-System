@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Course Service Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f6fa;
+        }
+
+        h2 {
+            color: #273c75;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            width: 300px;
+            padding: 6px;
+            margin-top: 3px;
+        }
+
+        button {
+            margin: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+            button:hover {
+                opacity: 0.9;
+            }
+
+        #actions button {
+            background-color: #0097e6;
+            color: white;
+        }
+
+            #actions button.delete {
+                background-color: #e84118;
+            }
+
+            #actions button.update {
+                background-color: #44bd32;
+            }
+
+            #actions button.clear {
+                background-color: #718093;
+            }
+
+        #result {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎓 Course Service CRUD Test Page</h2>
+
+    <div>
+        <label>Gateway Base URL:</label>
+        <input id="baseUrl" value="http://localhost:5261/course/api/courses" size="60" />
+    </div>
+
+    <hr>
+
+    <div id="form">
+        <label>Course ID:</label>
+        <input id="courseId" placeholder="(Tự động khi tạo mới)" />
+
+        <label>Code:</label>
+        <input id="code" placeholder="VD: CS101" />
+
+        <label>Name:</label>
+        <input id="name" placeholder="VD: Lập trình C#" />
+
+        <label>Description:</label>
+        <textarea id="desc" placeholder="VD: Học lập trình cơ bản với C#" rows="2"></textarea>
+
+        <label>Credits:</label>
+        <input id="credit" type="number" value="3" />
+    </div>
+
+    <div id="actions">
+        <button onclick="createCourse()">➕ Create</button>
+        <button onclick="getCourses()">📋 Get All</button>
+        <button onclick="getCourse()">🔍 Get by ID</button>
+        <button class="update" onclick="updateCourse()">✏️ Update</button>
+        <button class="delete" onclick="deleteCourse()">🗑️ Delete</button>
+        <button class="clear" onclick="clearForm()">🧹 Clear Form</button>
+    </div>
+
+    <h3>Kết quả:</h3>
+    <div id="result">...</div>
+
+    <script>
+    function show(data) {
+      document.getElementById("result").textContent =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    }
+
+    function clearForm() {
+      ["courseId","code","name","desc","credit"].forEach(id => document.getElementById(id).value = "");
+      show("Form đã được làm trống");
+    }
+
+    async function getCourses() {
+      const url = document.getElementById("baseUrl").value;
+      try {
+        const res = await fetch(url);
+        show(await res.json());
+      } catch (e) {
+        show("Lỗi khi lấy danh sách: " + e);
+      }
+    }
+
+    async function getCourse() {
+      const base = document.getElementById("baseUrl").value;
+      const id = document.getElementById("courseId").value.trim();
+      if (!id) return show("⚠️ Vui lòng nhập Course ID để xem chi tiết.");
+      try {
+        const res = await fetch(`${base}/${id}`);
+        show(await res.json());
+      } catch (e) {
+        show("Lỗi khi lấy dữ liệu: " + e);
+      }
+    }
+
+    async function createCourse() {
+      const url = document.getElementById("baseUrl").value;
+      const body = {
+        code: document.getElementById("code").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        description: document.getElementById("desc").value.trim(),
+        credits: parseInt(document.getElementById("credit").value)
+      };
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        show(data);
+        if (data.data && data.data.id) document.getElementById("courseId").value = data.data.id;
+      } catch (e) {
+        show("Lỗi khi tạo môn học: " + e);
+      }
+    }
+
+    async function updateCourse() {
+      const base = document.getElementById("baseUrl").value;
+      const id = document.getElementById("courseId").value.trim();
+      if (!id) return show("⚠️ Vui lòng nhập Course ID để cập nhật.");
+      const body = {
+        code: document.getElementById("code").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        description: document.getElementById("desc").value.trim(),
+        credits: parseInt(document.getElementById("credit").value)
+      };
+      try {
+        const res = await fetch(`${base}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        show(await res.json());
+      } catch (e) {
+        show("Lỗi khi cập nhật: " + e);
+      }
+    }
+
+    async function deleteCourse() {
+      const base = document.getElementById("baseUrl").value;
+      const id = document.getElementById("courseId").value.trim();
+      if (!id) return show("⚠️ Vui lòng nhập Course ID để xóa.");
+      if (!confirm("Bạn có chắc muốn xóa môn học này không?")) return;
+      try {
+        const res = await fetch(`${base}/${id}`, { method: "DELETE" });
+        show(await res.text());
+      } catch (e) {
+        show("Lỗi khi xóa: " + e);
+      }
+    }
+    </script>
+</body>
+</html>
