@@ -1,5 +1,7 @@
-using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
+using AssignmentService.Application;
+using AssignmentService.Application.Interface;
+using AssignmentService.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +12,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddJsonFile("Gateway/SubmissionOcelot.json", optional: false, reloadOnChange: true);// submission
-builder.Configuration.AddJsonFile("Gateway/AssignmentOcelot.json", optional: false, reloadOnChange: true);// submission
 
-builder.Services.AddOcelot();
+builder.Services.AddDbContext<AssignmentDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDb")));
+
+builder.Services.AddScoped<ICrudAssignment, CrudAssignment>();
+builder.Services.AddScoped<AssignmentControl>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,10 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-app.UseStaticFiles();
-
 
 app.MapControllers();
-await app.UseOcelot();
 
 app.Run();

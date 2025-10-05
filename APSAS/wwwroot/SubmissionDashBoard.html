@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Get Results API</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f4f4f4;
+            margin: 40px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 5px;
+            margin-top: 5px;
+            width: 200px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #222;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎯 Test API Get Results</h2>
+
+    <div>
+        <label>Nhập Student ID:</label>
+        <input type="number" id="studentId" placeholder="VD: 1">
+
+        <label>Nhập Assignment ID (tùy chọn):</label>
+        <input type="number" id="assignmentId" placeholder="VD: 2">
+
+        <br>
+        <button onclick="getAllSubmissions()">Lấy tất cả bài nộp</button>
+        <button onclick="getYourResults()">Lấy kết quả bài cụ thể</button>
+    </div>
+
+    <pre id="output">Kết quả sẽ hiển thị ở đây...</pre>
+
+    <script>
+        const baseUrl = "http://localhost:5261"; // 🔹 Cổng gateway Ocelot của bạn
+
+        async function getAllSubmissions() {
+            const studentId = document.getElementById("studentId").value;
+            if (!studentId) return alert("Vui lòng nhập Student ID!");
+
+            const res = await fetch(`${baseUrl}/getAllSubmissions?studentId=${studentId}`);
+            const data = await res.json();
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getYourResults() {
+            const studentId = document.getElementById("studentId").value;
+            const assignmentId = document.getElementById("assignmentId").value;
+            if (!studentId || !assignmentId) return alert("Nhập đủ Student ID và Assignment ID!");
+
+            const res = await fetch(`${baseUrl}/getYourResults?studentId=${studentId}&assignmentId=${assignmentId}`);
+            const data = await res.json();
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
