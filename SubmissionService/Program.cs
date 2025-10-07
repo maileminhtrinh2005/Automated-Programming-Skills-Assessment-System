@@ -19,10 +19,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHttpClient<Submit>();
 
+
 builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
 builder.Services.AddScoped<ISubmit, Submit>();
 builder.Services.AddScoped<IGetResult, GetResult>();
 builder.Services.AddScoped<Sub>();
+
+
+
 
 var app = builder.Build();
 

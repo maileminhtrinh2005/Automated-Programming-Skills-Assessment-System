@@ -1,5 +1,5 @@
-using AssignmentService.Application;
 using AssignmentService.Application.Interface;
+using AssignmentService.Application.Service;
 using AssignmentService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,8 +16,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AssignmentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDb")));
 
+
+builder.Services.AddHttpClient<TestCaseFunc>();
+
 builder.Services.AddScoped<ICrudAssignment, CrudAssignment>();
+builder.Services.AddScoped<ITestCaseFunc, TestCaseFunc>();
 builder.Services.AddScoped<AssignmentControl>();
+builder.Services.AddScoped<TestCaseControl>();
+
 
 
 var app = builder.Build();

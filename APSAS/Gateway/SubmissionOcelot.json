@@ -1,7 +1,7 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/Submission/submit",
+      "DownstreamPathTemplate": "/api/Submission/Submit",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,9 +9,25 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/submit",
+      "UpstreamPathTemplate": "/Submit",
       "UpstreamHttpMethod": [ "POST" ]
     },
+
+
+    {
+      "DownstreamPathTemplate": "/api/Submission/SubmitAndShow",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/SubmitAndShow",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+
+
 
     {
       "DownstreamPathTemplate": "/api/GetResult/getAllSubmissions",

@@ -12,11 +12,11 @@ namespace AssignmentService.Infrastructure
         {
             _context = context;
         }
-        public async Task<bool> AddAssignment(RequestAssignment request)
+        public async Task<AssignmentDTO> AddAssignment(AssignmentRequest request)
         {
             if (request == null)
             {
-                return false;
+                return null;
             }
             Assignment assignment = new Assignment
             {
@@ -30,15 +30,29 @@ namespace AssignmentService.Infrastructure
             };
             _context.assignments.Add(assignment);
             await _context.SaveChangesAsync();
+
+            return new AssignmentDTO
+            {
+                AssignmentId = assignment.AssignmentId
+            };
+        }
+
+        public async Task<bool> DeleteAssignment(AssignmentRequest request)
+        {
+            Console.WriteLine("checkkk");
+            if (request == null) return false;
+            var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId==request.AssignmentId);
+            if (assignment == null) { return false; }
+
+
+            Console.WriteLine("checkkkkk");
+             _context.assignments.Remove(assignment); 
+            await _context.SaveChangesAsync();
+
             return true;
         }
 
-        public Task<bool> DeleteAssignment(RequestAssignment request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<AssignmentDTO> GetAssignmentById(RequestAssignment request)
+        public async Task<AssignmentDTO> GetAssignmentById(AssignmentRequest request)
         {
             if (request == null)
             {
@@ -59,9 +73,21 @@ namespace AssignmentService.Infrastructure
             return assign;
         }
 
-        public Task<bool> UpdateAssignment(RequestAssignment request)
+        public async Task<bool> UpdateAssignment(AssignmentRequest request)
         {
-            throw new NotImplementedException();
+            //Console.WriteLine("check111");
+            if (request == null) return false;
+
+            var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId== request.AssignmentId);
+            if (assignment == null) return false;
+            assignment.Title = request.Title;
+            assignment.Description = request.Description;
+            assignment.Deadline = request.Deadline;
+            assignment.Difficulty = request.Difficulty;
+            assignment.UpdatedAt= DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

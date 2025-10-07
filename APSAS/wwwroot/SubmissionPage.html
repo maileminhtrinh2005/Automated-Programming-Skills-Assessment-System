@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Code Submission</title>
+    <title>Online Judge</title>
 </head>
 <body>
-    <h2>Online Judge - Submit Code</h2>
+    <h2>Online Judge - Submit & Run Code</h2>
 
     <!-- Nhập code -->
     <label for="codeArea">Source Code:</label><br />
@@ -24,37 +24,71 @@
     </select>
     <br /><br />
 
-    <!-- Nút submit -->
+    <!-- Hai nút: Submit và Run -->
     <button onclick="submitCode()">Submit</button>
+    <button onclick="runCode()">Run</button>
 
     <!-- Hiển thị kết quả -->
     <h3>Result:</h3>
     <pre id="result"></pre>
 
     <script>
-        const gatewayUrl = "http://localhost:5261"; // đổi thành API Gateway của bạn
+        const gatewayUrl = "http://localhost:5261"; // API Gateway URL
 
         async function submitCode() {
-            let body = {
+            const body = {
                 SourceCode: document.getElementById("codeArea").value,
-                LanguageID: parseInt(document.getElementById("languageSelect").value)
+                LanguageId: parseInt(document.getElementById("languageSelect").value)
             };
 
             try {
-                let res = await fetch(gatewayUrl + "/submit", {
+                const res = await fetch(`${gatewayUrl}/Submit`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+                document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById("result").innerText = "❌ " + err.message;
+            }
+        }
+
+        async function runCode() {
+            const body = {
+                SourceCode: document.getElementById("codeArea").value,
+                LanguageId: parseInt(document.getElementById("languageSelect").value)
+            };
+
+            try {
+                const res = await fetch(`${gatewayUrl}/SubmitAndShow`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body)
                 });
 
                 if (!res.ok) {
-                    throw new Error("Submit failed, status " + res.status);
+                    throw new Error("Run failed, status " + res.status);
                 }
 
-                let data = await res.json();
-                document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+                const result = await res.json();
+
+                // Format kết quả cho dễ đọc
+                const formatted = `
+🟢 Status: ${result.status}
+⏱️ Time: ${result.executionTime}
+💾 Memory: ${result.memoryUsed} KB
+📤 Output:
+${result.output}
+
+⚠️ Error Message:
+${result.errorMessage}
+                    `;
+
+                document.getElementById("result").innerText = formatted;
             } catch (err) {
-                document.getElementById("result").innerText = err.message;
+                document.getElementById("result").innerText = "❌ " + err.message;
             }
         }
     </script>

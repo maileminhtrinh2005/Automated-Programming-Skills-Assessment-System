@@ -1,12 +1,12 @@
-﻿using AssignmentService.Application;
-using AssignmentService.Application.DTO;
+﻿using AssignmentService.Application.DTO;
+using AssignmentService.Application.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssignmentService.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]")]
-    public class AssignmentController : Controller
+    [Route("api/Assignment")]
+    public class AssignmentController : ControllerBase
     {
         private readonly AssignmentControl _assignment;
         public AssignmentController(AssignmentControl assignment)
@@ -16,7 +16,7 @@ namespace AssignmentService.Controllers
 
 
         [HttpPost("AddAssignment")]
-        public async Task<IActionResult> AddAssignment(RequestAssignment request)
+        public async Task<IActionResult> AddAssignment(AssignmentRequest request)
         {
             if (request == null) { return BadRequest(); }
             
@@ -31,7 +31,7 @@ namespace AssignmentService.Controllers
         {
             if (id <= 0) return BadRequest();
 
-            var request = new RequestAssignment { AssignmentId = id };
+            var request = new AssignmentRequest { AssignmentId = id };
             var assignment = await _assignment.GetAssignmentById(request);
 
             if (assignment == null) return NotFound();
@@ -39,5 +39,34 @@ namespace AssignmentService.Controllers
             return Ok(assignment);
         }
 
+
+        [HttpPost("UpdateAssignment")]
+        public async Task<IActionResult> UpdateAssignment(AssignmentRequest request)
+        {
+            if (request == null) return BadRequest();
+            if (! await _assignment.UpdateAssignment(request)) return BadRequest();
+
+            return Ok();
+        }
+
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> DeleteAssignment(int id)
+        {
+            try
+            {
+
+                if (id <= 0) return BadRequest();
+
+                var request = new AssignmentRequest { AssignmentId = id };
+                if (!await _assignment.DeleteAssignment(request))
+                    return BadRequest();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

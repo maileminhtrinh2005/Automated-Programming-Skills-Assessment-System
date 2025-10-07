@@ -19,28 +19,28 @@ namespace SubmissionService.Infrastructure
 
             var body = new
             {
-                source_code = request.SourceCode,
+                source_code = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SourceCode)),
                 language_id = request.LanguageId
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{urlJudge0}/submissions?base64_encoded=false&wait=true", content);
+            // ✅ gửi base64 nên query phải có base64_encoded=true
+            var response = await _httpClient.PostAsync($"{urlJudge0}/submissions?base64_encoded=true&wait=true", content);
             if (!response.IsSuccessStatusCode) return null;
 
-
             var result = await response.Content.ReadAsStringAsync();
-
             Console.WriteLine("Judge0 raw response: " + result);
+
             var json = JsonDocument.Parse(result);
             string token = json.RootElement.GetProperty("token").GetString();
 
-            var ketquaResponse = await _httpClient.GetAsync($"{urlJudge0}/submissions/{token}?base64_encoded=false");
+            // ✅ lấy kết quả cũng phải để base64_encoded=true
+            var ketquaResponse = await _httpClient.GetAsync($"{urlJudge0}/submissions/{token}?base64_encoded=true");
             if (!ketquaResponse.IsSuccessStatusCode) return null;
 
             var ketqua = await ketquaResponse.Content.ReadAsStringAsync();
             Console.WriteLine(ketqua);
-
 
             try
             {
@@ -54,9 +54,24 @@ namespace SubmissionService.Infrastructure
                 root.TryGetProperty("memory", out var memProp);
                 root.TryGetProperty("status", out var statusProp);
 
-                string stdout = stdoutProp.GetString() ?? "";
-                string stderr = stderrProp.GetString() ?? "";
-                string compileOutput = compileProp.GetString() ?? "";
+                // 
+                string DecodeBase64(string? encoded)
+                {
+                    if (string.IsNullOrEmpty(encoded)) return "";
+                    try
+                    {
+                        var bytes = Convert.FromBase64String(encoded);
+                        return Encoding.UTF8.GetString(bytes);
+                    }
+                    catch
+                    {
+                        return encoded;
+                    }
+                }
+
+                string stdout = DecodeBase64(stdoutProp.GetString());
+                string stderr = DecodeBase64(stderrProp.GetString());
+                string compileOutput = DecodeBase64(compileProp.GetString());
 
                 double time = 0;
                 if (timeProp.ValueKind == JsonValueKind.String)
@@ -78,15 +93,16 @@ namespace SubmissionService.Infrastructure
                     Status = statusDescription,
                     ExecutionTime = time,
                     MemoryUsed = memory,
-                    ErrorMessage = stderr ?? compileOutput ?? "none"
+                    ErrorMessage = string.IsNullOrEmpty(stderr) ? compileOutput : stderr
                 };
             }
             catch (Exception ex)
-            { 
+            {
                 Console.WriteLine("⚠️ Lỗi parse JSON hoặc mapping: " + ex.Message);
                 return null;
             }
         }
+
 
     }
 }

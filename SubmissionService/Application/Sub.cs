@@ -8,10 +8,12 @@ namespace SubmissionService.Application
         private string _urlJugde0 = "http://192.168.117.133:2358";// Ubuntu Vmware 
         private readonly ICompareTestCase _final;
         private readonly IGetResult _getResult;
-        public Sub(ICompareTestCase final, IGetResult getResult)
+        private readonly ISubmit _submit;
+        public Sub(ICompareTestCase final, IGetResult getResult,ISubmit submit)
         {
             _final = final;
             _getResult = getResult; 
+            _submit = submit;
         }
         public async Task<bool> Submit(Request request)
         {
@@ -32,5 +34,15 @@ namespace SubmissionService.Application
         {
             return await _getResult.GetAllYourSubmissions(studentId);
         }
+
+        public async Task<ResultDTO> SubmitWithResult(Request request)
+        {
+            if (request == null) return null;
+
+            var result = await _submit.Submited(request, _urlJugde0);
+
+            return result;
+        }
+
     }
 }
