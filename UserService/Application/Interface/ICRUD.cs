@@ -1,0 +1,19 @@
+﻿using UserService.Application.DTO;
+using UserService.Domain;
+namespace UserService.Application.Interface
+{
+    public interface ICRUD
+    {
+        Task<bool> AddUser(UserDTO user); // Tạo mới User
+
+        Task<User> GetUser(int userId); // Lấy 1 User theo ID
+
+        Task<IEnumerable<UserDTO>> GetAllUsers(); // Lấy danh sách User
+
+        Task<bool> UpdateUser(UserDTO user); // Cập nhật User
+
+        Task<bool> DeleteUser(int userId);
+        Task<User?> LoginAsync(LoginDTO loginDto);
+        Task<User> GetUserByUsername(string username);
+    }
+}
