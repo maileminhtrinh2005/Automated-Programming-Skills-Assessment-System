@@ -1,0 +1,31 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/Feedback.html",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8088
+        }
+      ],
+      "DownstreamPathTemplate": "/Feedback.html"
+    },
+
+    // Các route API sẵn có
+    {
+      "UpstreamPathTemplate": "/feedback/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/api/feedback/{everything}"
+    }
+  ],
+  "GlobalConfiguration": { "BaseUrl": "http://localhost:5141" }
+}
