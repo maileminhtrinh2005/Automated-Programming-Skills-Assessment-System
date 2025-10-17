@@ -17,7 +17,7 @@ namespace AssignmentService.Application.Service
         public async Task<bool> AddAssignment(AssignmentRequest request)
         {
             if (request == null) { return false; }
-            if (!await _testCaseFunc.SaveTestCase(request, _submissionUrl)) return false;
+            if (!await _testCaseFunc.SaveTestCase(request)) return false;
 
             return true;
         }

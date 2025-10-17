@@ -6,9 +6,15 @@ namespace SubmissionService.Application
     public class Sub
     {
         private string _urlJugde0 = "http://192.168.117.133:2358";// Ubuntu Vmware 
+        private const string _exchangeName = "exchange.submission";
+        private const string _routingKey = "submission.result";
+
+
+
         private readonly ICompareTestCase _final;
         private readonly IGetResult _getResult;
         private readonly ISubmit _submit;
+
         public Sub(ICompareTestCase final, IGetResult getResult,ISubmit submit)
         {
             _final = final;

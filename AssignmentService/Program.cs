@@ -2,6 +2,8 @@ using AssignmentService.Application.Interface;
 using AssignmentService.Application.Service;
 using AssignmentService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
+using ShareLibrary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +25,23 @@ builder.Services.AddScoped<ICrudAssignment, CrudAssignment>();
 builder.Services.AddScoped<ITestCaseFunc, TestCaseFunc>();
 builder.Services.AddScoped<AssignmentControl>();
 builder.Services.AddScoped<TestCaseControl>();
+builder.Services.AddScoped<TestCaseHandle>();
 
 
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+       new ConnectionFactory()
+       {
+           HostName = "localhost", // 
+           Port = 5672,            // 
+           UserName = "guest",     //
+           Password = "guest"      // 
+       }
+);
+
+builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+// dang ki rabbit mq
+builder.Services.AddSingleton<RabbitMQEventBus>();
+builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 var app = builder.Build();
 

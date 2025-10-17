@@ -12,7 +12,7 @@ namespace AssignmentService.Infrastructure
         {
             _context = context;
         }
-        public async Task<AssignmentDTO> AddAssignment(AssignmentRequest request)
+        public async Task<AssignmentDTO?> AddAssignment(AssignmentRequest request)
         {
             if (request == null)
             {
@@ -52,7 +52,7 @@ namespace AssignmentService.Infrastructure
             return true;
         }
 
-        public async Task<AssignmentDTO> GetAssignmentById(AssignmentRequest request)
+        public async Task<AssignmentDTO?> GetAssignmentById(AssignmentRequest request)
         {
             if (request == null)
             {
@@ -65,10 +65,10 @@ namespace AssignmentService.Infrastructure
             AssignmentDTO assign = new AssignmentDTO
             {
                 AssignmentId= assignment.AssignmentId,
-                Title= assignment.Title,
-                Description= assignment.Description,
+                Title= assignment.Title??"",
+                Description= assignment.Description ?? "",
                 Deadline= assignment.Deadline,
-                Difficulty = assignment.Difficulty
+                Difficulty = assignment.Difficulty ?? ""
             };
             return assign;
         }
@@ -89,5 +89,10 @@ namespace AssignmentService.Infrastructure
             await _context.SaveChangesAsync();
             return true;
         }
+
+
+
+
+
     }
 }
