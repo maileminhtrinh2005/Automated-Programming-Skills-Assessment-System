@@ -1,10 +1,9 @@
+using AssignmentService.Application.Interface;
+using AssignmentService.Application.Service;
+using AssignmentService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using SubmissionService.Application.Interface;
-using SubmissionService.Application;
-using SubmissionService.Infrastructure;
-using ShareLibrary;
 using RabbitMQ.Client;
-
+using ShareLibrary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,18 +15,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddHttpClient<Submit>();
+builder.Services.AddDbContext<AssignmentDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDb")));
 
 
-builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
-builder.Services.AddScoped<ISubmit, Submit>();
-builder.Services.AddScoped<IGetResult, GetResult>();
-builder.Services.AddScoped<Sub>();
-builder.Services.AddScoped<RunCodeHandle>();
+builder.Services.AddHttpClient<TestCaseFunc>();
+
+builder.Services.AddScoped<ICrudAssignment, CrudAssignment>();
+builder.Services.AddScoped<ITestCaseFunc, TestCaseFunc>();
+builder.Services.AddScoped<AssignmentControl>();
+builder.Services.AddScoped<TestCaseControl>();
+builder.Services.AddScoped<TestCaseHandle>();
 
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
@@ -41,10 +39,9 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 );
 
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+// dang ki rabbit mq
 builder.Services.AddSingleton<RabbitMQEventBus>();
 builder.Services.AddHostedService<RabbitMqSubscriberService>();
-
-
 
 var app = builder.Build();
 
