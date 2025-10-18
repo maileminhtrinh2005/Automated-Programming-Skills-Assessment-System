@@ -5,7 +5,6 @@ namespace AssignmentService.Application.Service
 {
     public class AssignmentControl
     {
-        private string _submissionUrl = "http://localhost:5090";// tam thoi
         private readonly ICrudAssignment _control;
         private readonly ITestCaseFunc _testCaseFunc;
         public AssignmentControl(ICrudAssignment control, ITestCaseFunc testCaseFunc)
@@ -17,8 +16,10 @@ namespace AssignmentService.Application.Service
         public async Task<bool> AddAssignment(AssignmentRequest request)
         {
             if (request == null) { return false; }
-            if (!await _testCaseFunc.SaveTestCase(request)) return false;
-
+            //if (!await _testCaseFunc.SaveTestCase(request)) return false;
+            var check = await _control.AddAssignment(request);
+            if (check == null) return false;
+                
             return true;
         }
 
@@ -42,6 +43,11 @@ namespace AssignmentService.Application.Service
             if (request == null) return false;
             if (!await _control.DeleteAssignment(request)) return false;
             return true;
+        }
+
+        public async Task<List<AssignmentDTO>> GetAllAssignment()
+        {
+            return await _control.GetAllAssigment();
         }
     }
 }

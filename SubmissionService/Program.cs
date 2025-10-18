@@ -4,6 +4,7 @@ using SubmissionService.Application;
 using SubmissionService.Infrastructure;
 using ShareLibrary;
 using RabbitMQ.Client;
+using SubmissionService.Infrastructure.Persistence;
 
 
 var builder = WebApplication.CreateBuilder(args);

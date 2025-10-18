@@ -52,6 +52,21 @@ namespace AssignmentService.Infrastructure
             return true;
         }
 
+        public async Task<List<AssignmentDTO>> GetAllAssigment()
+        {
+            var assigment = await _context.assignments.ToListAsync();
+
+            var assignmentDTOs = assigment.Select(a => new AssignmentDTO
+            {
+                AssignmentId= a.AssignmentId,
+                Title= a.Title,
+                Description= a.Description,
+                Deadline= a.Deadline,
+                Difficulty= a.Difficulty
+            }).ToList();
+            return assignmentDTOs;
+        }
+
         public async Task<AssignmentDTO?> GetAssignmentById(AssignmentRequest request)
         {
             if (request == null)
@@ -89,10 +104,5 @@ namespace AssignmentService.Infrastructure
             await _context.SaveChangesAsync();
             return true;
         }
-
-
-
-
-
     }
 }

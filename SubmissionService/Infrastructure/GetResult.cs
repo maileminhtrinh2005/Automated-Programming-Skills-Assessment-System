@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
+using SubmissionService.Infrastructure.Persistence;
 
 namespace SubmissionService.Infrastructure
 {
@@ -13,8 +14,8 @@ namespace SubmissionService.Infrastructure
         }
         public async Task<List<ResultDTO>> GetYourResult(int studentId, int assignmentId)
         {
-            var query = from s in _context.submissions
-                        join r in _context.results
+            var query = from s in _context.Submissions
+                        join r in _context.Results
                         on s.SubmissionId equals r.SubmissionId
                         where s.StudentId == studentId && s.AssignmentId == assignmentId
                         orderby s.SubmittedAt descending
@@ -36,7 +37,7 @@ namespace SubmissionService.Infrastructure
         }
         public async Task<List<ResultDTO>> GetAllYourSubmissions(int studentId)
         {
-            var query = from s in _context.submissions
+            var query = from s in _context.Submissions
                         where s.StudentId == studentId
                         select new ResultDTO
                         {

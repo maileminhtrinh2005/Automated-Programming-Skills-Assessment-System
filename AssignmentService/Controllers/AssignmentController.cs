@@ -68,5 +68,14 @@ namespace AssignmentService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("GetAllAssignment")]
+        public async Task<IActionResult> GetAllAssignment()
+        {
+
+            var assignmentList = await _assignment.GetAllAssignment();
+            if (assignmentList == null) return NotFound();
+            return Ok(assignmentList);
+        }
     }
 }

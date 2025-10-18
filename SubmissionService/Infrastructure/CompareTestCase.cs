@@ -1,6 +1,7 @@
 ﻿using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
 using SubmissionService.Domain;
+using SubmissionService.Infrastructure.Persistence;
 using Result = SubmissionService.Domain.Result;
 
 namespace SubmissionService.Infrastructure
@@ -44,7 +45,7 @@ namespace SubmissionService.Infrastructure
                 };
 
                 Console.WriteLine("Thêm submission...");
-                _dbcontext.submissions.Add(submission);
+                _dbcontext.Submissions.Add(submission);
                 await _dbcontext.SaveChangesAsync();
                 Console.WriteLine("Đã lưu submission với ID = " + submission.SubmissionId);
 
@@ -60,7 +61,7 @@ namespace SubmissionService.Infrastructure
                 };
 
                 Console.WriteLine("Thêm result...");
-                _dbcontext.results.Add(results);
+                _dbcontext.Results.Add(results);
                 await _dbcontext.SaveChangesAsync();
 
                 Console.WriteLine("Xong tất cả!");

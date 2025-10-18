@@ -2,135 +2,140 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Test Assignment API</title>
+    <title>🧪 Thêm TestCase</title>
 </head>
-<body style="font-family: sans-serif;">
-    <h2>🧩 Test Assignment API qua Gateway</h2>
+<body>
+    <h2>Thêm TestCase cho Bài tập</h2>
 
-    <!-- Thêm bài tập mới -->
-    <h3>Thêm bài tập mới</h3>
-    <form id="addForm">
-        <label>Title: <input type="text" id="title" required></label><br><br>
-        <label>Description: <input type="text" id="description" required></label><br><br>
-        <label>Deadline: <input type="datetime-local" id="deadline" required></label><br><br>
-        <label>
-            Difficulty:
-            <select id="difficulty">
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
-            </select>
-        </label><br><br>
-        <button type="submit">Thêm Assignment</button>
-    </form>
+    <h2>Thêm Bài Tập Mới</h2>
+    <form id="addAssignmentForm">
+        <label for="title">Tiêu đề:</label>
+        <input type="text" id="title" required>
 
-    <hr>
+        <label for="description">Mô tả:</label>
+        <textarea id="description" rows="3" required></textarea>
 
-    <!-- Lấy Assignment theo ID -->
-    <h3>Lấy Assignment theo ID</h3>
-    <label>ID: <input type="number" id="getId" required></label>
-    <button id="getBtn">Lấy Assignment</button>
+        <label for="deadline">Hạn nộp:</label>
+        <input type="date" id="deadline" required>
 
-    <hr>
-
-    <!-- Cập nhật Assignment -->
-    <h3>Cập nhật Assignment</h3>
-    <label>ID: <input type="number" id="updateId" required></label><br><br>
-    <label>Title: <input type="text" id="updateTitle"></label><br><br>
-    <label>Description: <input type="text" id="updateDescription"></label><br><br>
-    <label>Deadline: <input type="datetime-local" id="updateDeadline"></label><br><br>
-    <label>
-        Difficulty:
-        <select id="updateDifficulty">
-            <option>Easy</option>
-            <option>Medium</option>
-            <option>Hard</option>
+        <label for="difficulty">Độ khó:</label>
+        <select id="difficulty">
+            <option value="Easy">Dễ</option>
+            <option value="Medium">Trung bình</option>
+            <option value="Hard">Khó</option>
         </select>
-    </label><br><br>
-    <button id="updateBtn">Cập nhật Assignment</button>
+        <label for="weight">Trọng số (weight):</label>
+        <input type="number" id="weight" step="0.1" value="1" required>
 
-    <hr>
+        <button type="submit">Thêm Bài Tập</button>
+    </form>
+        <label>Chọn bài tập:</label>
+        <select id="assignmentSelect"></select>
 
-    <!-- Xóa Assignment -->
-    <h3>Xóa Assignment</h3>
-    <label>ID: <input type="number" id="deleteId" required></label>
-    <button id="deleteBtn">Xóa Assignment</button>
+        <h3>Danh sách TestCase</h3>
+        <table id="testcaseTable">
+            <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Expected Output</th>
+                    <th>Weight</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-    <hr>
+        <button id="addRowBtn">+ Thêm dòng</button><br>
+        <button id="submitBtn">📤 Gửi TestCases</button>
 
-    <pre id="result"></pre>
+        <pre id="result"></pre>
 
-    <script>
-        const baseUrl = "http://localhost:5261";
+        <script>
+            const baseUrl = "http://localhost:5261";
 
-        // Thêm
-        document.getElementById("addForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const data = {
-                title: document.getElementById("title").value,
-                description: document.getElementById("description").value,
-                deadline: document.getElementById("deadline").value,
-                difficulty: document.getElementById("difficulty").value
-            };
-
-            const res = await fetch(`${baseUrl}/AddAssignment`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
-
-            document.getElementById("result").textContent = res.ok
-                ? "✅ Thêm thành công!"
-                : "❌ Lỗi khi thêm assignment!";
-        });
-
-        // Lấy
-        document.getElementById("getBtn").addEventListener("click", async () => {
-            const id = document.getElementById("getId").value;
-            const res = await fetch(`${baseUrl}/GetAssignmentByid/${id}`);
-
-            if (!res.ok) {
-                document.getElementById("result").textContent = "❌ Không tìm thấy Assignment!";
-                return;
+            // 🔹 Lấy tất cả bài tập để đưa vào dropdown
+            async function loadAssignments() {
+                const res = await fetch(`${baseUrl}/GetAllAssignment`);
+                const data = await res.json();
+                const select = document.getElementById("assignmentSelect");
+                data.forEach(a => {
+                    const opt = document.createElement("option");
+                    opt.value = a.assignmentId;
+                    opt.textContent = `${a.assignmentId} - ${a.title}`;
+                    select.appendChild(opt);
+                });
             }
 
-            const data = await res.json();
-            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-        });
+            // 🔹 Thêm 1 dòng testcase mới
+            document.getElementById("addRowBtn").addEventListener("click", () => {
+                const tbody = document.querySelector("#testcaseTable tbody");
+                const row = document.createElement("tr");
 
-        // Cập nhật
-        document.getElementById("updateBtn").addEventListener("click", async () => {
-            const data = {
-                assignmentId: document.getElementById("updateId").value,
-                title: document.getElementById("updateTitle").value,
-                description: document.getElementById("updateDescription").value,
-                deadline: document.getElementById("updateDeadline").value,
-                difficulty: document.getElementById("updateDifficulty").value
-            };
+                row.innerHTML = `
+                            <td><input type="text" placeholder="Ví dụ: 1 2"></td>
+                            <td><input type="text" placeholder="Ví dụ: 3"></td>
+                            <td><input type="number" step="0.1" value="1"></td>
+                            <td><button class="removeBtn">❌</button></td>
+                        `;
 
-            const res = await fetch(`${baseUrl}/UpdateAssignment`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                row.querySelector(".removeBtn").addEventListener("click", () => row.remove());
+                tbody.appendChild(row);
             });
 
-            document.getElementById("result").textContent = res.ok
-                ? "✅ Cập nhật thành công!"
-                : "❌ Lỗi khi cập nhật assignment!";
-        });
+            // 🔹 Gửi toàn bộ testcase
+            document.getElementById("submitBtn").addEventListener("click", async () => {
+                const assignmentId = document.getElementById("assignmentSelect").value;
+                const rows = document.querySelectorAll("#testcaseTable tbody tr");
 
-        // Xóa
-        document.getElementById("deleteBtn").addEventListener("click", async () => {
-            const id = document.getElementById("deleteId").value;
-            const res = await fetch(`${baseUrl}/Delete/${id}`, {
-                method: "DELETE"
+                const testCaseItems = Array.from(rows).map(r => ({
+                    input: r.children[0].querySelector("input").value,
+                    expectedOutput: r.children[1].querySelector("input").value,
+                    weight: parseFloat(r.children[2].querySelector("input").value)
+                }));
+
+                const payload = {
+                    assiginmentId: parseInt(assignmentId),
+                    testCaseItems: testCaseItems
+                };
+
+                const res = await fetch(`${baseUrl}/AddTestCase`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const text = await res.text();
+                document.getElementById("result").textContent = res.ok ? `✅ ${text}` : `❌ ${text}`;
             });
 
-            document.getElementById("result").textContent = res.ok
-                ? "✅ Xóa thành công!"
-                : "❌ Lỗi khi xóa assignment!";
-        });
+            // adđ assignment
+            document.getElementById("addAssignmentForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
 
-    </script>
+                const data = {
+                    title: document.getElementById("title").value,
+                    description: document.getElementById("description").value,
+                    deadline: document.getElementById("deadline").value,
+                    difficulty: document.getElementById("difficulty").value,
+                    weight: parseFloat(document.getElementById("weight").value)
+                };
+
+                const response = await fetch(`${baseUrl}/AddAssignment`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("✅ Thêm bài tập thành công!");
+                } else {
+                    alert("❌ Thêm bài tập thất bại!");
+                }
+            });
+
+            loadAssignments(); // gọi khi trang mở
+        </script>
 </body>
 </html>

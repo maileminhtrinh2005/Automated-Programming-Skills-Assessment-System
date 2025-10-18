@@ -50,8 +50,41 @@
       ],
       "UpstreamPathTemplate": "/Delete/{id}",
       "UpstreamHttpMethod": [ "DELETE" ]
-    }
+    },
+    //
+    {
+      "DownstreamPathTemplate": "/api/Assignment/GetAllAssignment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAllAssignment",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
 
+
+
+
+
+
+
+    //testcase
+
+    {
+      "DownstreamPathTemplate": "/api/TestCase/AddTestCase",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/AddTestCase",
+      "UpstreamHttpMethod": [ "POST" ]
+    }
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"
