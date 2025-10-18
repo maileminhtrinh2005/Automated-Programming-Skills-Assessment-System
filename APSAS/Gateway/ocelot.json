@@ -57,6 +57,79 @@
       ]
     },
     {
+      "UpstreamPathTemplate": "/Feedback.html",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8088
+        }
+      ],
+      "DownstreamPathTemplate": "/Feedback.html"
+    },
+    {
+      "UpstreamPathTemplate": "/Feedback/health",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/health"
+    },
+    {
+      "UpstreamPathTemplate": "/feedbacksubmit",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/feedbacksubmit"
+    },
+    {
+      "UpstreamPathTemplate": "/Feedback/manual",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/manual"
+    },
+    {
+      "UpstreamPathTemplate": "/Feedback/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/{everything}"
+    },
+    {
       "DownstreamPathTemplate": "/api/Submission/Submit",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
