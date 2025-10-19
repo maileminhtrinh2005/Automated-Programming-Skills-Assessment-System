@@ -1,0 +1,199 @@
+﻿<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>APSAS Notification • Gateway 5261</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Ngăn favicon request -->
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --ok: #059669;
+            --warn: #dc2626;
+            --violet: #7c3aed;
+        }
+
+        body {
+            font-family: system-ui,Arial,sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            margin: 28px auto;
+            max-width: 920px;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin: 0 0 8px;
+        }
+
+        p.small {
+            color: var(--muted);
+            text-align: center;
+            margin: 0 0 22px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 12px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-family: ui-monospace,Menlo,Consolas,monospace;
+        }
+
+        textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 14px 0;
+        }
+
+        button {
+            flex: 1;
+            min-width: 140px;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+            button:hover {
+                opacity: .92;
+            }
+
+        #btnHealth {
+            background: var(--ok);
+        }
+
+        #btnCreate {
+            background: var(--primary);
+        }
+
+        #btnGetAll {
+            background: var(--violet);
+        }
+
+        #btnClear {
+            background: var(--warn);
+        }
+
+        pre {
+            background: #0b1220;
+            color: #e2e8f0;
+            padding: 14px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 14px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+            .meta code {
+                background: #e2e8f0;
+                color: #111827;
+                padding: 2px 6px;
+                border-radius: 6px;
+            }
+    </style>
+</head>
+<body>
+    <h1>APSAS Notification • Gateway Tester</h1>
+    <p class="small">Trang này gọi qua Gateway: <code>http://localhost:5261</code> — Service Notification (5216)</p>
+
+    <div class="meta">
+        <span>Gateway base:</span>
+        <code id="gw"></code>
+    </div>
+
+    <label>Request Body (POST /notification/api/notification/from-feedback)</label>
+    <textarea id="body">{
+  "studentId": "SV001",
+  "assignmentTitle": "HW1 - Arrays",
+  "rubric": null,
+  "sourceCode": "Console.WriteLine(\u0022Hello\u0022);",
+  "languageId": 54,
+  "testResults": [
+    { "name": "Case 1", "status": "Passed" },
+    { "name": "Case 2", "status": "Failed", "expected": "2", "actual": "3" }
+  ]
+}</textarea>
+
+    <div class="row">
+        <button id="btnHealth">🩺 GET /notification/health</button>
+        <button id="btnCreate">📤 POST /notification/api/notification/from-feedback</button>
+        <button id="btnGetAll">📚 GET /notification/api/notification</button>
+        <button id="btnClear">🗑️ Clear</button>
+    </div>
+
+    <label>Kết quả</label>
+    <pre id="out">(chưa có kết quả)</pre>
+
+    <script>
+        const $ = s => document.querySelector(s);
+        const out = $('#out');
+        const gwBase = "http://localhost:5261";
+        $('#gw').textContent = gwBase;
+        const url = p => gwBase + (p.startsWith('/') ? p : '/' + p);
+
+        async function callApi(u, method = 'GET', data = null) {
+            out.textContent = `${method} ${u}\n...`;
+            const opts = { method, headers: {} };
+            if (data) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(data); }
+            try {
+                const res = await fetch(u, opts);
+                const txt = await res.text();
+                try {
+                    out.textContent = `${method} ${u}\nStatus: ${res.status}\n\n` + JSON.stringify(JSON.parse(txt), null, 2);
+                } catch {
+                    out.textContent = `${method} ${u}\nStatus: ${res.status}\n\n${txt}`;
+                }
+            } catch (e) { out.textContent = `${method} ${u}\nERROR: ${e}`; }
+        }
+
+        // ✅ Health endpoint
+        $('#btnHealth').onclick = () => callApi(url('/notification/health'));
+
+        // ✅ Create notification from feedback
+        $('#btnCreate').onclick = () => {
+            try {
+                const data = JSON.parse($('#body').value);
+                callApi(url('GetNotification'), 'POST', data);
+            } catch (e) {
+                out.textContent = '❌ JSON body không hợp lệ: ' + e.message;
+            }
+        };
+
+        // ✅ Get all notifications
+        $('#btnGetAll').onclick = () => callApi(url('/notification/api/notification'));
+
+        // ✅ Clear
+        $('#btnClear').onclick = () => { $('#body').value = ""; out.textContent = "(đã xoá)"; };
+    </script>
+</body>
+</html>
