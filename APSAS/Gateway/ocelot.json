@@ -1,7 +1,77 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/Submission/submit",
+      "DownstreamPathTemplate": "/api/APIConfig/AddAPI",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5140
+        }
+      ],
+      "UpstreamPathTemplate": "/AddAPI",
+      "UpstreamHttpMethod": [
+        "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Assignment/AddAssignment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/AddAssignment",
+      "UpstreamHttpMethod": [
+        "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Assignment/GetAssignmentByid/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAssignmentByid/{id}",
+      "UpstreamHttpMethod": [
+        "GET"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Assignment/UpdateAssignment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/UpdateAssignment",
+      "UpstreamHttpMethod": [
+        "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Assignment/Delete/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/Delete/{id}",
+      "UpstreamHttpMethod": [
+        "DELETE"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Submission/Submit",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,9 +79,51 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/submit",
+      "UpstreamPathTemplate": "/Submit",
       "UpstreamHttpMethod": [
         "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Submission/SubmitAndShow",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/SubmitAndShow",
+      "UpstreamHttpMethod": [
+        "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/GetResult/getAllSubmissions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/getAllSubmissions",
+      "UpstreamHttpMethod": [
+        "GET"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/GetResult/getYourResults",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/getYourResults",
+      "UpstreamHttpMethod": [
+        "GET"
       ]
     },
     {

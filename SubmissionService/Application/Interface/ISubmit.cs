@@ -4,6 +4,6 @@ namespace SubmissionService.Application.Interface
 {
     public interface ISubmit
     {
-        public Task<Result> Submited(Request request, string urlJugde0);
+        public Task<ResultDTO> Submited(Request request, string urlJugde0);
     }
 }

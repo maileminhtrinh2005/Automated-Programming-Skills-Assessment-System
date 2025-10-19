@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>APSAS - User Service</title>
+    <title>APSAS - Đăng nhập</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,13 +12,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         .card {
             width: 360px;
             margin: 20px auto;
             background: #fff;
-            padding: 18px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
@@ -26,12 +28,13 @@
         h2 {
             text-align: center;
             margin-bottom: 12px;
+            color: #333;
         }
 
         label {
             font-size: 13px;
             display: block;
-            margin-top: 8px;
+            margin-top: 12px;
         }
 
         input {
@@ -44,7 +47,7 @@
         }
 
         button {
-            margin-top: 14px;
+            margin-top: 20px;
             width: 100%;
             padding: 10px;
             border: none;
@@ -52,6 +55,7 @@
             background: #0066cc;
             color: #fff;
             cursor: pointer;
+            font-size: 15px;
         }
 
             button:disabled {
@@ -60,8 +64,9 @@
             }
 
         .msg {
-            margin-top: 12px;
+            margin-top: 15px;
             font-size: 14px;
+            text-align: center;
         }
 
             .msg.success {
@@ -71,41 +76,10 @@
             .msg.error {
                 color: #c0392b;
             }
-
-        .hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 6px;
-        }
     </style>
 </head>
 <body>
 
-    <!-- ADD USER -->
-    <div class="card" id="addCard">
-        <h2>Thêm người dùng (Add User)</h2>
-
-        <label for="username">Username</label>
-        <input id="username" type="text" placeholder="username" />
-
-        <label for="email">Email</label>
-        <input id="email" type="email" placeholder="user@example.com" />
-
-        <label for="fullname">Full Name</label>
-        <input id="fullname" type="text" placeholder="Nguyen Van A" />
-
-        <label for="password">Password</label>
-        <input id="password" type="password" placeholder="Mật khẩu người dùng" />
-
-        <div class="hint">
-            Trường gửi lên là <code>PasswordHash</code> (server sẽ mã hóa nếu bạn thêm hash bên server).
-        </div>
-
-        <button id="submitBtn">Thêm user</button>
-        <p id="message" class="msg"></p>
-    </div>
-
-    <!-- LOGIN -->
     <div class="card" id="loginCard">
         <h2>Đăng nhập (Login)</h2>
 
@@ -122,11 +96,7 @@
 
     <script>
         const gatewayUrl = "http://localhost:5261"; // Ocelot Gateway URL
-        const addUserEndpoint = "/AddUser";
         const loginEndpoint = "/Login";
-        const getUsersEndpoint = "/GetAllUsers";
-        const deleteEndpoint = "/DeleteUser"; // 🧩 (sẽ thêm ở backend sau)
-        const updateEndpoint = "/UpdateUser"; // 🧩 (sẽ thêm ở backend sau)
 
         const $ = id => document.getElementById(id);
 
@@ -136,46 +106,6 @@
             el.className = "msg " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
         }
 
-        // ================== ADD USER ==================
-        const submitBtn = $("submitBtn");
-        const msg = $("message");
-
-        submitBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            showMessage(msg, "");
-
-            const Username = $("username").value.trim();
-            const Email = $("email").value.trim();
-            const FullName = $("fullname").value.trim();
-            const PasswordHash = $("password").value;
-
-            if (!Username || !Email || !PasswordHash) {
-                showMessage(msg, "⚠️ Vui lòng điền đủ username, email và password.", "error");
-                return;
-            }
-
-            const body = { Username, Email, FullName, PasswordHash };
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Đang gửi...";
-
-            try {
-                const res = await fetch(gatewayUrl + addUserEndpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
-                });
-
-                if (!res.ok) throw new Error(await res.text());
-                showMessage(msg, "✅ Thêm user thành công!", "success");
-                $("username").value = $("email").value = $("fullname").value = $("password").value = "";
-                loadUsers(); // reload lại bảng
-            } catch (err) {
-                showMessage(msg, "❌ " + err.message, "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Thêm user";
-            }
-        });
         // ================= Login =================
         const loginBtn = $("loginBtn");
         const loginMsg = $("loginMessage");
@@ -209,6 +139,15 @@
 
                 const data = JSON.parse(text);
                 showMessage(loginMsg, `✅ ${data.message || "Đăng nhập thành công!"}`, "success");
+
+                // --- TÙY CHỌN: Lưu token và chuyển hướng ---
+                // if (data.token) {
+                //    localStorage.setItem("authToken", data.token);
+                //    // Chuyển hướng đến trang dashboard sau khi đăng nhập thành công
+                //    // window.location.href = "/dashboard.html";
+                // }
+                // ----------------------------------------
+
             } catch (err) {
                 console.error(err);
                 showMessage(loginMsg, "❌ " + err.message, "error");
@@ -217,166 +156,7 @@
                 loginBtn.textContent = "Đăng nhập";
             }
         });
-
-        // ================== LOAD USERS ==================
-        async function loadUsers() {
-            try {
-                const res = await fetch(gatewayUrl + getUsersEndpoint);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const users = await res.json();
-                renderTable(users);
-            } catch (err) {
-                console.error(err);
-                alert("Lỗi khi tải danh sách người dùng: " + err.message);
-            }
-        }
-
-        // ================== RENDER TABLE (CÓ PASSWORD) ==================
-        function renderTable(users) {
-            const container = document.getElementById("userTableContainer");
-            container.innerHTML = `
-        <table class="user-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Password (Nhập nếu muốn đổi)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${users.map(u => `
-                    <tr>
-                        <td>${u.userID}</td>
-                        <td contenteditable="true" data-field="username">${u.username}</td>
-                        <td contenteditable="true" data-field="email">${u.email}</td>
-                        <td contenteditable="true" data-field="fullName">${u.fullName}</td>
-                        <td>
-                            <input type="password" data-field="passwordHash" placeholder="••••••" style="width:120px; border:1px solid #ddd; border-radius:4px; padding:4px 6px;">
-                        </td>
-                        <td>
-                            <button class="btn-edit" onclick="updateUser(${u.userID}, this)">💾 Lưu</button>
-                            <button class="btn-delete" onclick="deleteUser(${u.userID})">🗑 Xóa</button>
-                        </td>
-                    </tr>
-                `).join("")}
-            </tbody>
-        </table>
-    `;
-        }
-
-
-        // ================== DELETE USER ==================
-        async function deleteUser(id) {
-            if (!confirm("Bạn có chắc muốn xóa người dùng này không?")) return;
-            try {
-                const res = await fetch(`${gatewayUrl}${deleteEndpoint}/${id}`, { method: "DELETE" });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                alert("✅ Xóa thành công!");
-                loadUsers();
-            } catch (err) {
-                alert("❌ Lỗi khi xóa: " + err.message);
-            }
-        }
-
-        // ================== UPDATE USER (CÓ PASSWORD) ==================
-        async function updateUser(id, btn) {
-            const row = btn.closest("tr");
-            const updatedUser = {
-                UserID: id,
-                Username: row.querySelector('[data-field="username"]').textContent.trim(),
-                Email: row.querySelector('[data-field="email"]').textContent.trim(),
-                FullName: row.querySelector('[data-field="fullName"]').textContent.trim(),
-                PasswordHash: row.querySelector('[data-field="passwordHash"]').value.trim() // ✅ thêm password
-            };
-
-            try {
-                const res = await fetch(gatewayUrl + updateEndpoint, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(updatedUser)
-                });
-
-                if (!res.ok) throw new Error(await res.text());
-
-                alert("✅ Cập nhật thành công!");
-                loadUsers(); // reload bảng sau khi lưu
-            } catch (err) {
-                alert("❌ Lỗi khi cập nhật: " + err.message);
-            }
-        }
-
-
-
-        window.deleteUser = deleteUser;
-        window.updateUser = updateUser;
-
-        // Load bảng khi trang mở
-        loadUsers();
     </script>
-
-    <style>
-        .user-table input[type="password"] {
-            width: 100%;
-            padding: 5px 6px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .user-table {
-            border-collapse: collapse;
-            width: 90%;
-            margin-top: 30px;
-            background: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-            .user-table th, .user-table td {
-                border: 1px solid #ddd;
-                padding: 10px 15px;
-                text-align: left;
-            }
-
-            .user-table th {
-                background-color: #0066cc;
-                color: white;
-            }
-
-            .user-table tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-
-        .btn-edit, .btn-delete {
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #fff;
-            margin-right: 4px;
-        }
-
-        .btn-edit {
-            background-color: #27ae60;
-        }
-
-        .btn-delete {
-            background-color: #c0392b;
-        }
-
-        .btn-edit:hover {
-            background-color: #2ecc71;
-        }
-
-        .btn-delete:hover {
-            background-color: #e74c3c;
-        }
-    </style>
-
-    <div id="userTableContainer"></div>
 
 </body>
 </html>
