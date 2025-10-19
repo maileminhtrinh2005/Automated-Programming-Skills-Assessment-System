@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Quản Trị (Admin)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+            width: 100%;
+        }
+
+        /* ----- Kiểu chung ----- */
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Thêm để padding không làm vỡ layout */
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+            .message.success {
+                color: green;
+            }
+
+            .message.error {
+                color: #c0392b;
+            }
+
+
+        /* ----- Kiểu cho Box "Thêm API" ----- */
+        .container-api {
+            width: 400px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+            .container-api button {
+                background-color: #3498db; /* Màu xanh dương */
+            }
+
+                .container-api button:hover {
+                    background-color: #2980b9;
+                }
+
+        /* ----- Kiểu cho Box "Thêm User" ----- */
+        .container-user {
+            width: 400px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+            .container-user button {
+                background: #0066cc; /* Màu xanh đậm */
+            }
+
+                .container-user button:hover {
+                    background: #0056b3;
+                }
+
+                .container-user button:disabled {
+                    opacity: .6;
+                    cursor: not-allowed;
+                }
+
+        .hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        /* * =============================================
+         * CSS CHO BẢNG DANH SÁCH USER (TỪ USERPAGE.HTML)
+         * =============================================
+        */
+        .user-table {
+            border-collapse: collapse;
+            width: 100%; /* Sửa lại cho vừa với container */
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+            .user-table th, .user-table td {
+                border: 1px solid #ddd;
+                padding: 10px 15px;
+                text-align: left;
+            }
+
+            .user-table th {
+                background-color: #0066cc;
+                color: white;
+            }
+
+            .user-table tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            .user-table input[type="password"] {
+                width: 100%;
+                padding: 5px 6px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                box-sizing: border-box;
+            }
+
+        .btn-edit, .btn-delete {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #fff;
+            margin-right: 4px;
+            font-size: 13px; /* Thêm cho đồng bộ */
+        }
+
+        .btn-edit {
+            background-color: #27ae60;
+        }
+
+        .btn-delete {
+            background-color: #c0392b;
+        }
+
+        .btn-edit:hover {
+            background-color: #2ecc71;
+        }
+
+        .btn-delete:hover {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Trang Quản Trị</h1>
+
+    <div class="container-api">
+        <h2>Thêm API Config</h2>
+
+        <label for="apiName">Tên API:</label>
+        <input type="text" id="apiName" placeholder="VD: Judge0">
+
+        <label for="baseUrl">Base URL:</label>
+        <input type="text" id="baseUrl" placeholder="VD: https://api.judge0.com">
+
+        <button onclick="addAPIConfig()">Thêm API</button>
+
+        <div id="apiMessage" class="message"></div>
+    </div>
+
+    <div class="container-user">
+        <h2>Thêm Người Dùng Mới</h2>
+
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="username" />
+
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="user@example.com" />
+
+        <label for="fullname">Full Name</label>
+        <input id="fullname" type="text" placeholder="Nguyen Van A" />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Mật khẩu người dùng" />
+
+        <div class="hint">
+            Trường gửi lên là <code>PasswordHash</code>.
+        </div>
+
+        <button id="submitUserBtn">Thêm user</button>
+        <p id="userMessage" class="message"></p>
+    </div>
+
+    <h2>Danh Sách Người Dùng</h2>
+    <div id="userTableContainer" style="width: 90%; max-width: 1000px; margin-top: 10px;">
+    </div>
+
+
+    <script>
+        const GATEWAY_URL = "http://localhost:5261"; // Đường dẫn Gateway chung
+        const $ = id => document.getElementById(id);
+
+        // ================== HELPER HIỂN THỊ MESSAGE ==================
+        function showMessage(el, text, kind = "info") {
+            el.textContent = text;
+            el.className = "message " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
+        }
+
+
+        // ================== SCRIPT THÊM API ==================
+        const apiMessageDiv = $("apiMessage");
+
+        async function addAPIConfig() {
+            const name = $("apiName").value.trim();
+            const baseUrl = $("baseUrl").value.trim();
+
+            if (!name || !baseUrl) {
+                showMessage(apiMessageDiv, "⚠️ Vui lòng nhập đầy đủ thông tin!", "error");
+                return;
+            }
+
+            const data = { name, baseURL: baseUrl };
+
+            try {
+                const response = await fetch(`${GATEWAY_URL}/AddAPI`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showMessage(apiMessageDiv, "✅ Thêm API thành công!", "success");
+                    $("apiName").value = "";
+                    $("baseUrl").value = "";
+                } else {
+                    const err = await response.json();
+                    showMessage(apiMessageDiv, "❌ Lỗi: " + (err.message || "Không thể thêm API!"), "error");
+                }
+            } catch (error) {
+                showMessage(apiMessageDiv, "🚫 Không thể kết nối tới Gateway!", "error");
+            }
+        }
+
+
+        // ================== SCRIPT THÊM USER ==================
+        const addUserEndpoint = "/AddUser";
+        const submitUserBtn = $("submitUserBtn");
+        const userMsg = $("userMessage");
+
+        submitUserBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            showMessage(userMsg, "");
+
+            const Username = $("username").value.trim();
+            const Email = $("email").value.trim();
+            const FullName = $("fullname").value.trim();
+            const PasswordHash = $("password").value;
+
+            if (!Username || !Email || !PasswordHash) {
+                showMessage(userMsg, "⚠️ Vui lòng điền đủ username, email và password.", "error");
+                return;
+            }
+
+            const body = { Username, Email, FullName, PasswordHash };
+            submitUserBtn.disabled = true;
+            submitUserBtn.textContent = "Đang gửi...";
+
+            try {
+                const res = await fetch(GATEWAY_URL + addUserEndpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                showMessage(userMsg, "✅ Thêm user thành công!", "success");
+                $("username").value = $("email").value = $("fullname").value = $("password").value = "";
+
+                // TỰ ĐỘNG TẢI LẠI BẢNG SAU KHI THÊM
+                loadUsers();
+            } catch (err) {
+                showMessage(userMsg, "❌ " + err.message, "error");
+            } finally {
+                submitUserBtn.disabled = false;
+                submitUserBtn.textContent = "Thêm user";
+            }
+        });
+
+
+        /* * =============================================
+         * JAVASCRIPT CHO BẢNG USER (TỪ USERPAGE.HTML)
+         * =============================================
+        */
+
+        // Khai báo các endpoint
+        const getUsersEndpoint = "/GetAllUsers";
+        const deleteEndpoint = "/DeleteUser";
+        const updateEndpoint = "/UpdateUser";
+
+        // ================== LOAD USERS ==================
+        async function loadUsers() {
+            try {
+                const res = await fetch(GATEWAY_URL + getUsersEndpoint);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const users = await res.json();
+                renderTable(users);
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi khi tải danh sách người dùng: " + err.message);
+            }
+        }
+
+        // ================== RENDER TABLE (CÓ PASSWORD) ==================
+        function renderTable(users) {
+            const container = document.getElementById("userTableContainer");
+            container.innerHTML = `
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Full Name</th>
+                        <th>Password (Nhập nếu muốn đổi)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(u => `
+                        <tr>
+                            <td>${u.userID}</td>
+                            <td contenteditable="true" data-field="username">${u.username}</td>
+                            <td contenteditable="true" data-field="email">${u.email}</td>
+                            <td contenteditable="true" data-field="fullName">${u.fullName}</td>
+                            <td>
+                                <input type="password" data-field="passwordHash" placeholder="••••••" style="width:120px; border:1px solid #ddd; border-radius:4px; padding:4px 6px;">
+                            </td>
+                            <td>
+                                <button class="btn-edit" onclick="updateUser(${u.userID}, this)">💾 Lưu</button>
+                                <button class="btn-delete" onclick="deleteUser(${u.userID})">🗑 Xóa</button>
+                            </td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        `;
+        }
+
+
+        // ================== DELETE USER ==================
+        async function deleteUser(id) {
+            if (!confirm("Bạn có chắc muốn xóa người dùng này không?")) return;
+            try {
+                const res = await fetch(`${GATEWAY_URL}${deleteEndpoint}/${id}`, { method: "DELETE" });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                alert("✅ Xóa thành công!");
+                loadUsers();
+            } catch (err) {
+                alert("❌ Lỗi khi xóa: " + err.message);
+            }
+        }
+
+        // ================== UPDATE USER (CÓ PASSWORD) ==================
+        async function updateUser(id, btn) {
+            const row = btn.closest("tr");
+            const updatedUser = {
+                UserID: id,
+                Username: row.querySelector('[data-field="username"]').textContent.trim(),
+                Email: row.querySelector('[data-field="email"]').textContent.trim(),
+                FullName: row.querySelector('[data-field="fullName"]').textContent.trim(),
+                PasswordHash: row.querySelector('[data-field="passwordHash"]').value.trim() // ✅ thêm password
+            };
+
+            try {
+                const res = await fetch(GATEWAY_URL + updateEndpoint, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedUser)
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                alert("✅ Cập nhật thành công!");
+                loadUsers(); // reload bảng sau khi lưu
+            } catch (err) {
+                alert("❌ Lỗi khi cập nhật: " + err.message);
+            }
+        }
+
+
+        // Đưa hàm ra global scope để onclick có thể gọi
+        window.deleteUser = deleteUser;
+        window.updateUser = updateUser;
+
+        // Load bảng khi trang mở
+        loadUsers();
+    </script>
+
+</body>
+</html>
