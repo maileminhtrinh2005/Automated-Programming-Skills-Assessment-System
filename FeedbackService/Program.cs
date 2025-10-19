@@ -3,9 +3,11 @@ using FeedbackService.Application.Interfaces;
 using FeedbackService.Application.Services;
 using FeedbackService.Infrastructure;
 using FeedbackService.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.EntityFrameworkCore;
 
+using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
+using ShareLibrary;
+using ShareLibrary.Event;
 
 
 
@@ -20,6 +22,18 @@ builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemi
 builder.Services.AddHttpClient<GeminiFeedbackGenerator>();
 builder.Services.AddScoped<IFeedbackGenerator, GeminiFeedbackGenerator>();
 builder.Services.AddScoped<IFeedbackAppService, FeedbackAppService>();
+
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+       new ConnectionFactory()
+       {
+           HostName = "localhost", // 
+           Port = 5672,            // 
+           UserName = "guest",     //
+           Password = "guest"      // 
+       }
+);
+builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+builder.Services.AddScoped<GenerateFeedbackHandle>();
 
 
 // Manual feedback service

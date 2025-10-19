@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
+using NotificationService.Infrastructure;
+using NotificationService.Infrastructure.Handlers;
 using NotificationService.NotificationInfrastructure.Service;
-
+using RabbitMQ.Client;
+using ShareLibrary;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,7 +14,18 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 builder.Services.AddScoped<INotificationAppService, NotificationAppService>();
 builder.Services.AddScoped<INotificationGenerator, NotificationGenerator>();
-
+builder.Services.AddScoped<NotificationCreatedHandler>();
+builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
+builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+       new ConnectionFactory()
+       {
+           HostName = "localhost", // 
+           Port = 5672,            // 
+           UserName = "guest",     //
+           Password = "guest"      // 
+       }
+);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

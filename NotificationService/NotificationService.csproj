@@ -25,4 +25,8 @@
     <Folder Include="Domain\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShareLibrary\ShareLibrary.csproj" />
+  </ItemGroup>
+
 </Project>

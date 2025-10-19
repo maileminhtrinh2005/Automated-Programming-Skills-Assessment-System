@@ -42,6 +42,13 @@ public class NotificationAppService : INotificationAppService
         return result;
     }
 
+    public async Task CreateNotification(GeneratedNotificationRecord notification)
+    {
+        _db.GeneratedNotifications.Add(notification);
+        await _db.SaveChangesAsync();
+        Console.WriteLine($"[NotificationService] Saved notification for {notification.StudentId}");
+    }
+
     public async Task<IReadOnlyList<NotificationResponseDto>> GetAllAsync(
         int take = 50, CancellationToken ct = default)
     {
