@@ -19,11 +19,11 @@ namespace AssignmentService.Application.Service
             //if (!await _testCaseFunc.SaveTestCase(request)) return false;
             var check = await _control.AddAssignment(request);
             if (check == null) return false;
-                
+
             return true;
         }
 
-        public async Task<AssignmentDTO> GetAssignmentById(AssignmentRequest request)
+        public async Task<AssignmentDTO?> GetAssignmentById(AssignmentRequest request)
         {
             if (request == null)
             {

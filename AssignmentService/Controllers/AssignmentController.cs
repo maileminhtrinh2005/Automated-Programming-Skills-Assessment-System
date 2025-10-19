@@ -26,7 +26,7 @@ namespace AssignmentService.Controllers
             return Ok();
         }
 
-        [HttpGet("GetAssignmentByid/{id}")]
+        [HttpGet("GetAssignmentById/{id}")]
         public async Task<IActionResult> GetAssignmentById(int id)
         {
             if (id <= 0) return BadRequest();

@@ -15,7 +15,7 @@
       ]
     },
     {
-      "DownstreamPathTemplate": "/api/Assignment/GetAssignmentByid/{id}",
+      "DownstreamPathTemplate": "/api/Assignment/GetAssignmentById/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

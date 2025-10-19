@@ -1,14 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
+using SubmissionService.Domain;
 using SubmissionService.Infrastructure.Persistence;
 
 namespace SubmissionService.Infrastructure
 {
-    public class GetResult : IGetResult
+    public class ResultHandle : IResultHandle
     {
         private readonly AppDbContext _context;
-        public GetResult(AppDbContext context)
+        public ResultHandle(AppDbContext context)
         {
             _context = context;
         }
@@ -45,6 +46,57 @@ namespace SubmissionService.Infrastructure
                         };
 
             return await query.ToListAsync();
+        }
+
+
+        public async Task<int> AddResult(ResultDTO resultdto)
+        {
+            if (resultdto == null) return -1;
+
+            var result = new Result
+            {
+                SubmissionId = resultdto.SubmissionId,
+                TestCaseId =resultdto.TestCaseId,
+                Passed= false,
+                ExecutionTime= resultdto.ExecutionTime,
+                MemoryUsed= resultdto.MemoryUsed, 
+                Output= resultdto.Output,
+                ErrorMessage= resultdto.ErrorMessage
+            };
+            await _context.Results.AddAsync(result);
+            await _context.SaveChangesAsync();
+
+            return result.ResultId;
+        }
+
+        public async Task<ResultDTO?> GetResultById(int id) // co the nen la string? 
+        {
+            if (id < 0)
+            {
+                return null;
+            }
+            var result = await _context.Results.FirstOrDefaultAsync(r=>r.ResultId==id);
+            if (result == null) return null;
+
+            var resultdto = new ResultDTO
+            {
+                Output=result.Output,
+                Passed=result.Passed
+            };
+
+            return resultdto;
+        }
+
+        public async Task<bool> UpdateResult(int resultId, int submissionId, int testCaseId, bool passed)
+        {
+            var result = await _context.Results.FirstOrDefaultAsync(r=> r.ResultId==resultId);
+            if (result == null) return false;
+
+            result.SubmissionId= submissionId;
+            result.TestCaseId= testCaseId;
+            result.Passed= passed;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

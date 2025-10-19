@@ -8,19 +8,29 @@ namespace ShareLibrary.Event
 {
     public class CodeSubmittedEvents
     {
-        // assignment send to submission 
+        // submission send it to assignment, 
         public string? SourceCode { get; set; }
         public int LanguageId { get; set; }
-        public int AssignmentId { get; set; }// luu de ti cap nhat sau
+        public int AssignmentId { get; set; }
+        public int SubmissionId { get; set; }
+
+    }
+
+    public class TestCaseEvent
+    {
+        public int TestCaseId { get; set; }
+        public string? Input { get; set; }
+        public string? ExpectedOutput { get; set; }
+        public double Weight { get; set; }
+    }
 
 
-
-        // submission execute and send result to assginment (testcase)
-        public string? Status { get; set; }
-        public string? Output { get; set; }
-        public string? ErrorMessage { get; set; }
-        public double ExecutionTime { get; set; }
-        public int MemoryUsed { get; set; }
-
+    public class TestCaseFetchEvent
+    {
+        public string? SourceCode { get; set; }
+        public int LanguageId { get; set; }
+        public int AssignmentId { get; set; }
+        public int SubmissionId { get; set; }
+        public List<TestCaseEvent> TestCaseList { get; set; } = new List<TestCaseEvent>();
     }
 }

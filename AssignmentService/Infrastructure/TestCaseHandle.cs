@@ -8,34 +8,39 @@ namespace AssignmentService.Infrastructure
     public class TestCaseHandle:IEventHandler <CodeSubmittedEvents>
     {
         private readonly AssignmentDbContext _context;
-        public TestCaseHandle(AssignmentDbContext context)
+        private readonly IEventBus _eventBus;
+        public TestCaseHandle(AssignmentDbContext context,IEventBus eventBus)
         {
             _context = context;
+            _eventBus = eventBus;
         }
 
-        public async Task Handle(CodeSubmittedEvents @event)
+        public  Task Handle(CodeSubmittedEvents @event)
         {
-            //var testcase = new TestCaseDTO
-            //{
-            //    AssignmentId = @event.AssignmentId,
-            //    ExpectedOutput = @event.Output,
-            //    Status= @event.Status,
-            //    ExecutionTime= @event.ExecutionTime,
-            //    MemoryUsed= @event.MemoryUsed,
-            //    ErrorMessage= @event.ErrorMessage
-            //};
+            // nhan id asssignment tu submission , lay ra danh sach cac testcase cua assingment do
+            var testcaselist = _context.testCases.
+                Where(tc => tc.AssignmentId == @event.AssignmentId).
+                Select(tc => new TestCaseEvent 
+                { 
+                    TestCaseId = tc.TestCaseId,
+                    Input=tc.Input,
+                    ExpectedOutput=tc.ExpectedOutput,
+                    Weight=tc.Weight         
+                }).
+                ToList();
 
-            Console.WriteLine(@event.AssignmentId+"   checkkkkkk");
-            var updatetestcase= await _context.testCases.FirstOrDefaultAsync(t => t.AssignmentId == @event.AssignmentId);
-            if (updatetestcase == null) throw new Exception();
-            updatetestcase.ExpectedOutput = @event.Output;
-            updatetestcase.Status = @event.Status;
-            updatetestcase.ExecutionTime = @event.ExecutionTime;
-            updatetestcase.MemoryUsed = @event.MemoryUsed;
-            updatetestcase.ErrorMessage = @event.ErrorMessage;
-            await _context.SaveChangesAsync();
-            Console.WriteLine("akjdhjksahdjkad");
-            //return await Task.CompletedTask;
+            var response = new TestCaseFetchEvent
+            {
+                AssignmentId = @event.AssignmentId,
+                SourceCode= @event.SourceCode,
+                LanguageId= @event.LanguageId,
+                SubmissionId=@event.SubmissionId,
+                TestCaseList =testcaselist
+            };
+            Console.WriteLine("da check, da nhan duoc akjdjkasd"+ @event.SubmissionId);
+
+            _eventBus.Publish(response);
+            return Task.CompletedTask;
         }
     }
 }

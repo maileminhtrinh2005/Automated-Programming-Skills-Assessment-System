@@ -16,7 +16,7 @@ namespace SubmissionService.Infrastructure
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _event.Subscribe<CodeSubmittedEvents, RunCodeHandle>();
+            _event.Subscribe<TestCaseFetchEvent, RunCodeHandle>();
 
 
 
