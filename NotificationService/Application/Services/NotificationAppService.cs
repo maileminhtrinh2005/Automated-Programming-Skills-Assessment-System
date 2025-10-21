@@ -1,7 +1,7 @@
 ﻿using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
 using NotificationService.Domain.Entities;
-using NotificationService.NotificationInfrastructure.Service;
+using NotificationService.Infrastructure.Persistence;
 using System.Text.Json;
 
 namespace NotificationService.Application.Services;

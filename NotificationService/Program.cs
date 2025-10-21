@@ -3,7 +3,7 @@ using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
 using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Handlers;
-using NotificationService.NotificationInfrastructure.Service;
+using NotificationService.Infrastructure.Persistence;
 using RabbitMQ.Client;
 using ShareLibrary;
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +17,7 @@ builder.Services.AddScoped<INotificationGenerator, NotificationGenerator>();
 builder.Services.AddScoped<NotificationCreatedHandler>();
 builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()
        {

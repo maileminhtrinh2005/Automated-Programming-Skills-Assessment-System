@@ -5,10 +5,6 @@ using NotificationService.Infrastructure.Handlers;
 
 namespace NotificationService.Infrastructure
 {
-    /// <summary>
-    /// Dịch vụ chạy nền: lắng nghe sự kiện NotificationCreatedEvent
-    /// để gọi NotificationCreatedHandler xử lý.
-    /// </summary>
     public class NotificationCreatedSubscriberService : BackgroundService
     {
         private readonly IEventBus _eventBus;
@@ -20,9 +16,10 @@ namespace NotificationService.Infrastructure
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _eventBus.Subscribe<NotificationCreatedEvent, NotificationCreatedHandler>();
+            // dang ki + chay background ,,, khi nao co tin se xuw li
+            _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationCreatedHandler>();
 
-            Console.WriteLine("[NotificationService] Subscribed to NotificationCreatedEvent");
+            Console.WriteLine("[NotificationService] Subscribed to FeedbackGeneratedEvent");
 
             return Task.CompletedTask;
         }

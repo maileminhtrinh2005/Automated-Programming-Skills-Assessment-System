@@ -2,6 +2,7 @@
 using FeedbackService.Application.Interfaces;
 using FeedbackService.Application.Services;
 using FeedbackService.Infrastructure;
+using FeedbackService.Infrastructure.Handlers;
 using FeedbackService.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -33,8 +34,8 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
        }
 );
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
-builder.Services.AddScoped<GenerateFeedbackHandle>();
-
+builder.Services.AddScoped<GenerateFeedbackHandler>();
+//builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 // Manual feedback service
 builder.Services.AddScoped<IManualFeedbackService, ManualFeedbackService>();

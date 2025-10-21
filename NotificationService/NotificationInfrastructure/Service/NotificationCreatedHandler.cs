@@ -8,8 +8,9 @@ namespace NotificationService.Infrastructure.Handlers
     /// - Được kích hoạt khi có thông báo mới được tạo.
     /// - Có thể dùng để gửi email, push notification, hoặc log lại thông báo.
     /// </summary>
-    public class NotificationCreatedHandler : IEventHandler<NotificationCreatedEvent>
+    public class NotificationCreatedHandler : IEventHandler<FeedbackGeneratedEvent>
     {
+
         public Task Handle(NotificationCreatedEvent e)
         {
             // 🔹 Ở đây bạn có thể thay logic này bằng:
@@ -23,6 +24,11 @@ namespace NotificationService.Infrastructure.Handlers
             Console.WriteLine("==========================================");
 
             return Task.CompletedTask;
+        }
+
+        public Task Handle(FeedbackGeneratedEvent @event)
+        {
+            throw new NotImplementedException();
         }
     }
 }

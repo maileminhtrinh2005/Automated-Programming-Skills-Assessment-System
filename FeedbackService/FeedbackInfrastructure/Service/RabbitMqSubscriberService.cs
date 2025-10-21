@@ -1,4 +1,5 @@
-﻿using ShareLibrary;
+﻿using FeedbackService.Infrastructure.Handlers;
+using ShareLibrary;
 using ShareLibrary.Event;
 
 namespace FeedbackService.Infrastructure
@@ -12,12 +13,10 @@ namespace FeedbackService.Infrastructure
             _eventBus = eventBus;
         }
 
-        /// <summary>
-        /// Khi service khởi động, đăng ký consumer để lắng nghe CodeSubmittedEvents
-        /// </summary>
+       
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _eventBus.Subscribe<CodeSubmittedEvents, GenerateFeedbackHandle>();
+            _eventBus.Subscribe<FeedbackGeneratedEvent, GenerateFeedbackHandler>();
 
             Console.WriteLine("[FeedbackService] Subscribed to CodeSubmittedEvents");
 
