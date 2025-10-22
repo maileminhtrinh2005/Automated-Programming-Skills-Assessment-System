@@ -11,6 +11,30 @@
       ],
       "UpstreamPathTemplate": "/AddAPI",
       "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/APIConfig/UpdateAPI/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5140
+        }
+      ],
+      "UpstreamPathTemplate": "/UpdateAPI/{id}",
+      "UpstreamHttpMethod": [ "PUT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/APIConfig/GetAllAPI",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5140
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAllAPI",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
   "GlobalConfiguration": {

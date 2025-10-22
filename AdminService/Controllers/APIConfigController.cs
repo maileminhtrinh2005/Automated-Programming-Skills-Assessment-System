@@ -20,5 +20,20 @@ namespace AdminService.Controllers
             var result = await _service.AddAPI(api);
             return result ? Ok("✅ Thêm API thành công") : BadRequest("❌ Thêm thất bại");
         }
+        [HttpPut("UpdateAPI/{id}")]
+        public async Task<IActionResult> UpdateAPI(int id, [FromBody] APIConfigDTO api)
+        {
+            var result = await _service.UpdateAPI(id, api);
+            return result ? Ok("✅ Cập nhật thành công") : NotFound("❌ Không tìm thấy API cần cập nhật");
+        }
+        [HttpGet("GetAllAPI")]
+        public async Task<IActionResult> GetAllAPI()
+        {
+            var result = await _service.GetAllAPI();
+            return Ok(result);
+        }
+
+
+
     }
 }

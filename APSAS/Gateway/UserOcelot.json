@@ -1,6 +1,20 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/api/User/GetAllStudents",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5239
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAllStudents",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+    {
       "DownstreamPathTemplate": "/api/User/GetAllUsers",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -10,7 +24,9 @@
         }
       ],
       "UpstreamPathTemplate": "/GetAllUsers",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     },
     {
       "DownstreamPathTemplate": "/api/User/AddUser",
@@ -22,7 +38,9 @@
         }
       ],
       "UpstreamPathTemplate": "/AddUser",
-      "UpstreamHttpMethod": [ "POST" ]
+      "UpstreamHttpMethod": [ "POST" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     },
     {
       "DownstreamPathTemplate": "/api/User/UpdateUser",
@@ -34,7 +52,9 @@
         }
       ],
       "UpstreamPathTemplate": "/UpdateUser",
-      "UpstreamHttpMethod": [ "PUT" ]
+      "UpstreamHttpMethod": [ "PUT" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     },
     {
       "DownstreamPathTemplate": "/api/User/DeleteUser/{id}",
@@ -46,7 +66,9 @@
         }
       ],
       "UpstreamPathTemplate": "/DeleteUser/{id}",
-      "UpstreamHttpMethod": [ "DELETE" ]
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     },
     {
       "DownstreamPathTemplate": "/api/User/Login",
@@ -58,7 +80,23 @@
         }
       ],
       "UpstreamPathTemplate": "/Login",
-      "UpstreamHttpMethod": [ "POST" ]
+      "UpstreamHttpMethod": [ "POST" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/User/ChangePassword",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5239
+        }
+      ],
+      "UpstreamPathTemplate": "/ChangePassword",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     }
   ],
   "GlobalConfiguration": {
