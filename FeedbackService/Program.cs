@@ -35,7 +35,7 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 );
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddScoped<GenerateFeedbackHandler>();
-//builder.Services.AddHostedService<RabbitMqSubscriberService>();
+builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 // Manual feedback service
 builder.Services.AddScoped<IManualFeedbackService, ManualFeedbackService>();

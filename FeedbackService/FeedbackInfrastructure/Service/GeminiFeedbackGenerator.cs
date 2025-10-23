@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using FeedbackService.Application.Dtos;
@@ -31,6 +32,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         _opts = opts.Value;
         _cfg = cfg;
         _env = env;
+
         _http.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
@@ -51,8 +53,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         // 3) Dựng prompt
         var testResultsText = JsonSerializer.Serialize(req.TestResults, new JsonSerializerOptions { WriteIndented = true });
 
-        // ✅ LƯU Ý: v1beta KHÔNG cho role=system trong contents
-        // → dùng field 'systemInstruction' hoặc prepend vào user
+        // ✅ v1beta: dùng systemInstruction thay vì role=system trong contents
         var systemInstruction = new
         {
             parts = new[] {
@@ -74,35 +75,78 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
 
         var bodyObj = new
         {
-            systemInstruction, // ✅ đúng chỗ cho v1beta
+            systemInstruction,
             contents = new object[]
             {
                 new { role = "user", parts = userParts }
             },
             generationConfig = new
             {
-                response_mime_type = "application/json" // ✅ ép trả JSON text
+                response_mime_type = "application/json"
             }
-            // Có thể thêm safetySettings nếu cần nới lỏng chặn nội dung
-            // safetySettings = new [] { new { category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_NONE" } }
         };
 
         var model = string.IsNullOrWhiteSpace(_opts.Model) ? "models/gemini-2.0-flash" : _opts.Model;
-        var url = $"v1beta/{model}:generateContent?key={apiKey}";
 
-        // (opt) Log request khi chạy Development để debug
+        // [CHANGED] Không để API key trong query string nữa
+        var url = $"v1beta/{model}:generateContent";
+
         if (_env.IsDevelopment())
         {
             Console.WriteLine("=== Gemini request body ===");
             Console.WriteLine(JsonSerializer.Serialize(bodyObj, new JsonSerializerOptions { WriteIndented = true }));
         }
 
-        // 4) Gọi API
+        // [ADDED] — gắn API key bằng header để tránh lộ key trong log/URL
         using var reqMsg = new HttpRequestMessage(HttpMethod.Post, url)
         {
             Content = new StringContent(JsonSerializer.Serialize(bodyObj), Encoding.UTF8, "application/json")
         };
-        var res = await _http.SendAsync(reqMsg, ct);
+        reqMsg.Headers.Add("x-goog-api-key", apiKey); // [ADDED]
+
+        // [ADDED] — retry 3 lần khi 503/429 với backoff 0.5s/1s/2s + fallback
+        HttpResponseMessage res;
+        var delays = new[] { 500, 1000, 2000 };
+        int attempt = 0;
+
+        while (true)
+        {
+            attempt++;
+            try
+            {
+                var sent = await _http.SendAsync(reqMsg, ct);
+                res = sent;
+            }
+            catch (HttpRequestException ex)
+            {
+                if (attempt <= delays.Length)
+                {
+                    if (_env.IsDevelopment()) Console.WriteLine($"[Gemini] network error, retry {attempt}: {ex.Message}");
+                    await Task.Delay(delays[attempt - 1], ct);
+                    continue;
+                }
+                // Fallback cuối cùng
+                return FallbackDto("(Lỗi mạng tới AI — dùng phản hồi tối thiểu)");
+            }
+
+            if (res.StatusCode == HttpStatusCode.ServiceUnavailable || (int)res.StatusCode == 429)
+            {
+                if (attempt <= delays.Length)
+                {
+                    if (_env.IsDevelopment()) Console.WriteLine($"[Gemini] {res.StatusCode}, retry {attempt}");
+                    await Task.Delay(delays[attempt - 1], ct);
+                    continue;
+                }
+                // Fallback khi quá tải kéo dài
+                var raw = await res.Content.ReadAsStringAsync(ct);
+                if (_env.IsDevelopment()) Console.WriteLine("=== Gemini raw response (fallback) ===\n" + raw);
+                return FallbackDto("(AI đang quá tải — dùng phản hồi tối thiểu)");
+            }
+
+            // thành công hoặc lỗi khác
+            break;
+        }
+
         var payload = await res.Content.ReadAsStringAsync(ct);
 
         if (_env.IsDevelopment())
@@ -114,8 +158,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         if (!res.IsSuccessStatusCode)
             throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
 
-        // 5) Parse dữ liệu JSON trả về
-        // v1beta: candidates[0].content.parts[0].text là chuỗi JSON bạn yêu cầu
+        // 5) Parse dữ liệu JSON trả về (v1beta: candidates[0].content.parts[0].text)
         using var doc = JsonDocument.Parse(payload);
         var candidates = doc.RootElement.GetProperty("candidates");
         if (candidates.GetArrayLength() == 0)
@@ -130,7 +173,6 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         if (string.IsNullOrWhiteSpace(text))
             throw new InvalidOperationException("Gemini không trả text trong phần response.");
 
-        // 6) Map vào DTO
         var feedback = JsonSerializer.Deserialize<FeedbackResponseDto>(text!, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -141,4 +183,15 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
 
         return feedback;
     }
+
+    // [ADDED] — DTO fallback khi AI unavailable để không ném exception
+    private static FeedbackResponseDto FallbackDto(string message) => new()
+    {
+        Summary = message,
+        Score = 0,
+        RubricBreakdown = new(),
+        TestCaseFeedback = new(),
+        Suggestions = new() { "Thử gửi lại sau ít phút", "Kiểm tra kết nối mạng/limit API" },
+        NextSteps = new() { "Hệ thống sẽ thử lại khi AI ổn định" }
+    };
 }
