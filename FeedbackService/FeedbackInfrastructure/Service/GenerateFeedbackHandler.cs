@@ -6,10 +6,8 @@ using ShareLibrary.Event;
 
 namespace FeedbackService.Infrastructure.Handlers
 {
-    /// <summary>
-    /// Lắng nghe CodeSubmittedEvents -> tính điểm/tạo nội dung -> publish FeedbackGeneratedEvent
-    /// </summary>
-    public class GenerateFeedbackHandler : IEventHandler<FeedbackGeneratedEvent>
+    /// Nghe CodeSubmittedEvents -> chấm điểm -> Publish FeedbackGeneratedEvent
+    public class GenerateFeedbackHandler : IEventHandler<CodeSubmittedEvents>
     {
         private readonly IEventBus _eventBus;
 
@@ -26,39 +24,29 @@ namespace FeedbackService.Infrastructure.Handlers
             Console.WriteLine($"Status       : {e.Status}");
             Console.WriteLine($"Output       : {e.Output}");
             Console.WriteLine($"ExecTime     : {e.ExecutionTime}s | Mem: {e.MemoryUsed}KB");
-
             Console.WriteLine("==========================================");
 
-            // Tạo feedback text (ví dụ)
             var feedbackText =
                 $"Output: {e.Output}\n" +
                 $"Status: {e.Status}\n" +
                 $"ExecutionTime: {e.ExecutionTime}s\n" +
                 $"MemoryUsed: {e.MemoryUsed}KB";
 
-            // Chấm điểm đơn giản
-            var score = e.Status == "Accepted" ? 10.0 : 0.0;
-
+            double score = e.Status == "Accepted" ? 10.0 : 0.0;
 
             var feedbackEvent = new FeedbackGeneratedEvent
             {
                 SubmissionId = Guid.NewGuid(),
-                
                 Score = score,
                 ResultStatus = e.Status,
                 Feedback = feedbackText,
-
             };
-
+            Console.WriteLine("[FeedbackService] >>> About to publish FeedbackGeneratedEvent");
+            // Lưu ý: dùng đúng overload Publish(event)
             _eventBus.Publish(feedbackEvent);
             Console.WriteLine("[FeedbackService] Published FeedbackGeneratedEvent");
 
             await Task.CompletedTask;
-        }
-
-        public Task Handle(FeedbackGeneratedEvent @event)
-        {
-            throw new NotImplementedException();
         }
     }
 }

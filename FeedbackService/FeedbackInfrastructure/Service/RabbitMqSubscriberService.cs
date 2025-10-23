@@ -16,10 +16,8 @@ namespace FeedbackService.Infrastructure
        
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _eventBus.Subscribe<FeedbackGeneratedEvent, GenerateFeedbackHandler>();
-
+            _eventBus.Subscribe<CodeSubmittedEvents, GenerateFeedbackHandler>();
             Console.WriteLine("[FeedbackService] Subscribed to CodeSubmittedEvents");
-
             return Task.CompletedTask;
         }
     }

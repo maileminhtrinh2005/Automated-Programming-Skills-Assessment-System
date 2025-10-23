@@ -17,6 +17,7 @@ builder.Services.AddScoped<INotificationGenerator, NotificationGenerator>();
 builder.Services.AddScoped<NotificationCreatedHandler>();
 builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+builder.Services.AddTransient<NotificationEventHandler>();
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()

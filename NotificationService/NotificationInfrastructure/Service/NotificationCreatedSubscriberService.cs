@@ -17,10 +17,8 @@ namespace NotificationService.Infrastructure
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // dang ki + chay background ,,, khi nao co tin se xuw li
-            _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationCreatedHandler>();
-
+            _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
             Console.WriteLine("[NotificationService] Subscribed to FeedbackGeneratedEvent");
-
             return Task.CompletedTask;
         }
     }
