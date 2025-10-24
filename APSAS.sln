@@ -14,12 +14,18 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShareLibrary", "ShareLibrary\ShareLibrary.csproj", "{975CACB6-FA32-424E-8073-BA0EC722AF19}"
 EndProject
 <<<<<<< HEAD
+<<<<<<< HEAD
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackService", "FeedbackService\FeedbackService.csproj", "{9E450816-43DE-4879-A094-BCFBCCBBFA30}"
 =======
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
 >>>>>>> vu
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackService", "FeedbackService\FeedbackService.csproj", "{9E450816-43DE-4879-A094-BCFBCCBBFA30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}"
+>>>>>>> trinh
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +55,7 @@ Global
 		{975CACB6-FA32-424E-8073-BA0EC722AF19}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> vu
 		{64278242-82AF-4DE5-A7B7-676EAD467341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -57,13 +64,22 @@ Global
 		{64278242-82AF-4DE5-A7B7-676EAD467341}.Release|Any CPU.Build.0 = Release|Any CPU
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> trinh
 		{9E450816-43DE-4879-A094-BCFBCCBBFA30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9E450816-43DE-4879-A094-BCFBCCBBFA30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E450816-43DE-4879-A094-BCFBCCBBFA30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E450816-43DE-4879-A094-BCFBCCBBFA30}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< HEAD
 >>>>>>> 2ff1c1728422ecec3d3150cc0eda8ebb5e5df3f5
 =======
 >>>>>>> vu
+=======
+		{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}.Release|Any CPU.Build.0 = Release|Any CPU
+>>>>>>> trinh
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

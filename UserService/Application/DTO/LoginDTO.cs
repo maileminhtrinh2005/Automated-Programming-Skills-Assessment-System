@@ -3,7 +3,9 @@
     public class LoginDTO
     {
         public string Username { get; set; } // Tài khoản (unique)                                    
-        public string Password { get; set; } // Mật khẩu (hash)
+
+        public string PasswordHash { get; set; } // Mật khẩu (hash)
+
 
 
 

@@ -3,13 +3,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <title>APSAS - Đăng nhập</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>APSAS - Đăng nhập, Đổi mật khẩu & Sinh viên</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,6 +29,7 @@
             max-width: 500px;
             background: #fff;
             padding: 25px;
+
             border-radius: 10px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
@@ -33,6 +37,7 @@
         h2 {
             text-align: center;
             margin-bottom: 12px;
+
             color: #333;
             color: #333;
             margin-bottom: 20px;
@@ -42,11 +47,13 @@
             display: block;
             font-size: 13px;
             margin-top: 12px;
+
         }
 
         input {
             width: 100%;
             padding: 10px;
+
             border: 1px solid #ccc;
             border-radius: 6px;
             margin-top: 6px;
@@ -80,6 +87,7 @@
             .msg.error {
                 color: #c0392b;
             }
+
 
             .msg.success {
                 color: green;
@@ -139,9 +147,11 @@
                 background-color: #ffe6e6;
                 text-align: left;
             }
+
     </style>
 </head>
 <body>
+
 
     <!-- LOGIN CARD -->
     <div class="card" id="loginCard">
@@ -197,10 +207,13 @@
 
         const $ = id => document.getElementById(id);
 
+
         function showMessage(el, text, kind = "info") {
             el.textContent = text;
             el.className = "msg " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
         }
+
+
 
         // ================= Login =================
         const loginBtn = $("loginBtn");
@@ -209,6 +222,7 @@
         loginBtn.addEventListener("click", async (e) => {
             e.preventDefault();
             showMessage(loginMsg, "");
+
 
         function switchView(viewName) {
             $("loginCard").classList.toggle("hidden", viewName !== 'login');
@@ -226,10 +240,12 @@
             $("loginBtn").disabled = true;
             $("loginBtn").textContent = "Đang đăng nhập...";
 
+
             try {
                 const res = await fetch(gatewayUrl + loginEndpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+
                     body: JSON.stringify({ Username, Password })
                 });
                 const text = await res.text();
@@ -382,3 +398,4 @@
     </script>
 </body>
 </html>
+

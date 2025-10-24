@@ -1,0 +1,70 @@
+{
+  "Routes": [
+
+    {
+      "UpstreamPathTemplate": "/GetNotification",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Notification/GetNotification"
+    },
+    {
+      "UpstreamPathTemplate": "/Notification/api/notification",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/api/notification"
+    },
+    {
+      "UpstreamPathTemplate": "/Notification/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Notification/{everything}"
+    },
+    {
+      // 1) NEGOTIATE (SignalR cần POST /negotiate)
+      "UpstreamPathTemplate": "/notificationsHub/negotiate",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/hubs/notifications/negotiate"
+    },
+    {
+      // 2) WEBSOCKET (kênh chính)
+      "UpstreamPathTemplate": "/notificationsHub",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/hubs/notifications"
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5261"
+  }
+}

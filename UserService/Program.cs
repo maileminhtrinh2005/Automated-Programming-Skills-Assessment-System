@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
-using ShareLibrary;
+
+using UserService.Application.DTO;
+
 using UserService.Application.Interface;
 using UserService.Infrastructure;
 
@@ -38,8 +39,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<UserAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ICRUD, CRUD>();
-builder.Services.AddScoped<ILogin,Login>();
-builder.Services.AddScoped<IChat, ChatSv>();
+
+builder.Services.AddScoped<Login>();
 
 builder.Services.AddCors(options =>
 {

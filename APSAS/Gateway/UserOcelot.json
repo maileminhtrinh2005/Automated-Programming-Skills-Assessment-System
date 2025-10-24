@@ -1,6 +1,7 @@
 {
   "Routes": [
     {
+
       "DownstreamPathTemplate": "/api/User/GetAllStudents",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -15,6 +16,7 @@
       "LoadBalancerOptions": { "Type": "RoundRobin" }
     },
     {
+
       "DownstreamPathTemplate": "/api/User/GetAllUsers",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -24,9 +26,12 @@
         }
       ],
       "UpstreamPathTemplate": "/GetAllUsers",
+
       "UpstreamHttpMethod": [ "GET" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+
+
     },
     {
       "DownstreamPathTemplate": "/api/User/AddUser",
@@ -38,9 +43,11 @@
         }
       ],
       "UpstreamPathTemplate": "/AddUser",
+
       "UpstreamHttpMethod": [ "POST" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+
     },
     {
       "DownstreamPathTemplate": "/api/User/UpdateUser",
@@ -52,9 +59,11 @@
         }
       ],
       "UpstreamPathTemplate": "/UpdateUser",
+
       "UpstreamHttpMethod": [ "PUT" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+
     },
     {
       "DownstreamPathTemplate": "/api/User/DeleteUser/{id}",
@@ -66,9 +75,11 @@
         }
       ],
       "UpstreamPathTemplate": "/DeleteUser/{id}",
+
       "UpstreamHttpMethod": [ "DELETE" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+
     },
     {
       "DownstreamPathTemplate": "/api/User/Login",
@@ -80,6 +91,7 @@
         }
       ],
       "UpstreamPathTemplate": "/Login",
+
       "UpstreamHttpMethod": [ "POST" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
@@ -126,6 +138,7 @@
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
     }
+
 
   ],
   "GlobalConfiguration": {
