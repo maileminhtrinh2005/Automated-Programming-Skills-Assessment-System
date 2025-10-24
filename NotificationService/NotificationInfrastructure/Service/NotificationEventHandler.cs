@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using NotificationService.Domain.Entities;
+using NotificationService.Hubs;
+using NotificationService.Infrastructure.Persistence; 
 using ShareLibrary;                     
 using ShareLibrary.Event;               
-using NotificationService.Domain.Entities;
-using NotificationService.Infrastructure.Persistence; 
+using System;
+using System.Threading.Tasks;
 
 namespace NotificationService.Infrastructure.Handlers
 {
@@ -12,10 +14,12 @@ namespace NotificationService.Infrastructure.Handlers
     public class NotificationEventHandler : IEventHandler<FeedbackGeneratedEvent>
     {
         private readonly AppDbContext _db; // AppDbContext của NotificationService
+        private readonly IHubContext<NotificationHub, INotificationClient> _hub;
 
-        public NotificationEventHandler(AppDbContext db)
+        public NotificationEventHandler(AppDbContext db, IHubContext<NotificationHub, INotificationClient> hub)
         {
             _db = db;
+            _hub = hub;
         }
 
         public async Task Handle(FeedbackGeneratedEvent e)
@@ -44,6 +48,10 @@ namespace NotificationService.Infrastructure.Handlers
             await _db.SaveChangesAsync();
 
             Console.WriteLine($"[NotificationService] ✅ Saved notification Id={rec.Id}");
+            await _hub.Clients.All.NotifyNew(
+                new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
+
+            Console.WriteLine("[NotificationService] 📡 SignalR pushed to clients");
         }
     }
 }

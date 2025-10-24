@@ -175,6 +175,35 @@
       "DownstreamPathTemplate": "/api/Notification/{everything}"
     },
     {
+      "UpstreamPathTemplate": "/notificationsHub/negotiate",
+      "UpstreamHttpMethod": [
+        "POST",
+        "OPTIONS"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/hubs/notifications/negotiate"
+    },
+    {
+      "UpstreamPathTemplate": "/notificationsHub",
+      "UpstreamHttpMethod": [
+        "GET"
+      ],
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5216
+        }
+      ],
+      "DownstreamPathTemplate": "/hubs/notifications"
+    },
+    {
       "DownstreamPathTemplate": "/api/Submission/Submit",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
