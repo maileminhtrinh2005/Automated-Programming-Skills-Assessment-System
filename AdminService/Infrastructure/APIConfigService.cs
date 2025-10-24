@@ -16,13 +16,6 @@ namespace AdminService.Infrastructure
             _context = context;
         }
 
-<<<<<<< HEAD
-        public async Task<IEnumerable<APIConfig>> GetAllAPIs()
-        {
-            return await _context.APIConfig.ToListAsync();
-        }
-
-=======
         public async Task<IEnumerable<object>> GetAllAPI()
         {
             var list = await _context.APIConfig
@@ -38,7 +31,6 @@ namespace AdminService.Infrastructure
         }
 
 
->>>>>>> vu
         public async Task<APIConfig> AddAPIConfig(APIConfig config)
         {
             config.UpdatedAt = DateTime.Now;
@@ -60,8 +52,6 @@ namespace AdminService.Infrastructure
             return true; 
             
         }
-<<<<<<< HEAD
-=======
         public async Task<bool> UpdateAPI(int id, APIConfigDTO api)
         {
             var existing = await _context.APIConfig.FindAsync(id);
@@ -77,6 +67,5 @@ namespace AdminService.Infrastructure
             return true;
         }
 
->>>>>>> vu
     }
 }
