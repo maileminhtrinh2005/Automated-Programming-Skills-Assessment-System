@@ -6,6 +6,10 @@ using RabbitMQ.Client;
 using ShareLibrary;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()
        {
@@ -26,6 +30,10 @@ builder.Services.AddSignalR();
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -48,11 +56,16 @@ if (app.Environment.IsDevelopment())
 }
 
 
+
+
 //app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+
+
 
 app.MapHub<ChatHub>("/chathub");
 app.Run();

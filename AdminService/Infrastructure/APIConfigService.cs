@@ -16,6 +16,9 @@ namespace AdminService.Infrastructure
             _context = context;
         }
 
+
+
+
         public async Task<IEnumerable<object>> GetAllAPI()
         {
             var list = await _context.APIConfig
@@ -52,6 +55,10 @@ namespace AdminService.Infrastructure
             return true; 
             
         }
+
+
+
+
         public async Task<bool> UpdateAPI(int id, APIConfigDTO api)
         {
             var existing = await _context.APIConfig.FindAsync(id);
