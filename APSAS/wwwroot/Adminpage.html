@@ -21,7 +21,6 @@
             width: 100%;
         }
 
-        /* ----- Kiểu chung ----- */
         label {
             font-weight: bold;
             display: block;
@@ -29,17 +28,18 @@
             font-size: 14px;
         }
 
-        input[type="text"], input[type="email"], input[type="password"] {
+        input, select {
+
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            box-sizing: border-box; /* Thêm để padding không làm vỡ layout */
+            box-sizing: border-box;
         }
 
         button {
-            margin-top: 20px;
+            margin-top: 10px;
             width: 100%;
             padding: 10px;
             border: none;
@@ -63,9 +63,7 @@
                 color: #c0392b;
             }
 
-
-        /* ----- Kiểu cho Box "Thêm API" ----- */
-        .container-api {
+        .container-api, .container-user {
             width: 400px;
             background: white;
             padding: 25px;
@@ -74,33 +72,20 @@
         }
 
             .container-api button {
-                background-color: #3498db; /* Màu xanh dương */
+                background-color: #3498db;
             }
 
                 .container-api button:hover {
                     background-color: #2980b9;
                 }
 
-        /* ----- Kiểu cho Box "Thêm User" ----- */
-        .container-user {
-            width: 400px;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        }
-
             .container-user button {
-                background: #0066cc; /* Màu xanh đậm */
+                background: #0066cc;
+
             }
 
                 .container-user button:hover {
                     background: #0056b3;
-                }
-
-                .container-user button:disabled {
-                    opacity: .6;
-                    cursor: not-allowed;
                 }
 
         .hint {
@@ -109,107 +94,102 @@
             margin-top: 6px;
         }
 
-        /* * =============================================
-         * CSS CHO BẢNG DANH SÁCH USER (TỪ USERPAGE.HTML)
-         * =============================================
-        */
-        .user-table {
+        table {
             border-collapse: collapse;
-            width: 100%; /* Sửa lại cho vừa với container */
-            margin-top: 20px;
+            width: 100%;
             background: #fff;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 10px;
         }
 
-            .user-table th, .user-table td {
-                border: 1px solid #ddd;
-                padding: 10px 15px;
-                text-align: left;
-            }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
 
-            .user-table th {
-                background-color: #0066cc;
-                color: white;
-            }
+        th {
+            background-color: #0066cc;
+            color: white;
+        }
 
-            .user-table tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-
-            .user-table input[type="password"] {
-                width: 100%;
-                padding: 5px 6px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                box-sizing: border-box;
-            }
-
-        .btn-edit, .btn-delete {
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #fff;
-            margin-right: 4px;
-            font-size: 13px; /* Thêm cho đồng bộ */
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
 
         .btn-edit {
             background-color: #27ae60;
         }
+            .btn-edit:hover {
+                background-color: #2ecc71;
+            }
 
         .btn-delete {
             background-color: #c0392b;
         }
 
-        .btn-edit:hover {
-            background-color: #2ecc71;
-        }
 
-        .btn-delete:hover {
-            background-color: #e74c3c;
-        }
+            .btn-delete:hover {
+                background-color: #e74c3c;
+            }
     </style>
 </head>
 <body>
 
     <h1>Trang Quản Trị</h1>
 
-    <div class="container-api">
-        <h2>Thêm API Config</h2>
-
-        <label for="apiName">Tên API:</label>
-        <input type="text" id="apiName" placeholder="VD: Judge0">
-
-        <label for="baseUrl">Base URL:</label>
-        <input type="text" id="baseUrl" placeholder="VD: https://api.judge0.com">
-
-        <button onclick="addAPIConfig()">Thêm API</button>
-
-        <div id="apiMessage" class="message"></div>
-    </div>
-
-    <div class="container-user">
-        <h2>Thêm Người Dùng Mới</h2>
-
-        <label for="username">Username</label>
-        <input id="username" type="text" placeholder="username" />
-
-        <label for="email">Email</label>
-        <input id="email" type="email" placeholder="user@example.com" />
-
-        <label for="fullname">Full Name</label>
-        <input id="fullname" type="text" placeholder="Nguyen Van A" />
-
-        <label for="password">Password</label>
-        <input id="password" type="password" placeholder="Mật khẩu người dùng" />
-
-        <div class="hint">
-            Trường gửi lên là <code>PasswordHash</code>.
+    <!-- ========== PHẦN API CONFIG ========== -->
+    <div class="container-api" id="apiContainer">
+        <h2 id="apiFormTitle">Thêm API Config</h2>
+        <div id="addApiForm">
+            <label for="apiName">Tên API:</label>
+            <input type="text" id="apiName" placeholder="VD: Judge0">
+            <label for="baseUrl">Base URL:</label>
+            <input type="text" id="baseUrl" placeholder="VD: https://api.judge0.com">
+            <button onclick="addAPIConfig()">Thêm API</button>
+            <button onclick="toggleApiForm('update')" style="background-color:#27ae60;">➡️ Chuyển sang Cập nhật API</button>
+            <button onclick="loadAPIList()" style="background-color:#8e44ad;">📜 Xem danh sách API</button>
+            <div id="apiMessage" class="message"></div>
         </div>
 
+        <div id="updateApiForm" style="display:none;">
+            <label for="apiId">API ID:</label>
+            <input type="number" id="apiId" placeholder="Nhập ID cần cập nhật">
+            <label for="apiNameUpdate">Tên API mới:</label>
+            <input type="text" id="apiNameUpdate" placeholder="VD: Judge0-New">
+            <label for="baseUrlUpdate">Base URL mới:</label>
+            <input type="text" id="baseUrlUpdate" placeholder="VD: https://new-judge0.com">
+            <button onclick="updateAPIConfig()" style="background-color:#27ae60;">Cập nhật API</button>
+            <button onclick="toggleApiForm('add')" style="background-color:#3498db;">↩️ Quay lại Thêm API</button>
+            <div id="apiUpdateMessage" class="message"></div>
+        </div>
+
+        <div id="apiListContainer" style="margin-top:15px; display:none;">
+            <h3>📋 Danh sách API hiện có</h3>
+            <div id="apiListContent"></div>
+        </div>
+    </div>
+
+    <!-- ========== PHẦN USER ========== -->
+    <div class="container-user">
+        <h2>Thêm Người Dùng Mới</h2>
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="username" />
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="user@example.com" />
+        <label for="fullname">Full Name</label>
+        <input id="fullname" type="text" placeholder="Nguyen Van A" />
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Mật khẩu người dùng" />
+        <label for="roleid">Role</label>
+        <select id="roleid">
+            <option value="1">1 - Admin</option>
+            <option value="2">2 - Giảng viên</option>
+            <option value="3">3 - Sinh viên</option>
+        </select>
+        <div class="hint">Trường gửi lên là <code>passwordHash</code> và <code>roleID</code>.</div>
         <button id="submitUserBtn">Thêm user</button>
         <p id="userMessage" class="message"></p>
     </div>
@@ -418,6 +398,83 @@
 
         // Load bảng khi trang mở
         loadUsers();
+    </script>
+
+</body>
+</html>
+    <div id="userTableContainer" style="width: 90%; max-width: 1000px;"></div>
+
+    <!-- ========== PHẦN CHAT VỚI SINH VIÊN ========== -->
+    <div class="container-user" style="width: 600px;">
+        <h2>💬 Chat với Sinh viên</h2>
+        <div id="chatBox" style="
+        background: #fff;
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;">
+            <p><i>Chưa có tin nhắn...</i></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <button id="sendChatBtn" style="background-color: #3498db;">Gửi</button>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPT CHUNG ========== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const GATEWAY_URL = "http://localhost:5261"; // gateway
+        const ADMIN_HUB_URL = "http://localhost:5097/chathub"; // port thật của AdminService
+
+        const chatBox = document.getElementById("chatBox");
+        const chatInput = document.getElementById("chatInput");
+        const sendChatBtn = document.getElementById("sendChatBtn");
+
+        // ✅ Kết nối SignalR tới AdminService
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(ADMIN_HUB_URL)
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // Nhận tin nhắn từ server
+        connection.on("ReceiveMessage", (user, message) => {
+            if (user.toLowerCase() === "student") appendChat(`Sinh viên: ${message}`, "student");
+            else appendChat(`${user}: ${message}`, "system");
+        });
+
+        // Bắt đầu kết nối
+        connection.start()
+            .then(() => appendChat("✅ Đã kết nối đến server chat (SignalR).", "system"))
+            .catch(err => appendChat("🚫 Không thể kết nối SignalR: " + err, "system"));
+
+        // Gửi tin nhắn (admin gửi)
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            appendChat(`Bạn: ${text}`, "admin");
+            connection.invoke("SendMessage", "Admin", text).catch(err =>
+                appendChat("⚠️ Lỗi gửi tin: " + err, "system")
+            );
+            chatInput.value = "";
+        }
+
+        sendChatBtn.onclick = sendMessage;
+        chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+
+        // Thêm tin nhắn vào khung chat
+        function appendChat(message, sender = "system") {
+            const p = document.createElement("p");
+            p.textContent = message;
+            p.style.margin = "5px 0";
+            if (sender === "admin") p.style.color = "#2c3e50";
+            else if (sender === "student") p.style.color = "#16a085";
+            else p.style.color = "#999";
+            chatBox.appendChild(p);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     </script>
 
 </body>

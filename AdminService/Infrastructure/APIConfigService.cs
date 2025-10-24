@@ -16,11 +16,29 @@ namespace AdminService.Infrastructure
             _context = context;
         }
 
+<<<<<<< HEAD
         public async Task<IEnumerable<APIConfig>> GetAllAPIs()
         {
             return await _context.APIConfig.ToListAsync();
         }
 
+=======
+        public async Task<IEnumerable<object>> GetAllAPI()
+        {
+            var list = await _context.APIConfig
+                .Select(a => new
+                {
+                    apiID = a.APIID,
+                    name = a.Name,
+                    baseURL = a.BaseURL
+                })
+                .ToListAsync();
+
+            return list;
+        }
+
+
+>>>>>>> vu
         public async Task<APIConfig> AddAPIConfig(APIConfig config)
         {
             config.UpdatedAt = DateTime.Now;
@@ -42,5 +60,23 @@ namespace AdminService.Infrastructure
             return true; 
             
         }
+<<<<<<< HEAD
+=======
+        public async Task<bool> UpdateAPI(int id, APIConfigDTO api)
+        {
+            var existing = await _context.APIConfig.FindAsync(id);
+            if (existing == null)
+                return false;
+
+            existing.Name = api.Name;
+            existing.BaseURL = api.BaseURL;
+            existing.UpdatedAt = DateTime.Now;
+
+            _context.APIConfig.Update(existing);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+>>>>>>> vu
     }
 }

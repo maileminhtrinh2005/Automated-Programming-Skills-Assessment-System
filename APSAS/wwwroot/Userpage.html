@@ -4,21 +4,26 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>APSAS - Đăng nhập</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>APSAS - Đăng nhập, Đổi mật khẩu & Sinh viên</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
-            padding: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            min-height: 100vh;
+            flex-direction: column;
+            gap: 20px;
+            margin: 0;
         }
 
         .card {
-            width: 360px;
-            margin: 20px auto;
+            width: 90%;
+            max-width: 500px;
             background: #fff;
             padding: 25px;
             border-radius: 10px;
@@ -29,78 +34,169 @@
             text-align: center;
             margin-bottom: 12px;
             color: #333;
+            color: #333;
+            margin-bottom: 20px;
         }
 
         label {
-            font-size: 13px;
             display: block;
+            font-size: 13px;
             margin-top: 12px;
         }
 
         input {
             width: 100%;
             padding: 10px;
-            margin-top: 6px;
-            border: 1px solid #d1d7de;
+            border: 1px solid #ccc;
             border-radius: 6px;
-            box-sizing: border-box;
+            margin-top: 6px;
         }
 
         button {
             margin-top: 20px;
             width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
+            margin-top: 15px;
             background: #0066cc;
             color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
             cursor: pointer;
             font-size: 15px;
         }
 
-            button:disabled {
-                opacity: .6;
-                cursor: not-allowed;
+            button.secondary {
+                background: #999;
             }
 
         .msg {
             margin-top: 15px;
             font-size: 14px;
             text-align: center;
+            text-align: center;
+            margin-top: 10px;
         }
+
+            .msg.error {
+                color: #c0392b;
+            }
 
             .msg.success {
                 color: green;
             }
 
-            .msg.error {
-                color: #c0392b;
+        .hidden {
+            display: none;
+        }
+
+        #tableContainer {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            word-break: break-all;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+
+        /* Chat styles */
+        #chatMessages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+        }
+
+            #chatMessages div {
+                margin-bottom: 6px;
+                padding: 4px 8px;
+                border-radius: 6px;
+            }
+
+            #chatMessages .student {
+                background-color: #d6eaff;
+                text-align: right;
+            }
+
+            #chatMessages .admin {
+                background-color: #ffe6e6;
+                text-align: left;
             }
     </style>
 </head>
 <body>
 
+    <!-- LOGIN CARD -->
     <div class="card" id="loginCard">
-        <h2>Đăng nhập (Login)</h2>
-
+        <h2>Đăng nhập</h2>
         <label for="loginUsername">Username</label>
         <input id="loginUsername" type="text" placeholder="username" />
-
         <label for="loginPassword">Password</label>
         <input id="loginPassword" type="password" placeholder="password" />
-
         <button id="loginBtn">Đăng nhập</button>
-
+        <button id="toChangePwdBtn" class="secondary">Đổi mật khẩu</button>
         <p id="loginMessage" class="msg"></p>
+    </div>
+
+    <!-- CHANGE PASSWORD CARD -->
+    <div class="card hidden" id="changePasswordCard">
+        <h2>Đổi mật khẩu</h2>
+        <label for="cpUsername">Username</label>
+        <input id="cpUsername" type="text" placeholder="username" />
+        <label for="oldPassword">Mật khẩu cũ</label>
+        <input id="oldPassword" type="password" placeholder="Nhập mật khẩu cũ" />
+        <label for="newPassword">Mật khẩu mới</label>
+        <input id="newPassword" type="password" placeholder="Nhập mật khẩu mới" />
+        <button id="changeBtn">Cập nhật mật khẩu</button>
+        <button id="backToLoginBtn" class="secondary">⬅ Quay lại đăng nhập</button>
+        <p id="changeMessage" class="msg"></p>
+    </div>
+
+    <!-- STUDENT LIST CARD -->
+    <div class="card" id="studentCard">
+        <h2>Danh sách Sinh viên</h2>
+        <div id="tableContainer">
+            <p>Đang tải dữ liệu sinh viên...</p>
+        </div>
+        <p id="studentMessage" class="msg"></p>
+    </div>
+
+    <!-- CHAT CARD -->
+    <div class="card" id="chatCard">
+        <h2>Chat với Admin</h2>
+        <div id="chatMessages"></div>
+        <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." />
+        <button id="sendChatBtn">Gửi</button>
     </div>
 
     <script>
         const gatewayUrl = "http://localhost:5261"; // Ocelot Gateway URL
         const loginEndpoint = "/Login";
 
+        const gatewayUrl = "http://localhost:5261";
+        const loginEndpoint = "/Login";
+        const changePwdEndpoint = "/ChangePassword";
+        const studentEndpoint = "/GetAllStudents";
+
         const $ = id => document.getElementById(id);
 
-        // ================== UI MESSAGE ==================
         function showMessage(el, text, kind = "info") {
             el.textContent = text;
             el.className = "msg " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
@@ -114,29 +210,32 @@
             e.preventDefault();
             showMessage(loginMsg, "");
 
+        function switchView(viewName) {
+            $("loginCard").classList.toggle("hidden", viewName !== 'login');
+            $("changePasswordCard").classList.toggle("hidden", viewName !== 'change');
+        }
+
+        // ===== LOGIN =====
+        $("loginBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
             const Username = $("loginUsername").value.trim();
-            const PasswordHash = $("loginPassword").value;
+            const Password = $("loginPassword").value;
+            const msg = $("loginMessage");
+            if (!Username || !Password) { showMessage(msg, "⚠️ Vui lòng nhập username và password.", "error"); return; }
 
-            if (!Username || !PasswordHash) {
-                showMessage(loginMsg, "⚠️ Vui lòng nhập username và password.", "error");
-                return;
-            }
-
-            const body = { Username, PasswordHash };
-
-            loginBtn.disabled = true;
-            loginBtn.textContent = "Đang đăng nhập...";
+            $("loginBtn").disabled = true;
+            $("loginBtn").textContent = "Đang đăng nhập...";
 
             try {
                 const res = await fetch(gatewayUrl + loginEndpoint, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({ Username, Password })
                 });
-
                 const text = await res.text();
-                if (!res.ok) throw new Error(text || `Lỗi: ${res.status}`);
-
+                if (!res.ok) {
+                    try { const errData = JSON.parse(text); throw new Error(errData.message || text); } catch { throw new Error(text || `Lỗi ${res.status}`); }
+                }
                 const data = JSON.parse(text);
                 showMessage(loginMsg, `✅ ${data.message || "Đăng nhập thành công!"}`, "success");
 
@@ -148,15 +247,138 @@
                 // }
                 // ----------------------------------------
 
+                showMessage(msg, `✅ ${data.message || "Đăng nhập thành công!"}`, "success");
             } catch (err) {
-                console.error(err);
-                showMessage(loginMsg, "❌ " + err.message, "error");
+                showMessage(msg, err.message.startsWith("❌") ? err.message : "❌ " + err.message, "error");
             } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = "Đăng nhập";
+                $("loginBtn").disabled = false;
+                $("loginBtn").textContent = "Đăng nhập";
             }
         });
     </script>
 
+
+        // ===== CHANGE PASSWORD =====
+        $("toChangePwdBtn").addEventListener("click", () => {
+            $("cpUsername").value = $("loginUsername").value.trim();
+            switchView('change');
+        });
+
+        $("changeBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
+            const username = $("cpUsername").value.trim();
+            const oldPassword = $("oldPassword").value;
+            const newPassword = $("newPassword").value;
+            const msg = $("changeMessage");
+
+            if (!username || !oldPassword || !newPassword) { showMessage(msg, "⚠️ Vui lòng nhập đầy đủ thông tin.", "error"); return; }
+
+            $("changeBtn").disabled = true;
+            $("changeBtn").textContent = "Đang cập nhật...";
+
+            try {
+                const res = await fetch(gatewayUrl + changePwdEndpoint, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ Username: username, OldPassword: oldPassword, NewPassword: newPassword })
+                });
+                const text = await res.text();
+                if (!res.ok) {
+                    try { const errData = JSON.parse(text); throw new Error(errData.message || text); } catch { throw new Error(text || `Lỗi ${res.status}`); }
+                }
+                const data = JSON.parse(text);
+                showMessage(msg, `✅ ${data.message || "Đổi mật khẩu thành công!"}`, "success");
+            } catch (err) {
+                showMessage(msg, err.message.startsWith("❌") ? err.message : "❌ " + err.message, "error");
+            } finally {
+                $("changeBtn").disabled = false;
+                $("changeBtn").textContent = "Cập nhật mật khẩu";
+            }
+        });
+
+        $("backToLoginBtn").addEventListener("click", () => { switchView('login'); });
+
+        // ===== STUDENT LIST =====
+        async function fetchAndDisplayStudents() {
+            const msg = $("studentMessage");
+            const container = $("tableContainer");
+            container.innerHTML = "<p>Đang tải dữ liệu sinh viên...</p>";
+            showMessage(msg, "");
+            try {
+                const res = await fetch(gatewayUrl + studentEndpoint, { method: "GET", headers: { "Content-Type": "application/json" } });
+                const text = await res.text();
+                if (!res.ok) { const errData = JSON.parse(text); throw new Error(errData.message || `Lỗi ${res.status}`); }
+                const students = JSON.parse(text);
+                if (!students || students.length === 0) throw new Error("Không tìm thấy sinh viên nào.");
+                container.innerHTML = renderStudentTable(students);
+            } catch (err) {
+                showMessage(msg, err.message.startsWith("❌") ? err.message : "❌ " + err.message, "error");
+                container.innerHTML = "";
+            }
+        }
+
+        function renderStudentTable(students) {
+            let tableHtml = `<table><thead><tr><th>UserID</th><th>Họ tên</th><th>Email</th></tr></thead><tbody>`;
+            for (const s of students) {
+                tableHtml += `<tr><td>${s.userID}</td><td>${s.fullName}</td><td>${s.email}</td></tr>`;
+            }
+            tableHtml += "</tbody></table>";
+            return tableHtml;
+        }
+
+        fetchAndDisplayStudents();
+
+        // ===== CHAT =====
+        const chatEndpoint = "/SendMessageToAdmin";
+
+        $("sendChatBtn").addEventListener("click", async () => {
+            const msgBox = $("chatMessages");
+            const message = $("chatInput").value.trim();
+            if (!message) return;
+
+            // Hiển thị tạm thời tin nhắn của sinh viên
+            const studentMsg = document.createElement("div");
+            studentMsg.className = "student";
+            studentMsg.textContent = `Bạn: ${message}`;
+            msgBox.appendChild(studentMsg);
+            msgBox.scrollTop = msgBox.scrollHeight;
+            $("chatInput").value = "";
+
+            try {
+                // Gửi tin nhắn đến API Gateway
+                const res = await fetch(gatewayUrl + "/SendMessageToAdmin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })  // ✅ phải có key 'message'
+                });
+
+
+                const text = await res.text();
+                if (!res.ok) {
+                    try {
+                        const err = JSON.parse(text);
+                        throw new Error(err.message || text);
+                    } catch {
+                        throw new Error(text || `Lỗi ${res.status}`);
+                    }
+                }
+
+                // Hiển thị phản hồi từ server (ví dụ: xác nhận đã gửi)
+                const data = JSON.parse(text);
+                const adminMsg = document.createElement("div");
+                adminMsg.className = "admin";
+                adminMsg.textContent = data.message || "✅ Tin nhắn đã được gửi đến admin!";
+                msgBox.appendChild(adminMsg);
+                msgBox.scrollTop = msgBox.scrollHeight;
+
+            } catch (err) {
+                const errDiv = document.createElement("div");
+                errDiv.className = "admin";
+                errDiv.textContent = `❌ Lỗi gửi tin nhắn: ${err.message}`;
+                msgBox.appendChild(errDiv);
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        });
+    </script>
 </body>
 </html>

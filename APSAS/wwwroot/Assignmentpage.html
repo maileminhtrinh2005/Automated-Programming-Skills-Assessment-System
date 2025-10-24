@@ -1,3 +1,4 @@
+
 ﻿<!doctype html>
 <html lang="vi">
 <head>
@@ -138,6 +139,139 @@
             call(url('/feedback/manual'), 'POST', d);
         };
         document.querySelector('#btnClear').onclick = () => { document.querySelector('#body').value = ""; out.textContent = "(đã xoá)"; };
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Assignment API</title>
+</head>
+<body style="font-family: sans-serif;">
+    <h2>🧩 Test Assignment API qua Gateway</h2>
+
+    <!-- Thêm bài tập mới -->
+    <h3>Thêm bài tập mới</h3>
+    <form id="addForm">
+        <label>Title: <input type="text" id="title" required></label><br><br>
+        <label>Description: <input type="text" id="description" required></label><br><br>
+        <label>Deadline: <input type="datetime-local" id="deadline" required></label><br><br>
+        <label>
+            Difficulty:
+            <select id="difficulty">
+                <option>Easy</option>
+                <option>Medium</option>
+                <option>Hard</option>
+            </select>
+        </label><br><br>
+        <button type="submit">Thêm Assignment</button>
+    </form>
+
+    <hr>
+
+    <!-- Lấy Assignment theo ID -->
+    <h3>Lấy Assignment theo ID</h3>
+    <label>ID: <input type="number" id="getId" required></label>
+    <button id="getBtn">Lấy Assignment</button>
+
+    <hr>
+
+    <!-- Cập nhật Assignment -->
+    <h3>Cập nhật Assignment</h3>
+    <label>ID: <input type="number" id="updateId" required></label><br><br>
+    <label>Title: <input type="text" id="updateTitle"></label><br><br>
+    <label>Description: <input type="text" id="updateDescription"></label><br><br>
+    <label>Deadline: <input type="datetime-local" id="updateDeadline"></label><br><br>
+    <label>
+        Difficulty:
+        <select id="updateDifficulty">
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+        </select>
+    </label><br><br>
+    <button id="updateBtn">Cập nhật Assignment</button>
+
+    <hr>
+
+    <!-- Xóa Assignment -->
+    <h3>Xóa Assignment</h3>
+    <label>ID: <input type="number" id="deleteId" required></label>
+    <button id="deleteBtn">Xóa Assignment</button>
+
+    <hr>
+
+    <pre id="result"></pre>
+
+    <script>
+        const baseUrl = "http://localhost:5261";
+
+        // Thêm
+        document.getElementById("addForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById("title").value,
+                description: document.getElementById("description").value,
+                deadline: document.getElementById("deadline").value,
+                difficulty: document.getElementById("difficulty").value
+            };
+
+            const res = await fetch(`${baseUrl}/AddAssignment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            document.getElementById("result").textContent = res.ok
+                ? "✅ Thêm thành công!"
+                : "❌ Lỗi khi thêm assignment!";
+        });
+
+        // Lấy
+        document.getElementById("getBtn").addEventListener("click", async () => {
+            const id = document.getElementById("getId").value;
+            const res = await fetch(`${baseUrl}/GetAssignmentByid/${id}`);
+
+            if (!res.ok) {
+                document.getElementById("result").textContent = "❌ Không tìm thấy Assignment!";
+                return;
+            }
+
+            const data = await res.json();
+            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+        });
+
+        // Cập nhật
+        document.getElementById("updateBtn").addEventListener("click", async () => {
+            const data = {
+                assignmentId: document.getElementById("updateId").value,
+                title: document.getElementById("updateTitle").value,
+                description: document.getElementById("updateDescription").value,
+                deadline: document.getElementById("updateDeadline").value,
+                difficulty: document.getElementById("updateDifficulty").value
+            };
+
+            const res = await fetch(`${baseUrl}/UpdateAssignment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            document.getElementById("result").textContent = res.ok
+                ? "✅ Cập nhật thành công!"
+                : "❌ Lỗi khi cập nhật assignment!";
+        });
+
+        // Xóa
+        document.getElementById("deleteBtn").addEventListener("click", async () => {
+            const id = document.getElementById("deleteId").value;
+            const res = await fetch(`${baseUrl}/Delete/${id}`, {
+                method: "DELETE"
+            });
+
+            document.getElementById("result").textContent = res.ok
+                ? "✅ Xóa thành công!"
+                : "❌ Lỗi khi xóa assignment!";
+        });
+
     </script>
 </body>
 </html>
