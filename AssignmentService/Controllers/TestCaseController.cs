@@ -1,29 +1,36 @@
-﻿//using AssignmentService.Application.DTO;
-//using AssignmentService.Application.Service;
-//using Microsoft.AspNetCore.Mvc;
+﻿
 
-//namespace AssignmentService.Controllers
-//{
-//    [ApiController]
-//    [Route("api/TestCase")]
-//    public class TestCaseController : Controller
-//    {
-//        private readonly TestCaseControl _testcase;
-//        public TestCaseController(TestCaseControl testcase)
-//        {
-//            _testcase = testcase;
-//        }
+using AssignmentService.Application.DTO;
+using AssignmentService.Application.Service;
+using Microsoft.AspNetCore.Mvc;
 
-//        [HttpPost("AddTestCase")]
-//        public async Task<IActionResult> AddTestCase(RequestTestCase request)
-//        {
-//            if (request == null) { return BadRequest(); }
-//            if (! await _testcase.AddTestCase(request.sourceCode, request.languageId))
-//            {
-//                return BadRequest();
-//            }
+namespace assignmentservice.controllers
+{
+    [ApiController]
+    [Route("api/TestCase")]
+    public class TestCaseController : Controller
+    {
+        private readonly TestCaseControl _testcase;
+        public TestCaseController(TestCaseControl testcase)
+        {
+            _testcase = testcase;
+        }
 
-//            return Ok();
-//        }
-//    }
-//}
+        [HttpPost("AddTestCase")]
+        public async Task<IActionResult> addtestcase([FromBody]TestCaseRequest request)
+        {
+            if (request == null) { return BadRequest(); }
+
+           foreach(var tc in request.testCaseItems)
+           {
+                bool check = await _testcase.AddTestCase(request.AssiginmentId,
+                    tc.Input??"",
+                    tc.ExpectedOutput??"",
+                    tc.Weight
+                    );
+                if (!check) return BadRequest("Failed to add one or more testcases");
+           }
+            return Ok("All testcases added successfully");
+        }
+    }
+}

@@ -2,25 +2,27 @@
 using SubmissionService.Application.Interface;
 using System.Text.Json;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace SubmissionService.Infrastructure
 {
-    public class Submit : ISubmit
+    public class SendToJudge0 : ISendToJudge0
     {
         private readonly HttpClient _httpClient;
-        public Submit(HttpClient httpClient)
+        public SendToJudge0(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<ResultDTO> Submited(Request request, string urlJudge0)
+        public async Task<ResultDTO?> RunCode(string sourceCode, int languageId, string stdin, string urlJudge0)
         {
-            if (request == null) return null;
+            if (sourceCode.IsNullOrEmpty() || languageId<0 || urlJudge0.IsNullOrEmpty()) return null;
 
             var body = new
             {
-                source_code = Convert.ToBase64String(Encoding.UTF8.GetBytes(request.SourceCode)),
-                language_id = request.LanguageId
+                source_code = Convert.ToBase64String(Encoding.UTF8.GetBytes(sourceCode)),
+                language_id = languageId,
+                stdin= Convert.ToBase64String(Encoding.UTF8.GetBytes(stdin))
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
@@ -33,7 +35,7 @@ namespace SubmissionService.Infrastructure
             Console.WriteLine("Judge0 raw response: " + result);
 
             var json = JsonDocument.Parse(result);
-            string token = json.RootElement.GetProperty("token").GetString();
+            string token = json.RootElement.GetProperty("token").GetString()??"";
 
             // ✅ lấy kết quả cũng phải để base64_encoded=true
             var ketquaResponse = await _httpClient.GetAsync($"{urlJudge0}/submissions/{token}?base64_encoded=true");
@@ -98,7 +100,7 @@ namespace SubmissionService.Infrastructure
             }
             catch (Exception ex)
             {
-                Console.WriteLine("⚠️ Lỗi parse JSON hoặc mapping: " + ex.Message);
+                Console.WriteLine("Lỗi parse JSON hoặc mapping: " + ex.Message);
                 return null;
             }
         }

@@ -12,11 +12,14 @@ namespace AssignmentService.Application.Service
         }
 
 
-        //public async Task<bool> AddTestCase(string sourcecode, int languageId)
-        //{
-        //    if (languageId < 0 || sourcecode == null) { return false; }
-        //    if (!await _testcase.SaveTestCase(sourcecode, languageId, _submissionUrl)) { return false; }
-        //    return true;
-        //}
+        public async Task<bool> AddTestCase(int assignmentId, string input, string expectedOutput, double weight)
+        {
+            if (assignmentId<0|| input ==null || expectedOutput ==null || weight < 0)
+            {
+                return false;
+            }
+            if (!  await _testcase.AddTestCase(assignmentId, input, expectedOutput, weight)) return false;
+            return true;
+        }
     }
 }

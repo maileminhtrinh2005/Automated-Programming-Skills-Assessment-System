@@ -18,8 +18,6 @@ namespace AssignmentService.Infrastructure
 
             _eventBus.Subscribe<CodeSubmittedEvents, TestCaseHandle>();
 
-
-
             return Task.CompletedTask;
         }
 

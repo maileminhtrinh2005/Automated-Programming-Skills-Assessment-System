@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SubmissionService.Application;
 using SubmissionService.Application.DTOs;
+using SubmissionService.Application.Service;
 
 namespace SubmissionService.Controllers
 {
@@ -8,10 +8,10 @@ namespace SubmissionService.Controllers
     [Route("api/Submission")]
     public class SubmissionController : Controller
     {
-        private readonly Sub _sub;
-        public SubmissionController(Sub sub)
+        private readonly SubmissionControl _control;
+        public SubmissionController(SubmissionControl sub)
         {
-            _sub = sub;
+            _control = sub;
         }
         [HttpPost("Submit")]
         public async Task<IActionResult> Submit(Request request)
@@ -19,7 +19,7 @@ namespace SubmissionService.Controllers
 
             try
             {
-                bool success = await _sub.Submit(request);
+                bool success = await _control.Submit(request);
                 if (!success)
                 {
                     // Submit thất bại, ví dụ do Judge0 trả lỗi
@@ -47,7 +47,7 @@ namespace SubmissionService.Controllers
 
             try
             {
-                var result = await _sub.SubmitWithResult(request);
+                var result = await _control.SubmitWithResult(request.SourceCode??"",request.LanguageId,"");
                 if (result == null) { return BadRequest(new { message = "Submission failed" }); }
 
                 return Ok(result);

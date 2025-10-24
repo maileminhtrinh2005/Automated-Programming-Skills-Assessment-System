@@ -26,7 +26,7 @@ namespace AssignmentService.Controllers
             return Ok();
         }
 
-        [HttpGet("GetAssignmentByid/{id}")]
+        [HttpGet("GetAssignmentById/{id}")]
         public async Task<IActionResult> GetAssignmentById(int id)
         {
             if (id <= 0) return BadRequest();
@@ -67,6 +67,15 @@ namespace AssignmentService.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("GetAllAssignment")]
+        public async Task<IActionResult> GetAllAssignment()
+        {
+
+            var assignmentList = await _assignment.GetAllAssignment();
+            if (assignmentList == null) return NotFound();
+            return Ok(assignmentList);
         }
     }
 }

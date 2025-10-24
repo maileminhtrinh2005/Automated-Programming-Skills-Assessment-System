@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SubmissionService.Application;
+using SubmissionService.Application.Service;
 
 namespace SubmissionService.Controllers
 {
@@ -7,8 +7,8 @@ namespace SubmissionService.Controllers
     [Route("api/[Controller]")]
     public class GetResultController : Controller
     {
-        private readonly Sub _sub;
-        public GetResultController(Sub sub)
+        private readonly SubmissionControl _sub;
+        public GetResultController(SubmissionControl sub)
         {
             _sub = sub;
         }

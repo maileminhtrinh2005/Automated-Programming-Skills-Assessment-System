@@ -1,19 +1,50 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>Online Judge</title>
+    <title>Online Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            font-family: monospace;
+        }
+
+        .assignment-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h2>Online Judge - Submit & Run Code</h2>
+    <h2>Online Code</h2>
+
+    <!-- Thông tin bài tập -->
+    <div class="assignment-info">
+        <h3 id="assignmentTitle">Đang tải bài tập...</h3>
+        <p id="assignmentDescription"></p>
+        <p><span class="label">Độ khó:</span> <span id="assignmentDifficulty"></span></p>
+        <p><span class="label">Hạn nộp:</span> <span id="assignmentDeadline"></span></p>
+        <input type="hidden" id="assignmentId" /> <!-- Ẩn ID -->
+    </div>
 
     <!-- Nhập code -->
-    <label for="codeArea">Source Code:</label><br />
-    <textarea id="codeArea" rows="15" cols="80"></textarea>
+    <label for="codeArea"><b>Nhập Source Code:</b></label><br />
+    <textarea id="codeArea" rows="15" placeholder="Nhập mã nguồn tại đây..."></textarea>
     <br /><br />
 
     <!-- Chọn ngôn ngữ -->
-    <label for="languageSelect">Select Language:</label>
+    <label for="languageSelect"><b>Chọn ngôn ngữ:</b></label>
     <select id="languageSelect">
         <option value="71">Python (3.8.1)</option>
         <option value="62">Java (OpenJDK 13.0.1)</option>
@@ -26,19 +57,53 @@
 
     <!-- Hai nút: Submit và Run -->
     <button onclick="submitCode()">Submit</button>
-    <button onclick="runCode()">Run</button>
+    <button onclick="runCode()">▶️ Run</button>
 
     <!-- Hiển thị kết quả -->
-    <h3>Result:</h3>
+    <h3>Kết quả:</h3>
     <pre id="result"></pre>
 
     <script>
         const gatewayUrl = "http://localhost:5261"; // API Gateway URL
 
+        // 🟢 Lấy assignmentId từ URL (?id=3)
+        const urlParams = new URLSearchParams(window.location.search);
+        const assignmentId = urlParams.get("id");
+
+        // 🟢 Load thông tin bài tập
+        async function loadAssignment() {
+            if (!assignmentId) {
+                document.getElementById("assignmentTitle").innerText = "❌ Không tìm thấy ID bài tập!";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${gatewayUrl}/GetAssignmentById/${assignmentId}`);
+                if (!res.ok) throw new Error("Không tải được bài tập");
+
+                const data = await res.json();
+
+                // Match với cấu trúc JSON trả về
+                document.getElementById("assignmentId").value = data.assignmentId;
+                document.getElementById("assignmentTitle").innerText = `🧪 ${data.title}`;
+                document.getElementById("assignmentDescription").innerText = data.description || "Không có mô tả.";
+                document.getElementById("assignmentDifficulty").innerText = data.difficulty || "Không xác định";
+
+                // Format ngày đẹp hơn
+                const date = new Date(data.deadline);
+                document.getElementById("assignmentDeadline").innerText = date.toLocaleDateString("vi-VN");
+            } catch (err) {
+                document.getElementById("assignmentTitle").innerText = "❌ Lỗi: " + err.message;
+            }
+        }
+
+        // 🟢 Submit code
         async function submitCode() {
+            const id = document.getElementById("assignmentId").value;
             const body = {
-                SourceCode: document.getElementById("codeArea").value,
-                LanguageId: parseInt(document.getElementById("languageSelect").value)
+                assignmentId: parseInt(id),
+                sourceCode: document.getElementById("codeArea").value,
+                languageId: parseInt(document.getElementById("languageSelect").value)
             };
 
             try {
@@ -55,10 +120,13 @@
             }
         }
 
+        // 🟢 Run code
         async function runCode() {
+            const id = document.getElementById("assignmentId").value;
             const body = {
-                SourceCode: document.getElementById("codeArea").value,
-                LanguageId: parseInt(document.getElementById("languageSelect").value)
+                assignmentId: parseInt(id),
+                sourceCode: document.getElementById("codeArea").value,
+                languageId: parseInt(document.getElementById("languageSelect").value)
             };
 
             try {
@@ -68,29 +136,27 @@
                     body: JSON.stringify(body)
                 });
 
-                if (!res.ok) {
-                    throw new Error("Run failed, status " + res.status);
-                }
+                if (!res.ok) throw new Error("Run failed, status " + res.status);
 
                 const result = await res.json();
-
-                // Format kết quả cho dễ đọc
                 const formatted = `
-🟢 Status: ${result.status}
-⏱️ Time: ${result.executionTime}
-💾 Memory: ${result.memoryUsed} KB
-📤 Output:
-${result.output}
+                    🟢 Status: ${result.status}
+                    ⏱️ Time: ${result.executionTime}
+                    💾 Memory: ${result.memoryUsed} KB
+                    📤 Output:
+                    ${result.output}
 
-⚠️ Error Message:
-${result.errorMessage}
+                    ⚠️ Error Message:
+                    ${result.errorMessage}
                     `;
-
                 document.getElementById("result").innerText = formatted;
             } catch (err) {
                 document.getElementById("result").innerText = "❌ " + err.message;
             }
         }
+
+        // Khi trang mở, tự tải thông tin bài tập
+        loadAssignment();
     </script>
 </body>
 </html>
