@@ -27,10 +27,12 @@ namespace ShareLibrary.Event
 
     public class TestCaseFetchEvent
     {
+        // assigment response submission
         public string? SourceCode { get; set; }
         public int LanguageId { get; set; }
         public int AssignmentId { get; set; }
         public int SubmissionId { get; set; }
         public List<TestCaseEvent> TestCaseList { get; set; } = new List<TestCaseEvent>();
     }
+
 }

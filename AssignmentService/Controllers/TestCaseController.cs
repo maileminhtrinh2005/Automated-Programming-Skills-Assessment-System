@@ -2,9 +2,7 @@
 
 using AssignmentService.Application.DTO;
 using AssignmentService.Application.Service;
-using AssignmentService.Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace assignmentservice.controllers
 {
