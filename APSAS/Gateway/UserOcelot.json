@@ -97,7 +97,36 @@
       "UpstreamHttpMethod": [ "PUT" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/User/SendMessageToAdmin",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5239
+        }
+      ],
+      "UpstreamPathTemplate": "/SendMessageToAdmin",
+      "UpstreamHttpMethod": [ "POST" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/chat/send",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5140
+        }
+      ],
+      "UpstreamPathTemplate": "/chat/send",
+      "UpstreamHttpMethod": [ "POST" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     }
+
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"

@@ -1,5 +1,4 @@
 ﻿<!DOCTYPE html>
-
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -80,7 +79,6 @@
             display: none;
         }
 
-        ```
         #tableContainer {
             max-height: 400px;
             overflow-y: auto;
@@ -105,13 +103,37 @@
             position: sticky;
             top: 0;
         }
-    </style>
-    ```
 
+        /* Chat styles */
+        #chatMessages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+        }
+
+            #chatMessages div {
+                margin-bottom: 6px;
+                padding: 4px 8px;
+                border-radius: 6px;
+            }
+
+            #chatMessages .student {
+                background-color: #d6eaff;
+                text-align: right;
+            }
+
+            #chatMessages .admin {
+                background-color: #ffe6e6;
+                text-align: left;
+            }
+    </style>
 </head>
 <body>
 
-    ```
+    <!-- LOGIN CARD -->
     <div class="card" id="loginCard">
         <h2>Đăng nhập</h2>
         <label for="loginUsername">Username</label>
@@ -123,6 +145,7 @@
         <p id="loginMessage" class="msg"></p>
     </div>
 
+    <!-- CHANGE PASSWORD CARD -->
     <div class="card hidden" id="changePasswordCard">
         <h2>Đổi mật khẩu</h2>
         <label for="cpUsername">Username</label>
@@ -136,12 +159,21 @@
         <p id="changeMessage" class="msg"></p>
     </div>
 
+    <!-- STUDENT LIST CARD -->
     <div class="card" id="studentCard">
         <h2>Danh sách Sinh viên</h2>
         <div id="tableContainer">
             <p>Đang tải dữ liệu sinh viên...</p>
         </div>
         <p id="studentMessage" class="msg"></p>
+    </div>
+
+    <!-- CHAT CARD -->
+    <div class="card" id="chatCard">
+        <h2>Chat với Admin</h2>
+        <div id="chatMessages"></div>
+        <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." />
+        <button id="sendChatBtn">Gửi</button>
     </div>
 
     <script>
@@ -252,7 +284,6 @@
             }
         }
 
-        // ✅ Sửa sang camelCase để hiển thị đúng
         function renderStudentTable(students) {
             let tableHtml = `<table><thead><tr><th>UserID</th><th>Họ tên</th><th>Email</th></tr></thead><tbody>`;
             for (const s of students) {
@@ -263,8 +294,58 @@
         }
 
         fetchAndDisplayStudents();
-    </script>
-    ```
 
+        // ===== CHAT =====
+        const chatEndpoint = "/SendMessageToAdmin";
+
+        $("sendChatBtn").addEventListener("click", async () => {
+            const msgBox = $("chatMessages");
+            const message = $("chatInput").value.trim();
+            if (!message) return;
+
+            // Hiển thị tạm thời tin nhắn của sinh viên
+            const studentMsg = document.createElement("div");
+            studentMsg.className = "student";
+            studentMsg.textContent = `Bạn: ${message}`;
+            msgBox.appendChild(studentMsg);
+            msgBox.scrollTop = msgBox.scrollHeight;
+            $("chatInput").value = "";
+
+            try {
+                // Gửi tin nhắn đến API Gateway
+                const res = await fetch(gatewayUrl + "/SendMessageToAdmin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })  // ✅ phải có key 'message'
+                });
+
+
+                const text = await res.text();
+                if (!res.ok) {
+                    try {
+                        const err = JSON.parse(text);
+                        throw new Error(err.message || text);
+                    } catch {
+                        throw new Error(text || `Lỗi ${res.status}`);
+                    }
+                }
+
+                // Hiển thị phản hồi từ server (ví dụ: xác nhận đã gửi)
+                const data = JSON.parse(text);
+                const adminMsg = document.createElement("div");
+                adminMsg.className = "admin";
+                adminMsg.textContent = data.message || "✅ Tin nhắn đã được gửi đến admin!";
+                msgBox.appendChild(adminMsg);
+                msgBox.scrollTop = msgBox.scrollHeight;
+
+            } catch (err) {
+                const errDiv = document.createElement("div");
+                errDiv.className = "admin";
+                errDiv.textContent = `❌ Lỗi gửi tin nhắn: ${err.message}`;
+                msgBox.appendChild(errDiv);
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        });
+    </script>
 </body>
 </html>

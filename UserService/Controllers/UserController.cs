@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using UserService.Application.DTO; 
 using UserService.Application.Interface;
 
@@ -11,8 +12,10 @@ namespace UserService.Controllers
     { 
         private readonly ICRUD _crud;
         private readonly ILogin _login;
-        public UserController(ICRUD crud, ILogin login) 
+        private readonly IChat _chat;
+        public UserController(ICRUD crud, ILogin login, IChat chat) 
         {
+            _chat = chat;
             _login = login;
             _crud = crud;
         } 
@@ -113,6 +116,15 @@ namespace UserService.Controllers
 
             // Trả về 200 OK cùng danh sách sinh viên
             return Ok(students);
+        }
+        [HttpPost("SendMessageToAdmin")]
+        public IActionResult SendMessageToAdmin([FromBody] ChatMessageDTO chat)
+        {
+            if (chat == null || string.IsNullOrWhiteSpace(chat.Message))
+                return BadRequest(new { message = "❌ Nội dung tin nhắn trống." });
+
+            _chat.SendMessageToAdmin(chat.Message);
+            return Ok(new { message = "✅ Tin nhắn đã được gửi đến admin!" });
         }
 
 

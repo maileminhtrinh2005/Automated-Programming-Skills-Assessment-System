@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssignmentService", "Assign
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShareLibrary", "ShareLibrary\ShareLibrary.csproj", "{975CACB6-FA32-424E-8073-BA0EC722AF19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

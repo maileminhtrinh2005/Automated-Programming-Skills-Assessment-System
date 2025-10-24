@@ -164,7 +164,6 @@
             <div id="apiUpdateMessage" class="message"></div>
         </div>
 
-        <!-- DANH SÁCH API -->
         <div id="apiListContainer" style="margin-top:15px; display:none;">
             <h3>📋 Danh sách API hiện có</h3>
             <div id="apiListContent"></div>
@@ -196,209 +195,78 @@
     <h2>Danh Sách Người Dùng</h2>
     <div id="userTableContainer" style="width: 90%; max-width: 1000px;"></div>
 
+    <!-- ========== PHẦN CHAT VỚI SINH VIÊN ========== -->
+    <div class="container-user" style="width: 600px;">
+        <h2>💬 Chat với Sinh viên</h2>
+        <div id="chatBox" style="
+        background: #fff;
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;">
+            <p><i>Chưa có tin nhắn...</i></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <button id="sendChatBtn" style="background-color: #3498db;">Gửi</button>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPT CHUNG ========== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        const GATEWAY_URL = "http://localhost:5261";
-        const $ = id => document.getElementById(id);
+        const GATEWAY_URL = "http://localhost:5261"; // gateway
+        const ADMIN_HUB_URL = "http://localhost:5097/chathub"; // port thật của AdminService
 
-        function showMessage(el, text, kind = "info") {
-            el.textContent = text;
-            el.className = "message " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
-        }
+        const chatBox = document.getElementById("chatBox");
+        const chatInput = document.getElementById("chatInput");
+        const sendChatBtn = document.getElementById("sendChatBtn");
 
-        function toggleApiForm(mode) {
-            const addForm = $("addApiForm"), updateForm = $("updateApiForm"), title = $("apiFormTitle");
-            if (mode === "update") {
-                addForm.style.display = "none"; updateForm.style.display = "block";
-                title.textContent = "Cập nhật API Config";
-            } else {
-                addForm.style.display = "block"; updateForm.style.display = "none";
-                title.textContent = "Thêm API Config";
-            }
-        }
+        // ✅ Kết nối SignalR tới AdminService
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(ADMIN_HUB_URL)
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
 
-        // ==== API CONFIG ====
-        async function addAPIConfig() {
-            const name = $("apiName").value.trim();
-            const baseURL = $("baseUrl").value.trim();
-            const msg = $("apiMessage");
-            if (!name || !baseURL) return showMessage(msg, "⚠️ Vui lòng nhập đầy đủ thông tin!", "error");
-
-            const data = { name, baseURL };
-            try {
-                const res = await fetch(`${GATEWAY_URL}/AddAPI`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) {
-                    showMessage(msg, "✅ Thêm API thành công!", "success");
-                    $("apiName").value = $("baseUrl").value = "";
-                    loadAPIList(); // tự động refresh danh sách
-                } else {
-                    const err = await res.json();
-                    showMessage(msg, "❌ " + (err.message || "Không thể thêm API!"), "error");
-                }
-            } catch {
-                showMessage(msg, "🚫 Không thể kết nối tới Gateway!", "error");
-            }
-        }
-
-        async function updateAPIConfig() {
-            const id = $("apiId").value.trim(), name = $("apiNameUpdate").value.trim(), baseURL = $("baseUrlUpdate").value.trim();
-            const msg = $("apiUpdateMessage");
-            if (!id || !name || !baseURL) return showMessage(msg, "⚠️ Nhập đủ ID, Tên và Base URL!", "error");
-
-            const data = { name, baseURL };
-            try {
-                const res = await fetch(`${GATEWAY_URL}/UpdateAPI/${id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) {
-                    showMessage(msg, `✅ Cập nhật API ID=${id} thành công!`, "success");
-                    $("apiId").value = $("apiNameUpdate").value = $("baseUrlUpdate").value = "";
-                    loadAPIList();
-                } else showMessage(msg, "❌ Lỗi khi cập nhật!", "error");
-            } catch {
-                showMessage(msg, "🚫 Không thể kết nối tới Gateway!", "error");
-            }
-        }
-
-        // ==== XEM DANH SÁCH API ====
-        async function loadAPIList() {
-            const container = $("apiListContainer");
-            const content = $("apiListContent");
-            container.style.display = "block";
-            content.innerHTML = "⏳ Đang tải danh sách API...";
-
-            try {
-                const res = await fetch(`${GATEWAY_URL}/GetAllAPI`);
-                if (!res.ok) throw new Error("Không tải được danh sách API!");
-                const list = await res.json();
-
-                if (!Array.isArray(list) || list.length === 0) {
-                    content.innerHTML = "<p>❗ Chưa có API nào được thêm.</p>";
-                    return;
-                }
-
-                // Xử lý tự nhận các tên trường khác nhau
-                const rows = list.map(api => {
-                    const id = api.apiID ?? api.APIID ?? api.id ?? api.Id ?? api.ID ?? "N/A";
-                    const name = api.name ?? api.Name ?? "N/A";
-                    const baseURL = api.baseURL ?? api.BaseURL ?? api.baseUrl ?? "N/A";
-                    return `
-                <tr>
-                    <td>${id}</td>
-                    <td>${name}</td>
-                    <td>${baseURL}</td>
-                </tr>`;
-                }).join("");
-
-                content.innerHTML = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên API</th>
-                        <th>BaseURL</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>`;
-            } catch (err) {
-                content.innerHTML = `<p style="color:red;">❌ ${err.message}</p>`;
-            }
-        }
-
-
-        // ==== USER CRUD ====
-        const addUserEndpoint = "/AddUser", getUsersEndpoint = "/GetAllUsers", deleteEndpoint = "/DeleteUser", updateEndpoint = "/UpdateUser";
-
-        const submitUserBtn = $("submitUserBtn"), userMsg = $("userMessage");
-        submitUserBtn.addEventListener("click", async e => {
-            e.preventDefault();
-            const username = $("username").value.trim(), email = $("email").value.trim(),
-                fullName = $("fullname").value.trim(), passwordHash = $("password").value.trim(),
-                roleID = parseInt($("roleid").value);
-            if (!username || !email || !passwordHash || !roleID) return showMessage(userMsg, "⚠️ Nhập đủ thông tin!", "error");
-
-            const body = { username, email, fullName, passwordHash, roleID };
-            submitUserBtn.disabled = true; submitUserBtn.textContent = "Đang gửi...";
-            try {
-                const res = await fetch(GATEWAY_URL + addUserEndpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-                if (!res.ok) throw new Error(await res.text());
-                showMessage(userMsg, "✅ Thêm user thành công!", "success");
-                $("username").value = $("email").value = $("fullname").value = $("password").value = "";
-                $("roleid").value = "3";
-                loadUsers();
-            } catch (err) { showMessage(userMsg, "❌ " + err.message, "error"); }
-            finally { submitUserBtn.disabled = false; submitUserBtn.textContent = "Thêm user"; }
+        // Nhận tin nhắn từ server
+        connection.on("ReceiveMessage", (user, message) => {
+            if (user.toLowerCase() === "student") appendChat(`Sinh viên: ${message}`, "student");
+            else appendChat(`${user}: ${message}`, "system");
         });
 
-        async function loadUsers() {
-            try {
-                const res = await fetch(GATEWAY_URL + getUsersEndpoint);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const users = await res.json();
-                renderTable(users);
-            } catch (err) { alert("Lỗi khi tải danh sách người dùng: " + err.message); }
+        // Bắt đầu kết nối
+        connection.start()
+            .then(() => appendChat("✅ Đã kết nối đến server chat (SignalR).", "system"))
+            .catch(err => appendChat("🚫 Không thể kết nối SignalR: " + err, "system"));
+
+        // Gửi tin nhắn (admin gửi)
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            appendChat(`Bạn: ${text}`, "admin");
+            connection.invoke("SendMessage", "Admin", text).catch(err =>
+                appendChat("⚠️ Lỗi gửi tin: " + err, "system")
+            );
+            chatInput.value = "";
         }
 
-        function renderTable(users) {
-            const container = document.getElementById("userTableContainer");
-            container.innerHTML = `
-            <table>
-                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Full Name</th><th>RoleID</th><th>Password</th><th>Actions</th></tr></thead>
-                <tbody>
-                    ${users.map(u => `
-                        <tr>
-                            <td>${u.userID}</td>
-                            <td contenteditable="true" data-field="username">${u.username}</td>
-                            <td contenteditable="true" data-field="email">${u.email}</td>
-                            <td contenteditable="true" data-field="fullName">${u.fullName}</td>
-                            <td contenteditable="true" data-field="roleID">${u.roleID}</td>
-                            <td><input type="password" data-field="passwordHash" placeholder="••••••"></td>
-                            <td>
-                                <button class="btn-edit" onclick="updateUser(${u.userID}, this)">💾 Lưu</button>
-                                <button class="btn-delete" onclick="deleteUser(${u.userID})">🗑 Xóa</button>
-                            </td>
-                        </tr>`).join("")}
-                </tbody>
-            </table>`;
-        }
+        sendChatBtn.onclick = sendMessage;
+        chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
 
-        async function deleteUser(id) {
-            if (!confirm("Bạn có chắc muốn xóa người dùng này không?")) return;
-            try {
-                const res = await fetch(`${GATEWAY_URL}${deleteEndpoint}/${id}`, { method: "DELETE" });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                alert("✅ Xóa thành công!"); loadUsers();
-            } catch (err) { alert("❌ Lỗi khi xóa: " + err.message); }
+        // Thêm tin nhắn vào khung chat
+        function appendChat(message, sender = "system") {
+            const p = document.createElement("p");
+            p.textContent = message;
+            p.style.margin = "5px 0";
+            if (sender === "admin") p.style.color = "#2c3e50";
+            else if (sender === "student") p.style.color = "#16a085";
+            else p.style.color = "#999";
+            chatBox.appendChild(p);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-
-        async function updateUser(id, btn) {
-            const row = btn.closest("tr");
-            const updatedUser = {
-                userID: id,
-                username: row.querySelector('[data-field="username"]').textContent.trim(),
-                email: row.querySelector('[data-field="email"]').textContent.trim(),
-                fullName: row.querySelector('[data-field="fullName"]').textContent.trim(),
-                roleID: parseInt(row.querySelector('[data-field="roleID"]').textContent.trim()),
-                passwordHash: row.querySelector('[data-field="passwordHash"]').value.trim()
-            };
-            try {
-                const res = await fetch(GATEWAY_URL + updateEndpoint, {
-                    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedUser)
-                });
-                if (!res.ok) throw new Error(await res.text());
-                alert("✅ Cập nhật thành công!"); loadUsers();
-            } catch (err) { alert("❌ Lỗi khi cập nhật: " + err.message); }
-        }
-
-        window.deleteUser = deleteUser;
-        window.updateUser = updateUser;
-        loadUsers();
     </script>
+
 </body>
 </html>

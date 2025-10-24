@@ -1,9 +1,27 @@
 using Microsoft.EntityFrameworkCore;
-using UserService.Application.DTO;
+using RabbitMQ.Client;
+using ShareLibrary;
 using UserService.Application.Interface;
 using UserService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// C?u hình RabbitMQ t? appsettings.json
+builder.Services.AddSingleton<IConnectionFactory>(sp =>
+       new ConnectionFactory()
+       {
+           HostName = "localhost", // 
+           Port = 5672,            // 
+           UserName = "guest",     //
+           Password = "guest"      // 
+       }
+);
+builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+builder.Services.AddSingleton<RabbitMQEventBus>();
+builder.Services.AddScoped<ChatMessageHandler>();
+builder.Services.AddHostedService<RabbitMqSubscriberService>();
+
+
 
 // Add services to the container.
 
@@ -13,6 +31,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -20,6 +39,8 @@ builder.Services.AddDbContext<UserAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ICRUD, CRUD>();
 builder.Services.AddScoped<ILogin,Login>();
+builder.Services.AddScoped<IChat, ChatSv>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
