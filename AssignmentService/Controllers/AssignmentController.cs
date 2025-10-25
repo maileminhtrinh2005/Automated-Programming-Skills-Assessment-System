@@ -8,8 +8,8 @@ namespace AssignmentService.Controllers
     [Route("api/Assignment")]
     public class AssignmentController : ControllerBase
     {
-        private readonly AssignmentControl _assignment;
-        public AssignmentController(AssignmentControl assignment)
+        private readonly AssignmentManager _assignment;
+        public AssignmentController(AssignmentManager assignment)
         {
             _assignment = assignment;
         }
@@ -38,7 +38,6 @@ namespace AssignmentService.Controllers
 
             return Ok(assignment);
         }
-
 
         [HttpPost("UpdateAssignment")]
         public async Task<IActionResult> UpdateAssignment(AssignmentRequest request)

@@ -84,8 +84,38 @@
       ],
       "UpstreamPathTemplate": "/AddTestCase",
       "UpstreamHttpMethod": [ "POST" ]
+    },
+
+
+    //resource
+    {
+      "DownstreamPathTemplate": "/api/Resource/AddResource",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/AddResource",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Resource/GetResourceById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetResourceById/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
     }
+
   ],
+
+
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"
   }

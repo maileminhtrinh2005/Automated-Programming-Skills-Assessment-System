@@ -32,7 +32,7 @@ namespace SubmissionService.Infrastructure
             _judge0 = sendToJudge0;
         }
 
-        //gui yeu cau lay testcase cho assignment
+        //gui yeu cau lay testcase 
         public Task GetTestCase(Request request)
         {
             var requestEvent = new CodeSubmittedEvents
@@ -96,7 +96,6 @@ namespace SubmissionService.Infrastructure
                 }
             }
         }
-
 
         private bool CompareOutput(string resultOutput, string expectedOutput)
         {

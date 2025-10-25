@@ -5,20 +5,15 @@
         // xem thu aii luu bai tap
         public int UserId { get; set; }
 
-
         // phan nay nhan request tu client cua bai tap
         //assignment request
         public int AssignmentId { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public DateTime Deadline { get; set; }
-        public string? Difficulty { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; }=string.Empty;
+        public string SampleTestCase { get; set; } = string.Empty;
+        public DateTime Deadline { get; set; } = DateTime.Now;
+        public string Difficulty { get; set; } = string.Empty;
 
 
-        // phan nay nhan request cua client phan testcase
-        // testcase request
-        public int languageId { get; set; }
-        public string? sourceCode { get; set; }
-        public double weight { get; set; }
     }
 }
