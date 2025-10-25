@@ -1,20 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using UserService.Application.DTO; 
 using UserService.Application.Interface; 
 using UserService.Infrastructure; 
+
 namespace UserService.Controllers 
 { 
     [ApiController]
     [Route("api/[Controller]")] 
     public class UserController : Controller 
     { 
+
         private readonly Login _login; 
         private readonly ICRUD _crud; 
         public UserController(ICRUD crud, Login login) 
         {
             _login = login;
             _crud = crud; 
+
         } 
         [HttpPost("AddUser")] 
         public async Task<IActionResult> AddUser(UserDTO user) 
@@ -26,6 +30,7 @@ namespace UserService.Controllers
             return Ok(); 
         }
         [AllowAnonymous]
+
         [HttpPost("Login")] 
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto) 
         { 
@@ -37,6 +42,7 @@ namespace UserService.Controllers
             } 
             return Unauthorized(new { message = "❌ Invalid username or password" }); 
         }
+
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -68,6 +74,8 @@ namespace UserService.Controllers
 
             return Ok(new { message = "🗑️ Xóa thành công!" });
         }
+
+
 
 
     }

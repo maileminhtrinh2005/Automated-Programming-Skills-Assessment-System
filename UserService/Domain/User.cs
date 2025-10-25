@@ -7,7 +7,9 @@
         public string Email { get; set; } // Email (unique)                                         
         public string PasswordHash { get; set; } // Mật khẩu (hash)                                         
         public string FullName { get; set; } // Họ tên                                          
+
         public int RoleID { get; set; } // FK tới Role                                        
+
         public DateTime CreatedAt { get; set; } // Ngày tạo                                     
         public DateTime UpdatedAt { get; set; } // Ngày cập nhật
                                                 

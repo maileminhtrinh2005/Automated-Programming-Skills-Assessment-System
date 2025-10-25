@@ -1,0 +1,112 @@
+﻿using AssignmentService.Application.DTO;
+using AssignmentService.Application.Interface;
+using AssignmentService.Domain;
+using Microsoft.EntityFrameworkCore;
+
+namespace AssignmentService.Infrastructure
+{
+    public class AssignmentRepository : IAssignmentRepository
+    {
+        private readonly AssignmentDbContext _context;
+        public AssignmentRepository(AssignmentDbContext context)
+        {
+            _context = context;
+        }
+        public async Task<AssignmentDTO?> AddAssignment(AssignmentRequest request)
+        {
+            if (request == null)
+            {
+                return null;
+            }
+            Assignment assignment = new Assignment
+            {
+                Title= request.Title,
+                Description= request.Description,
+                SampleTestCases=request.SampleTestCase,
+                Deadline = request.Deadline,
+                Difficulty = request.Difficulty,
+                CreatedBy = 1, // tamj thoiw chua co
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+            };
+            _context.assignments.Add(assignment);
+            await _context.SaveChangesAsync();
+
+            return new AssignmentDTO
+            {
+                AssignmentId = assignment.AssignmentId
+            };
+        }
+
+        public async Task<bool> DeleteAssignment(AssignmentRequest request)
+        {
+            Console.WriteLine("checkkk");
+            if (request == null) return false;
+            var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId==request.AssignmentId);
+            if (assignment == null) { return false; }
+
+
+            Console.WriteLine("checkkkkk");
+             _context.assignments.Remove(assignment); 
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<List<AssignmentDTO>> GetAllAssigment()
+        {
+            var assigment = await _context.assignments.ToListAsync();
+
+            var assignmentDTOs = assigment.Select(a => new AssignmentDTO
+            {
+                AssignmentId= a.AssignmentId,
+                Title= a.Title,
+                Description= a.Description,
+                SampleTestCase= a.SampleTestCases,
+                Deadline= a.Deadline,
+                Difficulty= a.Difficulty
+            }).ToList();
+            return assignmentDTOs;
+        }
+
+        public async Task<AssignmentDTO?> GetAssignmentById(AssignmentRequest request)
+        {
+            if (request == null)
+            {
+                return null;
+            }
+
+            var assignment =  await _context.assignments.FirstOrDefaultAsync(a=> a.AssignmentId== request.AssignmentId);
+            if (assignment == null) return null;
+
+            AssignmentDTO assign = new AssignmentDTO
+            {
+                AssignmentId= assignment.AssignmentId,
+                Title= assignment.Title,
+                Description= assignment.Description,
+                SampleTestCase= assignment.SampleTestCases,
+                Deadline= assignment.Deadline,
+                Difficulty = assignment.Difficulty
+            };
+            return assign;
+        }
+
+        public async Task<bool> UpdateAssignment(AssignmentRequest request)
+        {
+            //Console.WriteLine("check111");
+            if (request == null) return false;
+
+            var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId== request.AssignmentId);
+            if (assignment == null) return false;
+            assignment.Title = request.Title;
+            assignment.Description = request.Description;
+            assignment.SampleTestCases = request.SampleTestCase;
+            assignment.Deadline = request.Deadline;
+            assignment.Difficulty = request.Difficulty;
+            assignment.UpdatedAt= DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+    }
+}

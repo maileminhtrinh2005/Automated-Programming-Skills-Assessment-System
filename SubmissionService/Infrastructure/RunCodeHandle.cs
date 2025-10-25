@@ -1,39 +1,71 @@
 ﻿using ShareLibrary;
 using ShareLibrary.Event;
-using SubmissionService.Application;
-using SubmissionService.Application.DTOs;
+using SubmissionService.Application.Interface;
+
 
 namespace SubmissionService.Infrastructure
 {
-    public class RunCodeHandle : IEventHandler<CodeSubmittedEvents>
+    public class RunCodeHandle : IEventHandler<TestCaseFetchEvent>
     {
-        private readonly Sub _sub;
-        private readonly IEventBus _event;
-        public RunCodeHandle(Sub sub,IEventBus eventBus)
+        //private readonly SubmissionControl _sub;
+        //private readonly IEventBus _event;
+        private readonly ICompareTestCase _compare;
+        private readonly IResultRepository _resultHandle;
+        private readonly ISubmissionRepository _submissionHandle;
+        public RunCodeHandle(
+            //SubmissionControl sub,
+            //IEventBus eventBus,
+            ICompareTestCase compareTest,
+            IResultRepository resultHandle,
+            ISubmissionRepository submissionHandle)
         {
-            _sub = sub;
-            _event = eventBus;
+            //_sub = sub;
+            //_event = eventBus;
+            _compare = compareTest;
+            _resultHandle = resultHandle;
+            _submissionHandle = submissionHandle;
         }
 
-        public async Task Handle(CodeSubmittedEvents @event)
-        {
-            var body = new Request
-            {
-                SourceCode=@event.SourceCode,
-                LanguageId=@event.LanguageId
-            };
-            var result = await _sub.SubmitWithResult(body);
 
-            var response = new CodeSubmittedEvents
+
+        /// score= (weight* true?false)/ (total (weight))
+        public async Task Handle(TestCaseFetchEvent @event)
+        {
+            double score = 0.0;
+            double weightAvg = 0.0;// weight * true/flase
+            double totalWeight = 0.0;// total weight 
+            foreach (var tc in @event.TestCaseList)
             {
-                AssignmentId=@event.AssignmentId,
-                Output= result.Output,
-                Status=result.Status,
-                ExecutionTime=result.ExecutionTime,
-                MemoryUsed=result.MemoryUsed,
-                ErrorMessage=result.ErrorMessage,
-            };
-            _event.Publish(response);
+                string sourceCode = @event.SourceCode??"";
+                int languageId= @event.LanguageId;
+                int assignmentId = @event.AssignmentId;
+                int submissionId=@event.SubmissionId;
+                // testcase 
+                int testcaseId = tc.TestCaseId;
+                string stdin = tc.Input??"";
+                string exepectedOutput = tc.ExpectedOutput ?? "";
+                double weight = tc.Weight;
+
+
+                // luu bai nop, sau do lay id do len dung de so sanh voi output roi cham diem
+                int resultId = await _compare.RunAndAddResult(sourceCode,languageId,stdin,submissionId);
+
+                var resultAfterAdd = await _resultHandle.GetResultById(resultId);
+                if (resultAfterAdd == null) { continue; }
+
+                double weightAfterCompare =await _compare.CompareAndUpdateResult
+                    (resultAfterAdd.Output??"", exepectedOutput,weight,submissionId,testcaseId,resultId);
+
+                weightAvg += weightAfterCompare;
+                totalWeight += weight;
+                
+            }
+            score= (weightAvg/totalWeight)*100;
+            if (await _submissionHandle.UpdateScore(score, @event.SubmissionId))
+            {
+                Console.WriteLine("ok");
+            }
+            
         }
     }
 }

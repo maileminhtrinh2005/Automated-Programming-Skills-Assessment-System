@@ -13,7 +13,9 @@ namespace UserService.Application.Interface
         Task<bool> UpdateUser(UserDTO user); // Cập nhật User
 
         Task<bool> DeleteUser(int userId);
+
         Task<User?> LoginAsync(LoginDTO loginDto);
         Task<User> GetUserByUsername(string username);
+
     }
 }

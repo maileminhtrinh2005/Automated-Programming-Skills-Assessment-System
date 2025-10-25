@@ -1,0 +1,224 @@
+﻿/* ===== Container hiển thị bài tập ===== */
+.assignment-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.assignment-card {
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+    .assignment-card:hover {
+        background-color: #e8f0fe;
+        transform: scale(1.03);
+    }
+
+/* ===== Nút thêm bài tập ===== */
+.btn-add {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+    .btn-add:hover {
+        background-color: #43a047;
+        transform: scale(1.03);
+    }
+
+/* ===== Popup modal ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    width: 400px;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 90%;
+    width: fit-content; /* 🔥 Tự co theo nội dung */
+    max-height: 90vh; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Nếu nội dung dài thì cho cuộn */
+    animation: fadeIn 0.25s ease;
+}
+
+/* ===== Hiệu ứng mở popup ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ===== Tiêu đề ===== */
+.modal-content h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* ===== Form thêm bài tập ===== */
+#addAssignmentForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+    #addAssignmentForm label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    #addAssignmentForm input[type="text"],
+    #addAssignmentForm input[type="datetime-local"],
+    #addAssignmentForm textarea,
+    #addAssignmentForm select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+        #addAssignmentForm input:focus,
+        #addAssignmentForm textarea:focus,
+        #addAssignmentForm select:focus {
+            border-color: #2196f3;
+        }
+
+    #addAssignmentForm textarea {
+        resize: vertical;
+        min-height: 70px;
+    }
+
+/* ===== Các nút trong modal ===== */
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+    .modal-buttons button {
+        flex: 1;
+        padding: 10px 0;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+        /* ===== Nút lưu và hủy ===== */
+        .modal-buttons button[type="submit"] {
+            background-color: #2196f3;
+            color: white;
+        }
+
+            .modal-buttons button[type="submit"]:hover {
+                background-color: #1976d2;
+                transform: scale(1.03);
+            }
+
+#cancelAddBtn,
+#cancelEditBtn,
+#cancelResourceBtn {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+    #cancelAddBtn:hover,
+    #cancelEditBtn:hover,
+    #cancelResourceBtn:hover {
+        background-color: #c6c6c6;
+        transform: scale(1.03);
+    }
+
+/* ===== Nút trong popup chi tiết ===== */
+#viewResourceBtn {
+    background-color: #2196f3;
+    color: white;
+}
+
+#doAssignmentBtn {
+    background-color: #ff9800;
+    color: white;
+}
+
+#editAssignmentBtn {
+    background-color: #9c27b0;
+    color: white;
+}
+
+.close {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ===== Hover cho các nút trong popup ===== */
+#viewResourceBtn:hover {
+    background-color: #1976d2;
+    transform: scale(1.03);
+}
+
+#doAssignmentBtn:hover {
+    background-color: #f57c00;
+    transform: scale(1.03);
+}
+
+#editAssignmentBtn:hover {
+    background-color: #7b1fa2;
+    transform: scale(1.03);
+}
+
+.close:hover {
+    background-color: #d32f2f;
+    transform: scale(1.03);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1000px) {
+    .assignment-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .assignment-container {
+        grid-template-columns: 1fr;
+    }
+}

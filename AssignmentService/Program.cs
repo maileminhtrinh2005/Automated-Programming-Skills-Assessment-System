@@ -19,12 +19,14 @@ builder.Services.AddDbContext<AssignmentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AssignmentDb")));
 
 
-builder.Services.AddHttpClient<TestCaseFunc>();
+builder.Services.AddHttpClient<TestCaseRepository>();
 
-builder.Services.AddScoped<ICrudAssignment, CrudAssignment>();
-builder.Services.AddScoped<ITestCaseFunc, TestCaseFunc>();
-builder.Services.AddScoped<AssignmentControl>();
-builder.Services.AddScoped<TestCaseControl>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<ITestCaseRepository, TestCaseRepository>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
+builder.Services.AddScoped<AssignmentManager>();
+builder.Services.AddScoped<TestCaseManager>();
+builder.Services.AddScoped<ResourceManager>();
 builder.Services.AddScoped<TestCaseHandle>();
 
 

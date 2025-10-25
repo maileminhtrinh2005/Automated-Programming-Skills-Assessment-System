@@ -24,16 +24,20 @@ namespace UserService.Infrastructure
                 Username = user.Username,
                 Email = user.Email,
                 FullName = user.FullName,
+
                 RoleID = 1,
+
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
 
+
             // 🔐 Hash mật khẩu trước khi lưu
+
             newUser.PasswordHash = _passwordHasher.HashPassword(newUser, user.PasswordHash);
 
             _dbcontext.user.Add(newUser);
-            await _dbcontext.SaveChangesAsync();
+
 
             return true;
         }
@@ -41,23 +45,30 @@ namespace UserService.Infrastructure
         public async Task<User> GetUserByUsername(string username)
         {
             return await _dbcontext.user.FirstOrDefaultAsync(u => u.Username == username);
+
         }
 
         public async Task<IEnumerable<UserDTO>> GetAllUsers()
         {
             var users = await _dbcontext.user
+
+
                 .Select(u => new UserDTO
                 {
                     UserID = u.UserID,
                     Username = u.Username,
                     Email = u.Email,
                     FullName = u.FullName,
+
                     PasswordHash = u.PasswordHash  
+
                 })
                 .ToListAsync();
 
             return users;
         }
+
+
 
 
         public async Task<bool> UpdateUser(UserDTO user)
@@ -106,6 +117,8 @@ namespace UserService.Infrastructure
             throw new NotImplementedException();
         }
 
+
       
+
     }
 }

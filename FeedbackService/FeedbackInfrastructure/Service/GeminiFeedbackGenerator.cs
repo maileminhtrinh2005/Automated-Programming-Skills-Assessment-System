@@ -1,5 +1,7 @@
+
 ﻿using System.Net;
 using System.Net.Http.Headers;
+
 using System.Text;
 using System.Text.Json;
 using FeedbackService.Application.Dtos;
@@ -33,6 +35,8 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         _cfg = cfg;
         _env = env;
 
+
+
         _http.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
@@ -53,7 +57,9 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         // 3) Dựng prompt
         var testResultsText = JsonSerializer.Serialize(req.TestResults, new JsonSerializerOptions { WriteIndented = true });
 
+
         // ✅ v1beta: dùng systemInstruction thay vì role=system trong contents
+
         var systemInstruction = new
         {
             parts = new[] {
@@ -75,13 +81,16 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
 
         var bodyObj = new
         {
+
             systemInstruction,
+
             contents = new object[]
             {
                 new { role = "user", parts = userParts }
             },
             generationConfig = new
             {
+
                 response_mime_type = "application/json"
             }
         };
@@ -91,17 +100,21 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         // [CHANGED] Không để API key trong query string nữa
         var url = $"v1beta/{model}:generateContent";
 
+
         if (_env.IsDevelopment())
         {
             Console.WriteLine("=== Gemini request body ===");
             Console.WriteLine(JsonSerializer.Serialize(bodyObj, new JsonSerializerOptions { WriteIndented = true }));
         }
 
+
         // [ADDED] — gắn API key bằng header để tránh lộ key trong log/URL
+
         using var reqMsg = new HttpRequestMessage(HttpMethod.Post, url)
         {
             Content = new StringContent(JsonSerializer.Serialize(bodyObj), Encoding.UTF8, "application/json")
         };
+
         reqMsg.Headers.Add("x-goog-api-key", apiKey); // [ADDED]
 
         // [ADDED] — retry 3 lần khi 503/429 với backoff 0.5s/1s/2s + fallback
@@ -158,7 +171,8 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         if (!res.IsSuccessStatusCode)
             throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
 
-        // 5) Parse dữ liệu JSON trả về (v1beta: candidates[0].content.parts[0].text)
+
+
         using var doc = JsonDocument.Parse(payload);
         var candidates = doc.RootElement.GetProperty("candidates");
         if (candidates.GetArrayLength() == 0)
@@ -173,6 +187,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         if (string.IsNullOrWhiteSpace(text))
             throw new InvalidOperationException("Gemini không trả text trong phần response.");
 
+
         var feedback = JsonSerializer.Deserialize<FeedbackResponseDto>(text!, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -184,6 +199,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         return feedback;
     }
 
+
     // [ADDED] — DTO fallback khi AI unavailable để không ném exception
     private static FeedbackResponseDto FallbackDto(string message) => new()
     {
@@ -194,4 +210,5 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         Suggestions = new() { "Thử gửi lại sau ít phút", "Kiểm tra kết nối mạng/limit API" },
         NextSteps = new() { "Hệ thống sẽ thử lại khi AI ổn định" }
     };
+
 }

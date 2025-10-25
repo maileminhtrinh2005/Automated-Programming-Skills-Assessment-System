@@ -14,7 +14,7 @@
     },
     //
     {
-      "DownstreamPathTemplate": "/api/Assignment/GetAssignmentByid/{id}",
+      "DownstreamPathTemplate": "/api/Assignment/GetAssignmentById/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -50,9 +50,85 @@
       ],
       "UpstreamPathTemplate": "/Delete/{id}",
       "UpstreamHttpMethod": [ "DELETE" ]
+    },
+    //
+    {
+      "DownstreamPathTemplate": "/api/Assignment/GetAllAssignment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAllAssignment",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+
+
+
+
+
+
+
+    //testcase
+
+    {
+      "DownstreamPathTemplate": "/api/TestCase/AddTestCase",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/AddTestCase",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/TestCase/GetTestCaseById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetTestCaseById/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+
+
+    //resource
+    {
+      "DownstreamPathTemplate": "/api/Resource/AddResource",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/AddResource",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Resource/GetResourceById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetResourceById/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
     }
 
   ],
+
+
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"
   }

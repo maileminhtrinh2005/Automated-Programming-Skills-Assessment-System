@@ -5,6 +5,7 @@ using UserService.Domain;
 
 namespace UserService.Infrastructure
 {
+
     public class Login
     {
         private readonly ICRUD _crud;
@@ -27,6 +28,7 @@ namespace UserService.Infrastructure
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDTO.PasswordHash);
 
             return result == PasswordVerificationResult.Success;
+
         }
     }
 }

@@ -1,96 +1,57 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>Online Judge</title>
+    <title>Online Code</title>
+    <link rel="stylesheet" href="Css/Submission.css" />
 </head>
 <body>
-    <h2>Online Judge - Submit & Run Code</h2>
+    <h2>Online Code</h2>
 
-    <!-- Nhập code -->
-    <label for="codeArea">Source Code:</label><br />
-    <textarea id="codeArea" rows="15" cols="80"></textarea>
-    <br /><br />
+    <!-- 🧾 Phần thông tin bài tập -->
+    <div class="assignment-info">
+        <h3 id="assignmentTitle">Đang tải bài tập...</h3>
+        <p id="assignmentDescription"></p>
+        <p><span class="label">Example TestCase:</span> <span id="assignmentSampleTestCase"></span></p>
+        <p><span class="label">Độ khó:</span> <span id="assignmentDifficulty"></span></p>
+        <p><span class="label">Hạn nộp:</span> <span id="assignmentDeadline"></span></p>
+        <input type="hidden" id="assignmentId" />
+    </div>
 
-    <!-- Chọn ngôn ngữ -->
-    <label for="languageSelect">Select Language:</label>
-    <select id="languageSelect">
-        <option value="71">Python (3.8.1)</option>
-        <option value="62">Java (OpenJDK 13.0.1)</option>
-        <option value="50">C (GCC 9.2.0)</option>
-        <option value="54">C++ (GCC 9.2.0)</option>
-        <option value="63">JavaScript (Node.js 12.14.0)</option>
-        <option value="68">PHP (7.4.1)</option>
-    </select>
-    <br /><br />
+    <!-- 🔹 Thanh chọn ngôn ngữ -->
+    <div class="language-bar">
+        <div class="languages">
+            <button class="lang-btn active" data-id="71">Python</button>
+            <button class="lang-btn" data-id="62">Java</button>
+            <button class="lang-btn" data-id="50">C</button>
+            <button class="lang-btn" data-id="54">C++</button>
+            <button class="lang-btn" data-id="63">JavaScript</button>
+            <button class="lang-btn" data-id="68">PHP</button>
+        </div>
+        <button class="run-btn" onclick="runCode()">▶️</button>
+        <button class="run-btn" onclick="runWithTestcase()">Run with Testcase</button>
+    </div>
 
-    <!-- Hai nút: Submit và Run -->
-    <button onclick="submitCode()">Submit</button>
-    <button onclick="runCode()">Run</button>
+    <!-- 🔹 Bố cục 2 khung + nút Run giữa -->
+    <div class="workspace">
+        <!-- Khung bên trái: code -->
+        <div class="editor">
+            <textarea id="codeArea" rows="18" placeholder="Nhập mã nguồn tại đây..."></textarea>
+        </div>
 
-    <!-- Hiển thị kết quả -->
-    <h3>Result:</h3>
-    <pre id="result"></pre>
 
-    <script>
-        const gatewayUrl = "http://localhost:5261"; // API Gateway URL
+        <!-- Khung bên phải: kết quả -->
+        <div class="result">
+            <h3>Kết quả:</h3>
+            <pre id="result">...</pre>
+        </div>
+    </div>
 
-        async function submitCode() {
-            const body = {
-                SourceCode: document.getElementById("codeArea").value,
-                LanguageId: parseInt(document.getElementById("languageSelect").value)
-            };
+    <!-- Nút Submit nằm ở cuối -->
+    <div class="bottom-submit">
+        <button onclick="submitCode()">✅ Submit</button>
+    </div>
 
-            try {
-                const res = await fetch(`${gatewayUrl}/Submit`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
-                });
-
-                const data = await res.json();
-                document.getElementById("result").innerText = JSON.stringify(data, null, 2);
-            } catch (err) {
-                document.getElementById("result").innerText = "❌ " + err.message;
-            }
-        }
-
-        async function runCode() {
-            const body = {
-                SourceCode: document.getElementById("codeArea").value,
-                LanguageId: parseInt(document.getElementById("languageSelect").value)
-            };
-
-            try {
-                const res = await fetch(`${gatewayUrl}/SubmitAndShow`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
-                });
-
-                if (!res.ok) {
-                    throw new Error("Run failed, status " + res.status);
-                }
-
-                const result = await res.json();
-
-                // Format kết quả cho dễ đọc
-                const formatted = `
-🟢 Status: ${result.status}
-⏱️ Time: ${result.executionTime}
-💾 Memory: ${result.memoryUsed} KB
-📤 Output:
-${result.output}
-
-⚠️ Error Message:
-${result.errorMessage}
-                    `;
-
-                document.getElementById("result").innerText = formatted;
-            } catch (err) {
-                document.getElementById("result").innerText = "❌ " + err.message;
-            }
-        }
-    </script>
+    <script src="Js/Submission.js"></script>
 </body>
 </html>

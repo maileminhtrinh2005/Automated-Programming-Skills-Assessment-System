@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SubmissionService.Application.Interface;
-using SubmissionService.Application;
 using SubmissionService.Infrastructure;
 using ShareLibrary;
 using RabbitMQ.Client;
+using SubmissionService.Infrastructure.Persistence;
+using SubmissionService.Application.Service;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,14 +21,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddHttpClient<Submit>();
+builder.Services.AddHttpClient<SendToJudge0>();
 
 
 builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
-builder.Services.AddScoped<ISubmit, Submit>();
-builder.Services.AddScoped<IGetResult, GetResult>();
-builder.Services.AddScoped<Sub>();
+builder.Services.AddScoped<ISendToJudge0, SendToJudge0>();
+builder.Services.AddScoped<IResultRepository, ResultRepository>();
+builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+builder.Services.AddScoped<SubmissionManager>();
 builder.Services.AddScoped<RunCodeHandle>();
+
 
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
