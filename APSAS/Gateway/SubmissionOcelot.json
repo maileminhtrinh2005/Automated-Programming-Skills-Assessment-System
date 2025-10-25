@@ -1,5 +1,7 @@
 {
   "Routes": [
+
+    // doan nay la dung de nop bai + chay code
     {
       "DownstreamPathTemplate": "/api/Submission/Submit",
       "DownstreamScheme": "http",
@@ -13,9 +15,8 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
 
-
     {
-      "DownstreamPathTemplate": "/api/Submission/SubmitAndShow",
+      "DownstreamPathTemplate": "/api/Submission/RunCode",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -23,14 +24,14 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/SubmitAndShow",
+      "UpstreamPathTemplate": "/RunCode",
       "UpstreamHttpMethod": [ "POST" ]
     },
 
-
+    // ddoan nay lay danh sach bai lam,  duoi la danh sach ket qua cho tung bai
 
     {
-      "DownstreamPathTemplate": "/api/GetResult/getAllSubmissions",
+      "DownstreamPathTemplate": "/api/Result/GetYourSubmission/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -38,12 +39,12 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/getAllSubmissions",
+      "UpstreamPathTemplate": "/GetYourSubmission/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
 
     {
-      "DownstreamPathTemplate": "/api/GetResult/getYourResults",
+      "DownstreamPathTemplate": "/api/Result/GetYourResult/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -51,7 +52,7 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/getYourResults",
+      "UpstreamPathTemplate": "/GetYourResult/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     }
 

@@ -1,11 +1,7 @@
-﻿
-using ShareLibrary;
+﻿using ShareLibrary;
 using ShareLibrary.Event;
 using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
-using SubmissionService.Application.Service;
-
-using SubmissionService.Infrastructure.Persistence;
 using System.Text;
 
 namespace SubmissionService.Infrastructure
@@ -15,18 +11,15 @@ namespace SubmissionService.Infrastructure
 
         private const string _urlJudge0 = "http://192.168.117.133:2358";
 
-        private readonly AppDbContext _context;
         private readonly IEventBus _eventBus;
         private readonly ISendToJudge0 _judge0;
 
-        private readonly IResultHandle _resultHandle;
+        private readonly IResultRepository _resultHandle;
         public CompareTestCase(
-            AppDbContext dbContext,
             IEventBus eventBus,
-            IResultHandle resultHandle,
+            IResultRepository resultHandle,
             ISendToJudge0 sendToJudge0)
         {
-            _context = dbContext;
             _eventBus = eventBus;
             _resultHandle = resultHandle;
             _judge0 = sendToJudge0;

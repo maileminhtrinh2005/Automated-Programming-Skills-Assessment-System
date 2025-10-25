@@ -1,29 +1,30 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿
+using Microsoft.IdentityModel.Tokens;
 using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
 
 namespace SubmissionService.Application.Service
 {
-    public class SubmissionControl
+    public class SubmissionManager
     {
         private string _urlJugde0 = "http://192.168.117.133:2358";// Ubuntu Vmware + judge0 
 
 
         private readonly ICompareTestCase _compare;
-        private readonly IResultHandle _getResult;
+        private readonly IResultRepository _getResult;
         private readonly ISendToJudge0 _judge0;
-        private readonly ISubmissionHandle _submissionHandle;
+        private readonly ISubmissionRepository _submissionRepo;
 
-        public SubmissionControl(
+        public SubmissionManager(
             ICompareTestCase final, 
-            IResultHandle getResult, 
+            IResultRepository getResult, 
             ISendToJudge0 judge0,
-            ISubmissionHandle submissionHandle)
+            ISubmissionRepository submissionHandle)
         {
             _compare = final;
             _getResult = getResult;
             _judge0 = judge0;
-            _submissionHandle = submissionHandle;
+            _submissionRepo = submissionHandle;
         }
         public async Task<bool> Submit(Request request)
         {
@@ -36,7 +37,7 @@ namespace SubmissionService.Application.Service
                 LanguageId = request.LanguageId,
             };
             // luu bai tap xuong database truoc
-            int id = await _submissionHandle.AddSubmission(body);
+            int id = await _submissionRepo.AddSubmission(body);
             if (id < 0) return false;
 
             // publish assignmentid qua de lay list test case
@@ -46,24 +47,30 @@ namespace SubmissionService.Application.Service
             await _compare.GetTestCase(request);
 
             return true;
-        }
-        public async Task<List<ResultDTO>> GetResults(int studentId, int assignmentId)
+        }// done
+
+        public async Task<ResultDTO?> RunCode(string sourceCode, int languageId, string stdin)
         {
-            return await _getResult.GetYourResult(studentId, assignmentId);
-        }
+            if (sourceCode.IsNullOrEmpty() || languageId < 0) return null;
+
+            var result = await _judge0.RunCode(sourceCode, languageId, stdin, _urlJugde0);
+
+            if (result == null) return null;
+            return result;
+        }//done
+
         public async Task<List<ResultDTO>> GetAllYourSubmissions(int studentId)
         {
             return await _getResult.GetAllYourSubmissions(studentId);
         }
 
-        public async Task<ResultDTO?> SubmitWithResult(string sourceCode, int languageId, string stdin)
+        public async Task<List<SubmissionDTO>?> GetSubmissionsByStudentId(int studentId)
         {
-            if (sourceCode.IsNullOrEmpty() || languageId<0 ) return null;
+            if (studentId <= 0) return null;
 
-            var result = await _judge0.RunCode(sourceCode,languageId,stdin,_urlJugde0);
-
-            if (result == null) return null;    
-            return result;
+            var submissions= await _submissionRepo.GetSubmissionsByStudentId(studentId);
+            if (submissions == null) return null;
+            return submissions;
         }
 
     }

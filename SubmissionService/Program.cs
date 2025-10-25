@@ -26,9 +26,9 @@ builder.Services.AddHttpClient<SendToJudge0>();
 
 builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
 builder.Services.AddScoped<ISendToJudge0, SendToJudge0>();
-builder.Services.AddScoped<IResultHandle, ResultHandle>();
-builder.Services.AddScoped<ISubmissionHandle, SubmissionHandle>();
-builder.Services.AddScoped<SubmissionControl>();
+builder.Services.AddScoped<IResultRepository, ResultRepository>();
+builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+builder.Services.AddScoped<SubmissionManager>();
 builder.Services.AddScoped<RunCodeHandle>();
 
 

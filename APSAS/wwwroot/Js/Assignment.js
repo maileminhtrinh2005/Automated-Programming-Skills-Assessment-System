@@ -101,8 +101,8 @@ document.getElementById("addTestcaseBtn").onclick = () => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-        <td><input type="text" class="input-value"></td>
-        <td><input type="text" class="output-value"></td>
+        <td><textarea class="testcase-input" rows="3" placeholder="Nhập input..."></textarea></td>
+        <td><textarea class="testcase-output" rows="3" placeholder="Nhập output mong đợi..."></textarea></td>
         <td><input type="number" class="weight-value" value="1" min="0" step="0.1"></td>
         <td><button class="removeRowBtn">❌</button></td>
     `;
@@ -115,14 +115,14 @@ document.getElementById("addTestcaseBtn").onclick = () => {
 document.getElementById("saveEditBtn").onclick = async () => {
     const testCases = [];
     document.querySelectorAll("#testcaseBody tr").forEach(row => {
-        const input = row.querySelector(".input-value").value;
-        const output = row.querySelector(".output-value").value;
+        const input = row.querySelector(".testcase-input").value.trim();
+        const output = row.querySelector(".testcase-output").value.trim();
         const weight = parseFloat(row.querySelector(".weight-value").value) || 1;
         testCases.push({ input, expectedOutput: output, weight });
     });
 
     const testCaseRequest = {
-        AssiginmentId: selectedAssignmentId,
+        AssignmentId: selectedAssignmentId,
         testCaseItems: testCases
     };
 

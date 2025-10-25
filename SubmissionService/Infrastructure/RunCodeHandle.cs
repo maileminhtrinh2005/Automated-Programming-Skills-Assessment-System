@@ -1,8 +1,7 @@
 ﻿using ShareLibrary;
 using ShareLibrary.Event;
-using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Interface;
-using SubmissionService.Application.Service;
+
 
 namespace SubmissionService.Infrastructure
 {
@@ -11,14 +10,14 @@ namespace SubmissionService.Infrastructure
         //private readonly SubmissionControl _sub;
         //private readonly IEventBus _event;
         private readonly ICompareTestCase _compare;
-        private readonly IResultHandle _resultHandle;
-        private readonly ISubmissionHandle _submissionHandle;
+        private readonly IResultRepository _resultHandle;
+        private readonly ISubmissionRepository _submissionHandle;
         public RunCodeHandle(
             //SubmissionControl sub,
             //IEventBus eventBus,
             ICompareTestCase compareTest,
-            IResultHandle resultHandle,
-            ISubmissionHandle submissionHandle)
+            IResultRepository resultHandle,
+            ISubmissionRepository submissionHandle)
         {
             //_sub = sub;
             //_event = eventBus;

@@ -6,11 +6,11 @@ using SubmissionService.Infrastructure.Persistence;
 
 namespace SubmissionService.Infrastructure
 {
-    public class SubmissionHandle : ISubmissionHandle
+    public class SubmissionRepository : ISubmissionRepository
     {
 
         private readonly AppDbContext _context;
-        public SubmissionHandle(AppDbContext context)
+        public SubmissionRepository(AppDbContext context)
         {
             _context = context;
         }
@@ -36,7 +36,7 @@ namespace SubmissionService.Infrastructure
             await _context.SaveChangesAsync();
             Console.WriteLine("cccc" + submission.SubmissionId);
             return submission.SubmissionId;
-        }
+        }// done
 
         public async Task<bool> UpdateScore(double score, int submissionId)
         {
@@ -46,6 +46,25 @@ namespace SubmissionService.Infrastructure
             submission.Score = score;
             await _context.SaveChangesAsync();
             return true;
+        }// done
+
+        public async Task<List<SubmissionDTO>?> GetSubmissionsByStudentId(int id)
+        {
+            if (id <= 0) return null;
+            var submissions = await _context.Submissions.
+                Where(s => s.StudentId == id).
+                Select(s => new SubmissionDTO
+                {
+                    SubmissionId = s.SubmissionId,
+                    AssignmentId = s.AssignmentId,
+                    Code = s.Code,
+                    LanguageId = s.LanguageId,
+                    SubmittedAt = s.SubmittedAt,
+                    Status = s.Status,
+                    Score = s.Score
+                }).ToListAsync();
+
+            return submissions;
         }
     }
 }

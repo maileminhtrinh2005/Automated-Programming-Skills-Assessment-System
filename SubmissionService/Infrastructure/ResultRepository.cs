@@ -6,35 +6,30 @@ using SubmissionService.Infrastructure.Persistence;
 
 namespace SubmissionService.Infrastructure
 {
-    public class ResultHandle : IResultHandle
+    public class ResultRepository : IResultRepository
     {
         private readonly AppDbContext _context;
-        public ResultHandle(AppDbContext context)
+        public ResultRepository(AppDbContext context)
         {
             _context = context;
         }
-        public async Task<List<ResultDTO>> GetYourResult(int studentId, int assignmentId)
+        public async Task<List<ResultDTO>?> GetResults( int submissionId)
         {
-            var query = from s in _context.Submissions
-                        join r in _context.Results
-                        on s.SubmissionId equals r.SubmissionId
-                        where s.StudentId == studentId && s.AssignmentId == assignmentId
-                        orderby s.SubmittedAt descending
-                        select new ResultDTO
-                        {
-                            ResultId= r.ResultId,
-                            SubmissionId= s.SubmissionId,
-                            AssignmentId= s.AssignmentId,
-                            Status = s.Status,
-                            Score = s.Score,
-                            TestCaseId = r.TestCaseId,
-                            Passed= r.Passed,
-                            ExecutionTime= r.ExecutionTime,
-                            MemoryUsed= r.MemoryUsed,
-                            Output=r.Output,
-                            ErrorMessage=r.ErrorMessage
-                        };
-            return await query.ToListAsync();
+            if (submissionId <= 0) { return null; }
+
+            var results = await _context.Results.
+                Where(r=>r.SubmissionId == submissionId).
+                Select(r=> new ResultDTO
+                {
+                    TestCaseId = r.TestCaseId,
+                    Passed= r.Passed,
+                    ExecutionTime= r.ExecutionTime,
+                    MemoryUsed= r.MemoryUsed,
+                    Output= r.Output,
+                    ErrorMessage= r.ErrorMessage
+                }).ToListAsync();   
+            return results;
+
         }
         public async Task<List<ResultDTO>> GetAllYourSubmissions(int studentId)
         {

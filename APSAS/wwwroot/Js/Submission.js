@@ -19,6 +19,8 @@ async function loadAssignment() {
         document.getElementById("assignmentId").value = data.assignmentId;
         document.getElementById("assignmentTitle").innerText = `🧪 ${data.title}`;
         document.getElementById("assignmentDescription").innerText = data.description || "Không có mô tả.";
+        document.getElementById("assignmentSampleTestCase").innerText = data.sampleTestCase || "khoong co testcase";
+        testcaseExample = data.sampleTestCase;
         document.getElementById("assignmentDifficulty").innerText = data.difficulty || "Không xác định";
         const date = new Date(data.deadline);
         document.getElementById("assignmentDeadline").innerText = date.toLocaleDateString("vi-VN");
@@ -52,6 +54,13 @@ async function submitCode() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
+        if (res.ok) {
+
+            alert("Nộp bài thành công!");
+            window.location.href = `/Dashboard.html`;
+            return;
+        }
+
         const data = await res.json();
         document.getElementById("result").innerText = JSON.stringify(data, null, 2);
     } catch (err) {
@@ -65,11 +74,12 @@ async function runCode() {
     const body = {
         assignmentId: parseInt(id),
         sourceCode: document.getElementById("codeArea").value,
-        languageId: selectedLanguageId
+        languageId: selectedLanguageId,
+        stdin:""
     };
 
     try {
-        const res = await fetch(`${gatewayUrl}/SubmitAndShow`, {
+        const res = await fetch(`${gatewayUrl}/RunCode`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
@@ -93,5 +103,45 @@ ${result.errorMessage}
         document.getElementById("result").innerText = "❌ " + err.message;
     }
 }
+
+
+// 🟢 Run code with Sample Testcase
+async function runWithTestcase() {
+    const id = document.getElementById("assignmentId").value;
+
+    const body = {
+        assignmentId: parseInt(id),
+        sourceCode: document.getElementById("codeArea").value,
+        languageId: selectedLanguageId,
+        stdin: testcaseExample
+    };
+
+    try {
+        const res = await fetch(`${gatewayUrl}/RunCode`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        if (!res.ok) throw new Error("Run with sample testcase failed: " + res.status);
+
+        const result = await res.json();
+        const formatted = `
+🧪 Sample Testcase Run
+🟢 Status: ${result.status}
+⏱️ Time: ${result.executionTime}
+💾 Memory: ${result.memoryUsed} KB
+📤 Output:
+${result.output}
+
+⚠️ Error Message:
+${result.errorMessage}
+        `;
+        document.getElementById("result").innerText = formatted;
+    } catch (err) {
+        document.getElementById("result").innerText = "❌ " + err.message;
+    }
+}
+
 
 loadAssignment();

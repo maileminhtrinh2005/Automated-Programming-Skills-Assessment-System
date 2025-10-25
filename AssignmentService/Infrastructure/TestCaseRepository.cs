@@ -1,5 +1,7 @@
-﻿using AssignmentService.Application.Interface;
+﻿using AssignmentService.Application.DTO;
+using AssignmentService.Application.Interface;
 using AssignmentService.Domain;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -35,5 +37,21 @@ namespace AssignmentService.Infrastructure
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<TestCaseDTO>?> GetTestCases(int assignmentId)
+        {
+            var testcases = await _context.testCases.
+                Where(tc => tc.AssignmentId == assignmentId).
+                Select(tc => new TestCaseDTO
+                {
+                    TestCaseId = tc.TestCaseId,
+                    Input = tc.Input,
+                    ExpectedOutput = tc.ExpectedOutput,
+                    Weight = tc.Weight
+                }).ToListAsync();
+            if  (testcases==null) {  return null; }
+            return testcases;
+        }
+
     }
 }

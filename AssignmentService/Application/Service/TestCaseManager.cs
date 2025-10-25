@@ -1,4 +1,5 @@
-﻿using AssignmentService.Application.Interface;
+﻿using AssignmentService.Application.DTO;
+using AssignmentService.Application.Interface;
 
 namespace AssignmentService.Application.Service
 {
@@ -19,6 +20,14 @@ namespace AssignmentService.Application.Service
             }
             if (!  await _testcaseRepo.AddTestCase(assignmentId, input, expectedOutput, weight)) return false;
             return true;
+        }
+
+
+        public  async Task<List<TestCaseDTO>?> GetTestCases (int assignmentId)
+        {
+            var testcases = await _testcaseRepo.GetTestCases(assignmentId);
+            if (testcases == null ) return null;    
+            return testcases;
         }
     }
 }

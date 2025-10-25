@@ -9,10 +9,5 @@
         public DateTime Deadline { get; set; }
         public string Difficulty { get; set; } = string.Empty;
 
-
-        //resource gui kem khi tao assigment
-        public string ResourceTitle { get; set; } = string.Empty;
-        public string ResourceLink { get; set; } = string.Empty;
-        public string ResourceType { get; set; } = string.Empty;
     }
 }
