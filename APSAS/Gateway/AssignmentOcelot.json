@@ -86,6 +86,19 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
 
+    {
+      "DownstreamPathTemplate": "/api/TestCase/GetTestCaseById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetTestCaseById/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+
 
     //resource
     {

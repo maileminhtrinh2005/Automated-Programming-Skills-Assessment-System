@@ -2,7 +2,7 @@
 {
     public class TestCaseRequest
     {
-        public int AssiginmentId { get; set; }
+        public int AssignmentId { get; set; }
         public required List<TestCaseItem> testCaseItems { get; set; }
     }
 

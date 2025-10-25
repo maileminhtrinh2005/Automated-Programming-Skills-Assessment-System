@@ -12,6 +12,7 @@
     <div class="assignment-info">
         <h3 id="assignmentTitle">Đang tải bài tập...</h3>
         <p id="assignmentDescription"></p>
+        <p><span class="label">Example TestCase:</span> <span id="assignmentSampleTestCase"></span></p>
         <p><span class="label">Độ khó:</span> <span id="assignmentDifficulty"></span></p>
         <p><span class="label">Hạn nộp:</span> <span id="assignmentDeadline"></span></p>
         <input type="hidden" id="assignmentId" />
@@ -27,7 +28,8 @@
             <button class="lang-btn" data-id="63">JavaScript</button>
             <button class="lang-btn" data-id="68">PHP</button>
         </div>
-        <button class="run-btn" onclick="runCode()">▶️ Run</button>
+        <button class="run-btn" onclick="runCode()">▶️</button>
+        <button class="run-btn" onclick="runWithTestcase()">Run with Testcase</button>
     </div>
 
     <!-- 🔹 Bố cục 2 khung + nút Run giữa -->
@@ -41,7 +43,7 @@
         <!-- Khung bên phải: kết quả -->
         <div class="result">
             <h3>Kết quả:</h3>
-            <pre id="result">Kết quả sẽ hiển thị tại đây...</pre>
+            <pre id="result">...</pre>
         </div>
     </div>
 

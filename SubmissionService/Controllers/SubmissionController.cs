@@ -8,10 +8,10 @@ namespace SubmissionService.Controllers
     [Route("api/Submission")]
     public class SubmissionController : Controller
     {
-        private readonly SubmissionControl _control;
-        public SubmissionController(SubmissionControl sub)
+        private readonly SubmissionManager _submissionManager;
+        public SubmissionController(SubmissionManager sub)
         {
-            _control = sub;
+            _submissionManager = sub;
         }
         [HttpPost("Submit")]
         public async Task<IActionResult> Submit(Request request)
@@ -19,7 +19,7 @@ namespace SubmissionService.Controllers
 
             try
             {
-                bool success = await _control.Submit(request);
+                bool success = await _submissionManager.Submit(request);
                 if (!success)
                 {
                     // Submit thất bại, ví dụ do Judge0 trả lỗi
@@ -41,13 +41,14 @@ namespace SubmissionService.Controllers
         }
 
 
-        [HttpPost("SubmitAndShow")]
-        public async Task<IActionResult> SubmitAndShow([FromBody] Request request)
+        [HttpPost("RunCode")]
+        public async Task<IActionResult> RunCode([FromBody] Request request)
         {
 
             try
             {
-                var result = await _control.SubmitWithResult(request.SourceCode??"",request.LanguageId,"");
+                Console.WriteLine("chjecakjdjas"+request.Stdin);
+                var result = await _submissionManager.RunCode(request.SourceCode??"",request.LanguageId,request.Stdin);
                 if (result == null) { return BadRequest(new { message = "Submission failed" }); }
 
                 return Ok(result);
@@ -63,5 +64,6 @@ namespace SubmissionService.Controllers
                 return StatusCode(500, new { message = "Internal server error", detail = ex.Message });
             }
         }
+
     }
 }
