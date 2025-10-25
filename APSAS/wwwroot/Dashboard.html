@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="Css/Assignment.css">
+    <link rel="stylesheet" href="Css/Dashboard.css" />
+</head>
+<body style="background-image: url('Image/'); background-size: cover; background-repeat: no-repeat;">
+
+
+    <!-- 🔹 Thanh điều hướng -->
+    <nav class="top-nav">
+        <a href="#assignments">📚 Bài tập</a>
+        <a href="#submissions">🧩 Bài làm</a>
+        <a href="#resources">🧠 Resource</a>
+        <a href="#settings">⚙️ Cài đặt</a>
+    </nav>
+
+
+
+
+
+
+
+    <!--phan nay là cho bài tập ae né ra, có thêm gì thì thêm ở trên : hải-->
+    <section id="assignments">
+        <h2>Bài tập</h2>
+        <button id="addAssignmentBtn" class="btn-add">+ Thêm bài tập</button>
+        <div class="assignment-container" id="assignmentContainer"></div>
+    </section>
+    <!-- Popup chi tiết của bài tập : hải-->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+            <div class="modal-buttons">
+                <button id="viewResourceBtn">Hướng dẫn</button>
+                <button id="doAssignmentBtn">Làm bài</button>
+                <button id="editAssignmentBtn">Chỉnh sửa chi tiết</button>
+            </div>
+            <button id="closeModalBtn" class="close">Đóng</button>
+        </div>
+    </div>
+    <!-- Popup thêm bài tập: hải -->
+    <div id="addAssignmentModal" class="modal">
+        <div class="modal-content">
+            <h3>Thêm bài tập mới</h3>
+
+            <form id="addAssignmentForm">
+                <label>Tiêu đề:</label>
+                <input type="text" id="title" required>
+
+                <label>Mô tả:</label>
+                <textarea id="description"></textarea>
+
+                <label>Sample Test Case:</label>
+                <textarea id="sampleTestCase"></textarea>
+
+                <label>Deadline:</label>
+                <input type="datetime-local" id="deadline">
+
+                <label>Độ khó:</label>
+                <select id="difficulty">
+                    <option value="Easy">Dễ</option>
+                    <option value="Medium">Trung bình</option>
+                    <option value="Hard">Khó</option>
+                </select>
+
+                <div class="modal-buttons">
+                    <button type="submit">Lưu</button>
+                    <button type="button" id="cancelAddBtn">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Popup chỉnh sửa chi tiết bài tập: hải -->
+    <div id="editAssignmentModal" class="modal">
+        <div class="modal-content">
+            <h3>Chỉnh sửa chi tiết bài tập</h3>
+            <!-- 🔹 Test Case Section -->
+            <section>
+                <h4>Test Cases</h4>
+                <table id="testcaseTable" border="1" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>Input</th>
+                            <th>Expected Output</th>
+                            <th>Weight</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testcaseBody"></tbody>
+                </table>
+                <button id="addTestcaseBtn" type="button">+ Thêm Test Case</button>
+            </section>
+
+            <div class="modal-buttons">
+                <button id="saveEditBtn">💾 Lưu</button>
+                <button id="cancelEditBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+    <!-- Popup thêm/sửa Resource:hải -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <h3>Thêm / Chỉnh sửa Resource</h3>
+
+            <form id="resourceForm">
+                <label>Tiêu đề:</label>
+                <input type="text" id="resourceTitleInput" required>
+
+                <label>Link:</label>
+                <input type="text" id="resourceLinkInput" placeholder="https://..." required>
+
+                <label>Loại:</label>
+                <input type="text" id="resourceTypeInput" placeholder="VD: PDF, Video, v.v.">
+
+                <div class="modal-buttons">
+                    <button type="submit">💾 Lưu</button>
+                    <button type="button" id="cancelResourceBtn">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Popup xem Resource của học sinh -->
+    <div id="studentResourceModal" class="modal">
+        <div class="modal-content">
+            <h3>Hướng dẫn bài tập</h3>
+            <p><strong>Tiêu đề:</strong> <span id="studentResourceTitle"></span></p>
+            <p><strong>Loại:</strong> <span id="studentResourceType"></span></p>
+            <p><strong>Link:</strong> <a id="studentResourceLink" href="#" target="_blank">Xem tài liệu</a></p>
+            <div class="modal-buttons">
+                <button id="closeStudentResourceBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script src="Js/Assignment.js"></script>
+</body>
+</html>

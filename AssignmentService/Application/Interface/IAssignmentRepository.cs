@@ -2,7 +2,7 @@
 
 namespace AssignmentService.Application.Interface
 {
-    public interface ICrudAssignment
+    public interface IAssignmentRepository
     {
         public Task<AssignmentDTO?> GetAssignmentById(AssignmentRequest request);
         public Task<AssignmentDTO?> AddAssignment(AssignmentRequest request);

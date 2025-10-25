@@ -1,0 +1,38 @@
+﻿html {
+    scroll-behavior: smooth; /* 👈 Cuộn mượt */
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Thanh menu trên cùng */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+    z-index: 1000;
+}
+
+    .top-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .top-nav a:hover {
+            color: #ffcc00;
+        }
+
+/* Để nội dung không bị che bởi thanh nav */
+section {
+    padding: 80px 20px 50px;
+    min-height: 100vh; /* cho dễ test cuộn */
+}

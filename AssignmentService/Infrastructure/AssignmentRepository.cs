@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AssignmentService.Infrastructure
 {
-    public class CrudAssignment : ICrudAssignment
+    public class AssignmentRepository : IAssignmentRepository
     {
         private readonly AssignmentDbContext _context;
-        public CrudAssignment(AssignmentDbContext context)
+        public AssignmentRepository(AssignmentDbContext context)
         {
             _context = context;
         }
@@ -22,6 +22,7 @@ namespace AssignmentService.Infrastructure
             {
                 Title= request.Title,
                 Description= request.Description,
+                SampleTestCases=request.SampleTestCase,
                 Deadline = request.Deadline,
                 Difficulty = request.Difficulty,
                 CreatedBy = 1, // tamj thoiw chua co
@@ -61,6 +62,7 @@ namespace AssignmentService.Infrastructure
                 AssignmentId= a.AssignmentId,
                 Title= a.Title,
                 Description= a.Description,
+                SampleTestCase= a.SampleTestCases,
                 Deadline= a.Deadline,
                 Difficulty= a.Difficulty
             }).ToList();
@@ -80,10 +82,11 @@ namespace AssignmentService.Infrastructure
             AssignmentDTO assign = new AssignmentDTO
             {
                 AssignmentId= assignment.AssignmentId,
-                Title= assignment.Title??"",
-                Description= assignment.Description ?? "",
+                Title= assignment.Title,
+                Description= assignment.Description,
+                SampleTestCase= assignment.SampleTestCases,
                 Deadline= assignment.Deadline,
-                Difficulty = assignment.Difficulty ?? ""
+                Difficulty = assignment.Difficulty
             };
             return assign;
         }
@@ -97,6 +100,7 @@ namespace AssignmentService.Infrastructure
             if (assignment == null) return false;
             assignment.Title = request.Title;
             assignment.Description = request.Description;
+            assignment.SampleTestCases = request.SampleTestCase;
             assignment.Deadline = request.Deadline;
             assignment.Difficulty = request.Difficulty;
             assignment.UpdatedAt= DateTime.Now;

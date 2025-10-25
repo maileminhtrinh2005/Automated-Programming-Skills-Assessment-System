@@ -8,5 +8,6 @@ namespace AssignmentService.Infrastructure
         public AssignmentDbContext (DbContextOptions<AssignmentDbContext> options) : base(options) { }
         public DbSet<Assignment> assignments { get; set; }
         public DbSet<TestCase> testCases { get; set; }
+        public DbSet<Resource> resources { get; set; }
     }
 }

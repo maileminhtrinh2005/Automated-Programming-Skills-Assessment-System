@@ -2,13 +2,12 @@
 
 namespace AssignmentService.Application.Service
 {
-    public class TestCaseControl
+    public class TestCaseManager
     {
-        private string _submissionUrl = "http://localhost:5090";
-        private readonly ITestCaseFunc _testcase;
-        public TestCaseControl(ITestCaseFunc testcase)
+        private readonly ITestCaseRepository _testcaseRepo;
+        public TestCaseManager(ITestCaseRepository testcase)
         {
-            _testcase = testcase;
+            _testcaseRepo = testcase;
         }
 
 
@@ -18,7 +17,7 @@ namespace AssignmentService.Application.Service
             {
                 return false;
             }
-            if (!  await _testcase.AddTestCase(assignmentId, input, expectedOutput, weight)) return false;
+            if (!  await _testcaseRepo.AddTestCase(assignmentId, input, expectedOutput, weight)) return false;
             return true;
         }
     }

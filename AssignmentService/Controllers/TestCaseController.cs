@@ -10,8 +10,8 @@ namespace assignmentservice.controllers
     [Route("api/TestCase")]
     public class TestCaseController : Controller
     {
-        private readonly TestCaseControl _testcase;
-        public TestCaseController(TestCaseControl testcase)
+        private readonly TestCaseManager _testcase;
+        public TestCaseController(TestCaseManager testcase)
         {
             _testcase = testcase;
         }

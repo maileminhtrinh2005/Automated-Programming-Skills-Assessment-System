@@ -3,160 +3,53 @@
 <head>
     <meta charset="utf-8" />
     <title>Online Code</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            font-family: monospace;
-        }
-
-        .assignment-info {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .label {
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="Css/Submission.css" />
 </head>
 <body>
     <h2>Online Code</h2>
 
-    <!-- Thông tin bài tập -->
+    <!-- 🧾 Phần thông tin bài tập -->
     <div class="assignment-info">
         <h3 id="assignmentTitle">Đang tải bài tập...</h3>
         <p id="assignmentDescription"></p>
         <p><span class="label">Độ khó:</span> <span id="assignmentDifficulty"></span></p>
         <p><span class="label">Hạn nộp:</span> <span id="assignmentDeadline"></span></p>
-        <input type="hidden" id="assignmentId" /> <!-- Ẩn ID -->
+        <input type="hidden" id="assignmentId" />
     </div>
 
-    <!-- Nhập code -->
-    <label for="codeArea"><b>Nhập Source Code:</b></label><br />
-    <textarea id="codeArea" rows="15" placeholder="Nhập mã nguồn tại đây..."></textarea>
-    <br /><br />
+    <!-- 🔹 Thanh chọn ngôn ngữ -->
+    <div class="language-bar">
+        <div class="languages">
+            <button class="lang-btn active" data-id="71">Python</button>
+            <button class="lang-btn" data-id="62">Java</button>
+            <button class="lang-btn" data-id="50">C</button>
+            <button class="lang-btn" data-id="54">C++</button>
+            <button class="lang-btn" data-id="63">JavaScript</button>
+            <button class="lang-btn" data-id="68">PHP</button>
+        </div>
+        <button class="run-btn" onclick="runCode()">▶️ Run</button>
+    </div>
 
-    <!-- Chọn ngôn ngữ -->
-    <label for="languageSelect"><b>Chọn ngôn ngữ:</b></label>
-    <select id="languageSelect">
-        <option value="71">Python (3.8.1)</option>
-        <option value="62">Java (OpenJDK 13.0.1)</option>
-        <option value="50">C (GCC 9.2.0)</option>
-        <option value="54">C++ (GCC 9.2.0)</option>
-        <option value="63">JavaScript (Node.js 12.14.0)</option>
-        <option value="68">PHP (7.4.1)</option>
-    </select>
-    <br /><br />
+    <!-- 🔹 Bố cục 2 khung + nút Run giữa -->
+    <div class="workspace">
+        <!-- Khung bên trái: code -->
+        <div class="editor">
+            <textarea id="codeArea" rows="18" placeholder="Nhập mã nguồn tại đây..."></textarea>
+        </div>
 
-    <!-- Hai nút: Submit và Run -->
-    <button onclick="submitCode()">Submit</button>
-    <button onclick="runCode()">▶️ Run</button>
 
-    <!-- Hiển thị kết quả -->
-    <h3>Kết quả:</h3>
-    <pre id="result"></pre>
+        <!-- Khung bên phải: kết quả -->
+        <div class="result">
+            <h3>Kết quả:</h3>
+            <pre id="result">Kết quả sẽ hiển thị tại đây...</pre>
+        </div>
+    </div>
 
-    <script>
-        const gatewayUrl = "http://localhost:5261"; // API Gateway URL
+    <!-- Nút Submit nằm ở cuối -->
+    <div class="bottom-submit">
+        <button onclick="submitCode()">✅ Submit</button>
+    </div>
 
-        // 🟢 Lấy assignmentId từ URL (?id=3)
-        const urlParams = new URLSearchParams(window.location.search);
-        const assignmentId = urlParams.get("id");
-
-        // 🟢 Load thông tin bài tập
-        async function loadAssignment() {
-            if (!assignmentId) {
-                document.getElementById("assignmentTitle").innerText = "❌ Không tìm thấy ID bài tập!";
-                return;
-            }
-
-            try {
-                const res = await fetch(`${gatewayUrl}/GetAssignmentById/${assignmentId}`);
-                if (!res.ok) throw new Error("Không tải được bài tập");
-
-                const data = await res.json();
-
-                // Match với cấu trúc JSON trả về
-                document.getElementById("assignmentId").value = data.assignmentId;
-                document.getElementById("assignmentTitle").innerText = `🧪 ${data.title}`;
-                document.getElementById("assignmentDescription").innerText = data.description || "Không có mô tả.";
-                document.getElementById("assignmentDifficulty").innerText = data.difficulty || "Không xác định";
-
-                // Format ngày đẹp hơn
-                const date = new Date(data.deadline);
-                document.getElementById("assignmentDeadline").innerText = date.toLocaleDateString("vi-VN");
-            } catch (err) {
-                document.getElementById("assignmentTitle").innerText = "❌ Lỗi: " + err.message;
-            }
-        }
-
-        // 🟢 Submit code
-        async function submitCode() {
-            const id = document.getElementById("assignmentId").value;
-            const body = {
-                assignmentId: parseInt(id),
-                sourceCode: document.getElementById("codeArea").value,
-                languageId: parseInt(document.getElementById("languageSelect").value)
-            };
-
-            try {
-                const res = await fetch(`${gatewayUrl}/Submit`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
-                });
-
-                const data = await res.json();
-                document.getElementById("result").innerText = JSON.stringify(data, null, 2);
-            } catch (err) {
-                document.getElementById("result").innerText = "❌ " + err.message;
-            }
-        }
-
-        // 🟢 Run code
-        async function runCode() {
-            const id = document.getElementById("assignmentId").value;
-            const body = {
-                assignmentId: parseInt(id),
-                sourceCode: document.getElementById("codeArea").value,
-                languageId: parseInt(document.getElementById("languageSelect").value)
-            };
-
-            try {
-                const res = await fetch(`${gatewayUrl}/SubmitAndShow`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
-                });
-
-                if (!res.ok) throw new Error("Run failed, status " + res.status);
-
-                const result = await res.json();
-                const formatted = `
-                    🟢 Status: ${result.status}
-                    ⏱️ Time: ${result.executionTime}
-                    💾 Memory: ${result.memoryUsed} KB
-                    📤 Output:
-                    ${result.output}
-
-                    ⚠️ Error Message:
-                    ${result.errorMessage}
-                    `;
-                document.getElementById("result").innerText = formatted;
-            } catch (err) {
-                document.getElementById("result").innerText = "❌ " + err.message;
-            }
-        }
-
-        // Khi trang mở, tự tải thông tin bài tập
-        loadAssignment();
-    </script>
+    <script src="Js/Submission.js"></script>
 </body>
 </html>
