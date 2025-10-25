@@ -17,11 +17,11 @@
         }
 
         body {
-            font-family: system-ui, Arial, sans-serif;
+            font-family: system-ui,Arial,sans-serif;
             background: var(--bg);
             color: var(--ink);
             margin: 28px auto;
-            max-width: 920px;
+            max-width: 980px;
             padding: 20px;
         }
 
@@ -49,19 +49,19 @@
             margin-top: 6px;
             border-radius: 10px;
             border: 1px solid #cbd5e1;
-            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-family: ui-monospace,Menlo,Consolas,monospace
         }
 
         textarea {
             min-height: 160px;
-            resize: vertical;
+            resize: vertical
         }
 
         .row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin: 14px 0;
+            margin: 14px 0
         }
 
         button {
@@ -72,27 +72,27 @@
             padding: 12px 14px;
             color: #fff;
             font-weight: 700;
-            cursor: pointer;
+            cursor: pointer
         }
 
             button:hover {
-                opacity: .92;
+                opacity: .92
             }
 
         #btnHealth {
-            background: var(--ok);
+            background: var(--ok)
         }
 
         #btnSubmit {
-            background: var(--primary);
+            background: var(--primary)
         }
 
         #btnManual {
-            background: var(--violet);
+            background: var(--violet)
         }
 
         #btnClear {
-            background: var(--warn);
+            background: var(--warn)
         }
 
         pre {
@@ -102,7 +102,7 @@
             border-radius: 12px;
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 14px;
+            font-size: 14px
         }
 
         .meta {
@@ -110,15 +110,37 @@
             gap: 10px;
             align-items: center;
             color: var(--muted);
-            font-size: 13px;
+            font-size: 13px
         }
 
             .meta code {
                 background: #e2e8f0;
                 color: #111827;
                 padding: 2px 6px;
-                border-radius: 6px;
+                border-radius: 6px
             }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .readonly {
+            background: #f1f5f9
+        }
     </style>
 </head>
 <body>
@@ -130,6 +152,7 @@
         <code id="gw"></code>
     </div>
 
+    <!-- PANEL 1: BODY gửi /feedback/submit -->
     <label>Request Body (POST /feedback/submit)</label>
     <textarea id="body">{
   "studentId": "SV001",
@@ -146,21 +169,65 @@
     <div class="row">
         <button id="btnHealth">🩺 GET /feedback/health</button>
         <button id="btnSubmit">📤 POST /feedback/submit</button>
-        <button id="btnManual">✍️ POST /feedback/manual</button>
+        <button id="btnManual" disabled>✍️ POST /feedback/manual</button>
         <button id="btnClear">🗑️ Clear</button>
     </div>
 
-    <label>Kết quả</label>
-    <pre id="out">(chưa có kết quả)</pre>
+    <div class="grid">
+        <!-- PANEL 2: KẾT QUẢ AI (READ-ONLY) -->
+        <div class="card">
+            <h3>Kết quả AI (read-only)</h3>
+            <div class="muted">Summary & Score trả về từ <code>/feedback/submit</code>. Không sửa tại đây.</div>
+            <label>AI Summary</label>
+            <textarea id="aiSummary" class="readonly" readonly rows="10" placeholder="(chưa có)"></textarea>
+            <label>AI Score</label>
+            <input id="aiScore" class="readonly" type="number" readonly placeholder="(chưa có)" />
+            <label>Raw response</label>
+            <pre id="out">(chưa có kết quả)</pre>
+        </div>
+
+        <!-- PANEL 3: MANUAL EDITOR -->
+        <div class="card">
+            <h3>Manual Editor</h3>
+            <div class="muted">Sau khi có AI, các trường sẽ tự điền. Bạn có thể sửa trước khi POST /feedback/manual.</div>
+            <label>StudentId</label>
+            <input id="mStudentId" type="text" placeholder="SV..." />
+            <label>AssignmentTitle</label>
+            <input id="mAssignmentTitle" type="text" placeholder="Tên bài tập" />
+            <label>InstructorId</label>
+            <input id="mInstructorId" type="text" placeholder="GV001" />
+            <label>Nội dung (Content)</label>
+            <textarea id="mContent" rows="10" placeholder="Nội dung phản hồi do giảng viên chỉnh"></textarea>
+            <label>Score</label>
+            <input id="mScore" type="number" min="0" max="100" placeholder="0-100" />
+            <div class="muted">Bấm nút tím “POST /feedback/manual” ở trên để lưu.</div>
+        </div>
+    </div>
 
     <script>
         const $ = s => document.querySelector(s);
-        const out = $('#out');
 
         const gwBase = "http://localhost:5261";
         $('#gw').textContent = gwBase;
-
         const url = p => gwBase + (p.startsWith('/') ? p : '/' + p);
+
+        const out = $('#out');
+        const bodyEl = $('#body');
+
+        // Read-only AI boxes
+        const aiSummaryEl = $('#aiSummary');
+        const aiScoreEl = $('#aiScore');
+
+        // Manual editor fields
+        const mStudentId = $('#mStudentId');
+        const mAssignment = $('#mAssignmentTitle');
+        const mInstructor = $('#mInstructorId');
+        const mContent = $('#mContent');
+        const mScore = $('#mScore');
+
+        // State từ lần submit gần nhất
+        let lastReq = null;   // object request đã gửi lên /feedback/submit
+        let lastAI = null;   // object response từ /feedback/submit
 
         async function callApi(u, method = 'GET', data = null) {
             out.textContent = `${method} ${u}\n...`;
@@ -171,24 +238,74 @@
                 const txt = await res.text();
                 try { out.textContent = `${method} ${u}\nStatus: ${res.status}\n\n` + JSON.stringify(JSON.parse(txt), null, 2); }
                 catch { out.textContent = `${method} ${u}\nStatus: ${res.status}\n\n${txt}`; }
+                return { ok: res.ok, status: res.status, json: tryParseJson(txt) };
             } catch (e) {
                 out.textContent = `${method} ${u}\nERROR: ${e}`;
+                return { ok: false, err: e };
             }
         }
 
+        function tryParseJson(t) {
+            try { return JSON.parse(t); } catch { return null; }
+        }
+
+        // GET /feedback/health
         $('#btnHealth').onclick = () => callApi(url('/feedback/health'));
-        $('#btnSubmit').onclick = () => {
-            try {
-                const data = JSON.parse($('#body').value);
-                callApi(url('feedbacksubmit'), 'POST', data);
-            } catch (e) { out.textContent = '❌ JSON body không hợp lệ: ' + e.message; }
+
+        // POST /feedback/submit
+        $('#btnSubmit').onclick = async () => {
+            let payload;
+            try { payload = JSON.parse(bodyEl.value); }
+            catch (e) { out.textContent = '❌ JSON body không hợp lệ: ' + e.message; return; }
+
+            const resp = await callApi(url('feedbacksubmit'), 'POST', payload);
+            if (!resp.ok) return;
+
+            lastReq = payload;
+            lastAI = resp.json || {};
+
+            // Đổ read-only
+            const aiSummary = (lastAI.summary ?? lastAI.Summary ?? '') + '';
+            const aiScore = (lastAI.score ?? lastAI.Score ?? '');
+
+            aiSummaryEl.value = aiSummary;
+            aiScoreEl.value = aiScore;
+
+            // Đổ Manual Editor mặc định từ request + AI
+            mStudentId.value = payload.studentId || payload.StudentId || '';
+            mAssignment.value = payload.assignmentTitle || payload.AssignmentTitle || '';
+            mContent.value = aiSummary;
+            mScore.value = aiScore;
+
+            // mở nút manual
+            $('#btnManual').disabled = false;
         };
-        $('#btnManual').onclick = () => {
-            const manual = { studentId: "SV003", assignmentTitle: "Sorting Algorithm", instructorId: "GV002", score: 85, content: "Bài làm ổn, cần tối ưu thêm thuật toán và xử lý input âm." };
-            $('#body').value = JSON.stringify(manual, null, 2);
-            callApi(url('/feedback/manual'), 'POST', manual);
+
+        // POST /feedback/manual (dựa vào Manual Editor, KHÔNG đụng textarea body)
+        $('#btnManual').onclick = async () => {
+            const manual = {
+                studentId: mStudentId.value || '',
+                assignmentTitle: mAssignment.value || '',
+                instructorId: mInstructor.value || '',
+                score: mScore.value ? Number(mScore.value) : null,
+                content: mContent.value || ''
+            };
+
+            // Đặt lại phần “Request Body” chỉ để bạn nhìn payload gửi (không bắt buộc)
+            bodyEl.value = JSON.stringify(manual, null, 2);
+
+            await callApi(url('/feedback/manual'), 'POST', manual);
         };
-        $('#btnClear').onclick = () => { $('#body').value = ""; out.textContent = "(đã xoá)"; };
+
+        // Clear
+        $('#btnClear').onclick = () => {
+            out.textContent = "(đã xoá)";
+            aiSummaryEl.value = ""; aiScoreEl.value = "";
+            mStudentId.value = ""; mAssignment.value = ""; mInstructor.value = "";
+            mContent.value = ""; mScore.value = "";
+            $('#btnManual').disabled = true;
+            lastReq = null; lastAI = null;
+        };
     </script>
 </body>
 </html>

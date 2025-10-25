@@ -2,261 +2,149 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
+    <title>APSAS Feedback • Gateway 5261</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bell Notifications (SignalR)</title>
-    <!-- SignalR client -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="icon" href="/favicon.ico">
     <style>
         :root {
-            --bg: #0b1220;
-            --ink: #e5e7eb;
-            --muted: #9ca3af;
-            --panel: #0f172a;
-            --line: #1f2937;
-            --accent: #60a5fa;
-        }
-
-        * {
-            box-sizing: border-box
+            --bg: #f8fafc;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --ok: #059669;
+            --warn: #dc2626;
+            --violet: #7c3aed;
         }
 
         body {
-            margin: 0;
+            font-family: system-ui,Arial,sans-serif;
             background: var(--bg);
             color: var(--ink);
-            font: 500 15px/1.5 system-ui,Segoe UI,Roboto,Arial
+            margin: 28px auto;
+            max-width: 980px;
+            padding: 20px;
         }
 
-        .topbar {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--line);
-            background: #0d1526
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin: 0 0 8px;
         }
 
-        .bell {
-            position: relative;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
-            border: 1px solid var(--line);
-            background: #0b1220
-        }
-
-        .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            min-width: 18px;
-            height: 18px;
-            padding: 0 5px;
-            border-radius: 999px;
-            background: var(--accent);
-            color: #001428;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px
-        }
-
-        .panel {
-            position: absolute;
-            right: 10px;
-            top: 56px;
-            width: 360px;
-            max-height: 60vh;
-            overflow: auto;
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.35);
-            display: none
-        }
-
-            .panel.open {
-                display: block
-            }
-
-        .hd {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            justify-content: space-between;
-            align-items: center
-        }
-
-            .hd small {
-                color: var(--muted)
-            }
-
-        .list {
-            list-style: none;
-            margin: 0;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px
-        }
-
-        .item {
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px;
-            background: #0b1220
-        }
-
-            .item b {
-                display: block;
-                margin-bottom: 4px
-            }
-
-        .empty {
-            padding: 16px;
+        p.small {
             color: var(--muted);
-            text-align: center
+            text-align: center;
+            margin: 0 0 22px;
         }
 
-        .wrap {
-            max-width: 900px;
-            margin: 22px auto;
-            padding: 0 14px;
-            color: var(--muted)
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 12px;
         }
 
-        code {
-            background: #0b1220;
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            padding: 2px 6px
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-family: ui-monospace,Menlo,Consolas,monospace
+        }
+
+        textarea {
+            min-height: 160px;
+            resize: vertical
         }
 
         .row {
             display: flex;
-            gap: 6px;
-            align-items: center
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 14px 0
         }
 
-        .link {
-            color: var(--accent);
-            text-decoration: none
+        button {
+            flex: 1;
+            min-width: 140px;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer
         }
 
-            .link:hover {
-                text-decoration: underline
+            button:hover {
+                opacity: .92
             }
+
+        #btnHealth {
+            background: var(--ok)
+        }
+
+        #btnSubmit {
+            background: var(--primary)
+        }
+
+        #btnManual {
+            background: var(--violet)
+        }
+
+        #btnClear {
+            background: var(--warn)
+        }
+
+        pre {
+            background: #0b1220;
+            color: #e2e8f0;
+            padding: 14px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 14px
+        }
+
+        .meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+            .meta code {
+                background: #e2e8f0;
+                color: #111827;
+                padding: 2px 6px;
+                border-radius: 6px
+            }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .readonly {
+            background: #f1f5f9
+        }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <div id="bell" class="bell" aria-label="Thông báo" title="Thông báo">
-            <!-- SVG chuông -->
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 3a6 6 0 0 0-6 6v3.59l-.71.7A1 1 0 0 0 6 15h12a1 1 0 0 0 .71-1.71l-.71-.7V9a6 6 0 0 0-6-6Z" stroke="#cbd5e1" stroke-width="1.7" />
-                <path d="M9 18c.6 1.2 1.8 2 3 2s2.4-.8 3-2" stroke="#cbd5e1" stroke-width="1.7" stroke-linecap="round" />
-            </svg>
-            <span id="badge" class="badge" style="display:none">0</span>
-        </div>
-
-        <div id="panel" class="panel" role="dialog" aria-label="Danh sách thông báo">
-            <div class="hd">
-                <b>Thông báo</b>
-                <small><span id="state">Đang kết nối…</span></small>
-            </div>
-            <ul id="list" class="list"></ul>
-            <div id="empty" class="empty">Chưa có thông báo</div>
-        </div>
-    </div>
-
-    <div class="wrap">
-        <p>Trang này chỉ <b>nhận</b> tin nhắn từ SignalR (NotificationService) qua <b>API Gateway</b>.</p>
-        <div class="row">
-            <span>Hub:</span>
-            <code id="hubUrlShow">http://localhost:5261/notificationsHub</code>
-            <a class="link" href="#" id="reconnect">Kết nối lại</a>
-        </div>
-    </div>
-
-    <script>
-        // ==== CẤU HÌNH: ĐỔI THEO GATEWAY CỦA BẠN ====
-        const HUB_URL = "http://localhost:5261/notificationsHub"; // Upstream qua Gateway
-
-        // ==== UI ====
-        const bell = document.getElementById('bell');
-        const badge = document.getElementById('badge');
-        const panel = document.getElementById('panel');
-        const list = document.getElementById('list');
-        const empty = document.getElementById('empty');
-        const state = document.getElementById('state');
-        const hubUrlShow = document.getElementById('hubUrlShow');
-        const reconnect = document.getElementById('reconnect');
-        hubUrlShow.textContent = HUB_URL;
-
-        let unread = 0;
-        function setBadge(n) {
-            unread = n;
-            if (n > 0) { badge.style.display = 'flex'; badge.textContent = n > 99 ? '99+' : n; }
-            else { badge.style.display = 'none'; badge.textContent = '0'; }
-        }
-        function togglePanel() {
-            panel.classList.toggle('open');
-            if (panel.classList.contains('open')) setBadge(0);
-        }
-        bell.addEventListener('click', togglePanel);
-        reconnect.addEventListener('click', (e) => { e.preventDefault(); connect(true); });
-
-        function addItem(dto) {
-            const id = dto.id || dto.notificationId || '';
-            const title = dto.title || '(Không tiêu đề)';
-            const msg = dto.message || dto.content || '';
-            const created = dto.createdAtUtc || dto.createdAt || new Date().toISOString();
-
-            const li = document.createElement('li');
-            li.className = 'item';
-            li.innerHTML = `<b>${escapeHtml(title)}</b>
-                          <div>${escapeHtml(msg)}</div>
-                          <small>ID: <code>${escapeHtml(id)}</code> • ${escapeHtml(created)}</small>`;
-            list.prepend(li);
-            empty.style.display = 'none';
-            if (!panel.classList.contains('open')) setBadge(unread + 1);
-        }
-        function escapeHtml(s) {
-            return String(s).replace(/[&<>\"']/g, m => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', '\\'':' &#39; '}[m]));}
-
-        // ==== SIGNALR ====
-        let connection;
-                async function connect(force = false){
-                try{
-                    state.textContent = 'Đang kết nối…';
-                    if(force && connection){ try { await connection.stop(); } catch { } }
-
-            connection = new signalR.HubConnectionBuilder()
-                .withUrl(HUB_URL, { withCredentials: true }) // Gateway nên bật CORS + credentials nếu khác origin
-                .withAutomaticReconnect()
-                .build();
-
-            connection.on('NotifyNew', addItem);
-            connection.onreconnecting(() => state.textContent = 'Mất kết nối, đang thử lại…');
-            connection.onreconnected(() => state.textContent = 'Đã kết nối');
-            connection.onclose(() => state.textContent = 'Đã đóng kết nối');
-
-            await connection.start();
-            state.textContent = 'Đã kết nối';
-        } catch (e) {
-            console.error(e);
-            state.textContent = 'Lỗi kết nối (kiểm tra Gateway route / WebSocket)';
-            // Thử lại sau 2 giây
-            setTimeout(() => connect(), 2000);
-        }
-        
-        connect();
-    </script>
+    <h1>APSAS Feedback • Gateway Tester</h1> <p class="small">Trang này gọi qua Gateway: <code>http://localhost:5261</code>. Hãy mở: <code>http://localhost:5261/Feedback.html</code></p> <div class="meta"> <span>Gateway base:</span> <code id="gw"></code> </div> <!-- PANEL 1: BODY gửi /feedback/submit --> <label>Request Body (POST /feedback/submit)</label> <textarea id="body">{ "studentId": "SV001", "assignmentTitle": "Two Sum", "rubric": "Đúng 60, Hiệu năng 20, Style 20", "sourceCode": "// code của sinh viên...", "languageId": 52, "testResults": [ { "name": "Case 1", "status": "Passed", "input": "[2,7,11,15], 9", "expected": "[0,1]", "actual": "[0,1]" }, { "name": "Case 2", "status": "Failed", "input": "[3,2,4], 6", "expected": "[1,2]", "actual": "[]" } ] }</textarea> <div class="row"> <button id="btnHealth">🩺 GET /feedback/health</button> <button id="btnSubmit">📤 POST /feedback/submit</button> <button id="btnManual" disabled>✍️ POST /feedback/manual</button> <button id="btnClear">🗑️ Clear</button> </div> <div class="grid"> <!-- PANEL 2: KẾT QUẢ AI (READ-ONLY) --> <div class="card"> <h3>Kết quả AI (read-only)</h3> <div class="muted">Summary & Score trả về từ <code>/feedback/submit</code>. Không sửa tại đây.</div> <label>AI Summary</label> <textarea id="aiSummary" class="readonly" readonly rows="10" placeholder="(chưa có)"></textarea> <label>AI Score</label> <input id="aiScore" class="readonly" type="number" readonly placeholder="(chưa có)" /> <label>Raw response</label> <pre id="out">(chưa có kết quả)</pre> </div> <!-- PANEL 3: MANUAL EDITOR --> <div class="card"> <h3>Manual Editor</h3> <div class="muted">Sau khi có AI, các trường sẽ tự điền. Bạn có thể sửa trước khi POST /feedback/manual.</div> <label>StudentId</label> <input id="mStudentId" type="text" placeholder="SV..." /> <label>AssignmentTitle</label> <input id="mAssignmentTitle" type="text" placeholder="Tên bài tập" /> <label>InstructorId</label> <input id="mInstructorId" type="text" placeholder="GV001" /> <label>Nội dung (Content)</label> <textarea id="mContent" rows="10" placeholder="Nội dung phản hồi do giảng viên chỉnh"></textarea> <label>Score</label> <input id="mScore" type="number" min="0" max="100" placeholder="0-100" /> <div class="muted">Bấm nút tím “POST /feedback/manual” ở trên để lưu.</div> </div> </div>
+    <script>const $ = s => document.querySelector(s); const gwBase = "http://localhost:5261"; $('#gw').textContent = gwBase; const url = p => gwBase + (p.startsWith('/') ? p : '/' + p); const out = $('#out'); const bodyEl = $('#body'); // Read-only AI boxes const aiSummaryEl = $('#aiSummary'); const aiScoreEl = $('#aiScore'); // Manual editor fields const mStudentId = $('#mStudentId'); const mAssignment = $('#mAssignmentTitle'); const mInstructor = $('#mInstructorId'); const mContent = $('#mContent'); const mScore = $('#mScore'); // State từ lần submit gần nhất let lastReq = null; // object request đã gửi lên /feedback/submit let lastAI = null; // object response từ /feedback/submit async function callApi(u, method = 'GET', data = null) { out.textContent = ${method} ${u}\n...; const opts = { method, headers: {} }; if (data) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(data); } try { const res = await fetch(u, opts); const txt = await res.text(); try { out.textContent = ${method} ${u}\nStatus: ${res.status}\n\n + JSON.stringify(JSON.parse(txt), null, 2); } catch { out.textContent = ${method} ${u}\nStatus: ${res.status}\n\n${txt}; } return { ok: res.ok, status: res.status, json: tryParseJson(txt) }; } catch (e) { out.textContent = ${method} ${u}\nERROR: ${e}; return { ok: false, err: e }; } } function tryParseJson(t) { try { return JSON.parse(t); } catch { return null; } } // GET /feedback/health $('#btnHealth').onclick = () => callApi(url('/feedback/health')); // POST /feedback/submit $('#btnSubmit').onclick = async () => { let payload; try { payload = JSON.parse(bodyEl.value); } catch (e) { out.textContent = '❌ JSON body không hợp lệ: ' + e.message; return; } const resp = await callApi(url('feedbacksubmit'), 'POST', payload); if (!resp.ok) return; lastReq = payload; lastAI = resp.json || {}; // Đổ read-only const aiSummary = (lastAI.summary ?? lastAI.Summary ?? '') + ''; const aiScore = (lastAI.score ?? lastAI.Score ?? ''); aiSummaryEl.value = aiSummary; aiScoreEl.value = aiScore; // Đổ Manual Editor mặc định từ request + AI mStudentId.value = payload.studentId || payload.StudentId || ''; mAssignment.value = payload.assignmentTitle || payload.AssignmentTitle || ''; mContent.value = aiSummary; mScore.value = aiScore; // mở nút manual $('#btnManual').disabled = false; }; // POST /feedback/manual (dựa vào Manual Editor, KHÔNG đụng textarea body) $('#btnManual').onclick = async () => { const manual = { studentId: mStudentId.value || '', assignmentTitle: mAssignment.value || '', instructorId: mInstructor.value || '', score: mScore.value ? Number(mScore.value) : null, content: mContent.value || '' }; // Đặt lại phần “Request Body” chỉ để bạn nhìn payload gửi (không bắt buộc) bodyEl.value = JSON.stringify(manual, null, 2); await callApi(url('/feedback/manual'), 'POST', manual); }; // Clear $('#btnClear').onclick = () => { out.textContent = "(đã xoá)"; aiSummaryEl.value = ""; aiScoreEl.value = ""; mStudentId.value = ""; mAssignment.value = ""; mInstructor.value = ""; mContent.value = ""; mScore.value = ""; $('#btnManual').disabled = true; lastReq = null; lastAI = null; };</script>
 </body>
 </html>
