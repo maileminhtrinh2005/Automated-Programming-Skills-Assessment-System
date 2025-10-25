@@ -136,7 +136,7 @@ namespace UserService.Infrastructure
                 .Select(u => new UserDTO
                 {
                     UserID = u.UserID,
-                    Email = u.Email,
+                    Username = u.Username,
                     FullName = u.FullName,
 
                 })

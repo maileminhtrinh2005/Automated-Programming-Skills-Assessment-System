@@ -119,6 +119,11 @@
 
         .btn-edit {
             background-color: #27ae60;
+            padding: 6px 10px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            border: none;
         }
 
             .btn-edit:hover {
@@ -127,11 +132,56 @@
 
         .btn-delete {
             background-color: #c0392b;
+            padding: 6px 10px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            border: none;
         }
 
             .btn-delete:hover {
                 background-color: #e74c3c;
             }
+
+        /* Modal edit user */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            width: 420px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+            .modal h3 {
+                margin: 0 0 10px 0;
+                text-align: center;
+            }
+
+            .modal .actions {
+                display: flex;
+                gap: 10px;
+            }
+
+        .small {
+            width: auto;
+            padding: 8px 12px;
+        }
+
+        /* responsive table container */
+        #userTableContainer {
+            width: 90%;
+            max-width: 1000px;
+        }
     </style>
 </head>
 <body>
@@ -193,55 +243,67 @@
     </div>
 
     <h2>Danh Sách Người Dùng</h2>
-    <div id="userTableContainer" style="width: 90%; max-width: 1000px;"></div>
+    <div id="userTableContainer"></div>
 
-    <!-- ========== PHẦN CHAT VỚI SINH VIÊN ========== -->
-    <div class="container-user" style="width: 600px;">
-        <h2>💬 Chat với Sinh viên</h2>
-        <div id="chatBox" style="
-        background: #fff;
-        height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 10px;">
-            <p><i>Chưa có tin nhắn...</i></p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <input id="chatInput" type="text" placeholder="Nhập tin nhắn..." style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
-            <button id="sendChatBtn" style="background-color: #3498db;">Gửi</button>
+    <!-- Edit User Modal -->
+    <div id="editOverlay" class="modal-overlay">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+            <h3 id="editTitle">✏️ Sửa Người Dùng</h3>
+            <input type="hidden" id="editUserId" />
+            <label for="editUsername">Username</label>
+            <input id="editUsername" type="text" placeholder="username" />
+            <label for="editEmail">Email</label>
+            <input id="editEmail" type="email" placeholder="user@example.com" />
+            <label for="editFullname">Full Name</label>
+            <input id="editFullname" type="text" placeholder="Nguyen Van A" />
+            <label for="editPassword">Mật khẩu mới (để trống nếu không đổi)</label>
+            <input id="editPassword" type="password" placeholder="Mật khẩu mới (tùy chọn)" />
+            <label for="editRole">Role</label>
+            <select id="editRole">
+                <option value="1">1 - Admin</option>
+                <option value="2">2 - Giảng viên</option>
+                <option value="3">3 - Sinh viên</option>
+            </select>
+
+            <div class="actions" style="margin-top:12px;">
+                <button class="small" id="confirmUpdateBtn" style="background-color:#27ae60;" onclick="confirmUpdateUser()">Cập nhật</button>
+                <button class="small" style="background-color:#c0392b;" onclick="confirmDeleteFromModal()">Xóa</button>
+                <button class="small" style="background-color:#7f8c8d;" onclick="closeEditModal()">Hủy</button>
+            </div>
+            <p id="editMessage" class="message"></p>
         </div>
     </div>
 
     <!-- ========== SCRIPT CHUNG ========== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script>
-        const GATEWAY_URL = "http://localhost:5261"; // gateway
-        const ADMIN_HUB_URL = "http://localhost:5097/chathub"; // port thật của AdminService
+        const GATEWAY_URL = "http://localhost:5261"; // Gateway
+        const ADMIN_HUB_URL = "http://localhost:5097/chathub"; // AdminService SignalR hub
 
+        // Chat (giữ nguyên)
         const chatBox = document.getElementById("chatBox");
         const chatInput = document.getElementById("chatInput");
         const sendChatBtn = document.getElementById("sendChatBtn");
 
-        // ✅ Kết nối SignalR tới AdminService
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(ADMIN_HUB_URL)
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        // Nhận tin nhắn từ server
-        connection.on("ReceiveMessage", (user, message) => {
-            if (user.toLowerCase() === "student") appendChat(`Sinh viên: ${message}`, "student");
-            else appendChat(`${user}: ${message}`, "system");
-        });
+        try {
+            connection.on("ReceiveMessage", (user, message) => {
+                if (user.toLowerCase() === "student") appendChat(`Sinh viên: ${message}`, "student");
+                else appendChat(`${user}: ${message}`, "system");
+            });
 
-        // Bắt đầu kết nối
-        connection.start()
-            .then(() => appendChat("✅ Đã kết nối đến server chat (SignalR).", "system"))
-            .catch(err => appendChat("🚫 Không thể kết nối SignalR: " + err, "system"));
+            connection.start()
+                .then(() => appendChat("✅ Đã kết nối đến server chat (SignalR).", "system"))
+                .catch(err => appendChat("🚫 Không thể kết nối SignalR: " + err, "system"));
+        } catch (e) {
+            // nếu signalR ko load được thì bỏ qua
+            console.warn("SignalR connection error:", e);
+        }
 
-        // Gửi tin nhắn (admin gửi)
         function sendMessage() {
             const text = chatInput.value.trim();
             if (!text) return;
@@ -252,10 +314,12 @@
             chatInput.value = "";
         }
 
-        sendChatBtn.onclick = sendMessage;
-        chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+        // gửi chat
+        if (sendChatBtn) {
+            sendChatBtn.onclick = sendMessage;
+            chatInput && chatInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+        }
 
-        // Thêm tin nhắn vào khung chat
         function appendChat(message, sender = "system") {
             const p = document.createElement("p");
             p.textContent = message;
@@ -263,10 +327,222 @@
             if (sender === "admin") p.style.color = "#2c3e50";
             else if (sender === "student") p.style.color = "#16a085";
             else p.style.color = "#999";
-            chatBox.appendChild(p);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const cb = document.getElementById("chatBox");
+            if (cb) {
+                cb.appendChild(p);
+                cb.scrollTop = cb.scrollHeight;
+            }
         }
-    </script>
 
+        // ======================= QUẢN LÝ USER =======================
+        // Lưu tạm danh sách user để dùng cho edit
+        window._usersMap = {};
+
+        // Thêm user
+        document.getElementById("submitUserBtn").addEventListener("click", async () => {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const fullname = document.getElementById("fullname").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const roleid = parseInt(document.getElementById("roleid").value);
+            const msg = document.getElementById("userMessage");
+
+            if (!username || !email || !password) {
+                msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
+                msg.className = "message error";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${GATEWAY_URL}/AddUser`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        fullName: fullname,
+                        passwordHash: password,
+                        roleID: roleid
+                    })
+                });
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => null);
+                    throw new Error(`${res.status} ${res.statusText} ${text ? '- ' + text : ''}`);
+                }
+                msg.textContent = "✅ Thêm người dùng thành công!";
+                msg.className = "message success";
+                // reset form
+                document.getElementById("username").value = "";
+                document.getElementById("email").value = "";
+                document.getElementById("fullname").value = "";
+                document.getElementById("password").value = "";
+                loadUsers();
+            } catch (err) {
+                msg.textContent = `🚫 ${err.message}`;
+                msg.className = "message error";
+            }
+        });
+
+        // Tải danh sách user
+        async function loadUsers() {
+            const userTableContainer = document.getElementById("userTableContainer");
+            userTableContainer.innerHTML = "<p>⏳ Đang tải danh sách người dùng...</p>";
+            window._usersMap = {};
+
+            try {
+                const res = await fetch(`${GATEWAY_URL}/GetAllUsers`);
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => null);
+                    throw new Error(`${res.status} ${res.statusText} ${txt ? '- ' + txt : ''}`);
+                }
+                const users = await res.json();
+
+                // build map
+                users.forEach(u => {
+                    // đảm bảo key là số
+                    window._usersMap[u.userID] = u;
+                });
+
+                let html = `
+                        <table>
+                            <tr>
+                                <th>ID</th><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Actions</th>
+                            </tr>`;
+                users.forEach(u => {
+                    html += `
+                            <tr>
+                                <td>${u.userID}</td>
+                                <td>${u.username}</td>
+                                <td>${u.email || ''}</td>
+                                <td>${u.fullName || ''}</td>
+                                <td>${u.roleName || u.roleID || ''}</td>
+                                <td>
+                                    <button class="btn-edit" onclick="openEditModal(${u.userID})">Sửa</button>
+                                    <button class="btn-delete" onclick="deleteUser(${u.userID})">Xóa</button>
+                                </td>
+                            </tr>`;
+                });
+                html += "</table>";
+                userTableContainer.innerHTML = html;
+            } catch (err) {
+                userTableContainer.innerHTML = `<p style="color:red;">🚫 ${err.message}</p>`;
+            }
+        }
+
+        // Mở modal sửa user, điền dữ liệu
+        function openEditModal(userId) {
+            const user = window._usersMap[userId];
+            if (!user) {
+                alert("Không tìm thấy user để sửa.");
+                return;
+            }
+            document.getElementById("editUserId").value = user.userID;
+            document.getElementById("editUsername").value = user.username || "";
+            document.getElementById("editEmail").value = user.email || "";
+            document.getElementById("editFullname").value = user.fullName || "";
+            document.getElementById("editPassword").value = "";
+            document.getElementById("editRole").value = user.roleID || user.roleId || 3;
+            document.getElementById("editMessage").textContent = "";
+            document.getElementById("editMessage").className = "message";
+            document.getElementById("editOverlay").style.display = "flex";
+        }
+
+        function closeEditModal() {
+            document.getElementById("editOverlay").style.display = "none";
+        }
+
+        // Gọi API PUT để cập nhật user
+        async function confirmUpdateUser() {
+            const id = parseInt(document.getElementById("editUserId").value);
+            const username = document.getElementById("editUsername").value.trim();
+            const email = document.getElementById("editEmail").value.trim();
+            const fullName = document.getElementById("editFullname").value.trim();
+            const password = document.getElementById("editPassword").value.trim();
+            const roleID = parseInt(document.getElementById("editRole").value);
+            const msg = document.getElementById("editMessage");
+
+            if (!username || !email) {
+                msg.textContent = "⚠️ Username và Email không được để trống.";
+                msg.className = "message error";
+                return;
+            }
+
+            const payload = {
+                userID: id,
+                username,
+                email,
+                fullName,
+                roleID
+            };
+            // chỉ gửi password khi có nhập
+            if (password) payload.passwordHash = password;
+
+            try {
+                const res = await fetch(`${GATEWAY_URL}/UpdateUser`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => null);
+                    throw new Error(`${res.status} ${res.statusText} ${txt ? '- ' + txt : ''}`);
+                }
+                msg.textContent = "✅ Cập nhật thành công!";
+                msg.className = "message success";
+                // reload list và đóng modal sau 700ms
+                setTimeout(() => {
+                    closeEditModal();
+                    loadUsers();
+                }, 600);
+            } catch (err) {
+                msg.textContent = `🚫 ${err.message}`;
+                msg.className = "message error";
+            }
+        }
+
+        // Xóa user từ bảng (confirm)
+        async function deleteUser(userId) {
+            if (!confirm("Bạn có chắc muốn xóa user này? Hành động không thể hoàn tác.")) return;
+            try {
+                const res = await fetch(`${GATEWAY_URL}/DeleteUser/${userId}`, {
+                    method: "DELETE"
+                });
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => null);
+                    throw new Error(`${res.status} ${res.statusText} ${txt ? '- ' + txt : ''}`);
+                }
+                alert("✅ Xóa thành công!");
+                loadUsers();
+            } catch (err) {
+                alert("🚫 Lỗi xóa user: " + err.message);
+            }
+        }
+
+        // Xóa user từ modal (nút Xóa trong modal)
+        function confirmDeleteFromModal() {
+            const id = parseInt(document.getElementById("editUserId").value);
+            if (!id) return alert("ID user không hợp lệ.");
+            if (!confirm("Bạn có chắc muốn xóa user này?")) return;
+            // gọi delete
+            deleteUser(id);
+            closeEditModal();
+        }
+
+        // Tải danh sách khi load trang
+        window.onload = loadUsers;
+
+        // ----------------------------
+        // Hàm giả cho API Config (nếu bạn chưa hiện thực)
+        function addAPIConfig() { alert("Chức năng thêm API (chưa implement trong demo này)."); }
+        function toggleApiForm(mode) {
+            document.getElementById("addApiForm").style.display = mode === 'add' ? 'block' : 'none';
+            document.getElementById("updateApiForm").style.display = mode === 'update' ? 'block' : 'none';
+        }
+        function loadAPIList() { alert("Chức năng hiển thị API list (chưa implement)."); }
+        function updateAPIConfig() { alert("Chức năng update API (chưa implement)."); }
+        // ----------------------------
+    </script>
 </body>
 </html>
