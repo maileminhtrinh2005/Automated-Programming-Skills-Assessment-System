@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharedLibrary.Jwt;
 using System;
+using System.Security.Claims;
 using UserService.Application.DTO; 
 using UserService.Application.Interface;
 
@@ -13,12 +15,16 @@ namespace UserService.Controllers
         private readonly ICRUD _crud;
         private readonly ILogin _login;
         private readonly IChat _chat;
-        public UserController(ICRUD crud, ILogin login, IChat chat) 
+        private readonly IJwtService _jwtService;
+        public UserController(ICRUD crud, ILogin login, IChat chat, IJwtService jwtService) 
         {
+            _jwtService = jwtService;
             _chat = chat;
             _login = login;
             _crud = crud;
-        } 
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")] 
         public async Task<IActionResult> AddUser(UserDTO user) 
         { 
@@ -34,32 +40,33 @@ namespace UserService.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            // ▼ SỬA Ở ĐÂY ▼
-            // 1. Gọi và *nhận* kết quả từ service
             var user = await _login.LoginAsync(loginDto);
 
-            // 2. Kiểm tra kết quả
             if (user == null)
             {
-                // Nếu user là null, nghĩa là login thất bại (sai tên hoặc sai mật khẩu)
                 return Unauthorized(new { message = "❌ Invalid username or password" });
             }
 
-            // 3. Trả về thành công nếu user không phải là null
+            if (user.Role == null)
+            {
+                user.Role = await _crud.GetRoleById(user.RoleID);
+            }
+
+            var token = _jwtService.GenerateToken(user.UserID, user.Role?.RoleName ?? "Student");
+
+
             return Ok(new
             {
                 message = "✅ Login successful",
                 username = user.Username,
                 roleId = user.RoleID,
-                roleName = user.Role?.RoleName
-                // Lưu ý: user trả về từ Login.cs có thể chưa Include(Role)
-                // Bạn có thể cần sửa Login.cs để nó Include Role
-                // hoặc lấy RoleName từ _crud.GetUserByUsername sau khi đã xác thực
+                roleName = user.Role?.RoleName,
+                token = token
+
             });
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -72,6 +79,8 @@ namespace UserService.Controllers
 
             return Ok(users);
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDTO user)
         {
@@ -83,6 +92,7 @@ namespace UserService.Controllers
             return Ok(new { message = "✅ Cập nhật thành công!" });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -103,10 +113,14 @@ namespace UserService.Controllers
 
             return Ok(new { message = "✅ Đổi mật khẩu thành công!" });
         }
+
+
+        [Authorize(Roles = "Lecturer")]
         [HttpGet("GetAllStudents")]
         public async Task<IActionResult> GetAllStudents()
         {
-            var students = await _crud.GetAllStudents();
+            var role = "Student";
+            var students = await _crud.GetAllStudents(role);
 
             if (students == null || !students.Any())
             {

@@ -129,10 +129,10 @@ namespace UserService.Infrastructure
             return true;
         }
 
-        public async Task<IEnumerable<UserDTO>> GetAllStudents()
+        public async Task<IEnumerable<UserDTO>> GetAllStudents(string rolename)
         {
             var students = await _dbcontext.user
-                .Where(u => u.RoleID == 3) // ✅ chỉ lấy từ bảng User, không cần Role
+                .Where(u => u.Role.RoleName == rolename) // ✅ chỉ lấy từ bảng User, không cần Role
                 .Select(u => new UserDTO
                 {
                     UserID = u.UserID,
@@ -144,6 +144,13 @@ namespace UserService.Infrastructure
 
             return students;
         }
+
+        public async Task<Role> GetRoleById(int roleId)
+        {
+            return await _dbcontext.role.FindAsync(roleId);
+        }
+
+
 
     }
 }

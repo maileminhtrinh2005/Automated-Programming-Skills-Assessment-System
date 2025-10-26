@@ -15,6 +15,7 @@ namespace UserService.Application.Interface
         Task<bool> DeleteUser(int userId);
         Task<User> GetUserByUsername(string username);
         Task<bool> ChangePassword(ChangePasswordDTO changeDto);
-        Task<IEnumerable<UserDTO>> GetAllStudents();
+        Task<IEnumerable<UserDTO>> GetAllStudents(string rolename);
+        Task<Role> GetRoleById(int roleId);
     }
 }
