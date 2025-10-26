@@ -98,7 +98,7 @@ namespace UserService.Infrastructure
             return true;
         }
 
- 
+
 
 
         public Task<User> GetUser(int userId)

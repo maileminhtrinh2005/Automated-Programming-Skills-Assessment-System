@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Giảng Viên</title>
+    <link rel="stylesheet" href="Css/DashboardLecturer.css">
+    <link rel="stylesheet" href="Css/Dashboard.css"> <!-- nếu muốn dùng chung style nav -->
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+            .top-nav a {
+                color: white;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+                .top-nav a:hover {
+                    color: #ffcc00;
+                }
+
+        section, h2, table {
+            padding-top: 60px;
+        }
+        /* tránh navbar che nội dung */
+    </style>
+</head>
+<body style="background-image: url('Image/'); background-size: cover; background-repeat: no-repeat;">
+
+    <!-- 🔹 Thanh điều hướng -->
+    <nav class="top-nav">
+        <a href="#assignments">📚 Quản lý bài tập</a>
+        <a href="#resources">🧠 Resource</a>
+        <a href="#submissions">🧩 Bài làm của sinh viên</a>
+        <a href="#students">👩‍🏫 Danh sách sinh viên</a>
+        <a href="#settings">⚙️ Cài đặt</a>
+    </nav>
+
+    <!-- Section quản lý bài tập -->
+    <section id="assignments">
+        <h2>📚 Bài tập</h2>
+        <button id="addAssignmentBtn" class="btn-add">+ Thêm bài tập</button>
+        <div class="assignment-container" id="assignmentContainer"></div>
+    </section>
+
+    <!-- Popup thêm/chỉnh sửa bài tập -->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+            <div class="modal-buttons">
+                <button id="viewResourceBtn">Hướng dẫn</button>
+                <button id="doAssignmentBtn">Làm bài</button>
+                <button id="editAssignmentBtn">Chỉnh sửa chi tiết</button>
+            </div>
+            <button id="closeModalBtn" class="close">Đóng</button>
+        </div>
+    </div>
+
+    <div id="addAssignmentModal" class="modal">
+        <div class="modal-content">
+            <h3>Thêm bài tập mới</h3>
+            <form id="addAssignmentForm">
+                <label>Tiêu đề:</label>
+                <input type="text" id="title" required>
+                <label>Mô tả:</label>
+                <textarea id="description"></textarea>
+                <label>Sample Test Case:</label>
+                <textarea id="sampleTestCase"></textarea>
+                <label>Deadline:</label>
+                <input type="datetime-local" id="deadline">
+                <label>Độ khó:</label>
+                <select id="difficulty">
+                    <option value="Easy">Dễ</option>
+                    <option value="Medium">Trung bình</option>
+                    <option value="Hard">Khó</option>
+                </select>
+                <div class="modal-buttons">
+                    <button type="submit">💾 Lưu</button>
+                    <button type="button" id="cancelAddBtn">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editAssignmentModal" class="modal">
+        <div class="modal-content">
+            <h3>Chỉnh sửa chi tiết bài tập</h3>
+            <section>
+                <h4>Test Cases</h4>
+                <table id="testcaseTable" border="1" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>Input</th>
+                            <th>Expected Output</th>
+                            <th>Weight</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testcaseBody"></tbody>
+                </table>
+                <button id="addTestcaseBtn" type="button">+ Thêm Test Case</button>
+            </section>
+            <div class="modal-buttons">
+                <button id="saveEditBtn">💾 Lưu</button>
+                <button id="cancelEditBtn">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup thêm/sửa Resource -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <h3>Thêm / Chỉnh sửa Resource</h3>
+            <form id="resourceForm">
+                <label>Tiêu đề:</label>
+                <input type="text" id="resourceTitleInput" required>
+                <label>Link:</label>
+                <input type="text" id="resourceLinkInput" placeholder="https://..." required>
+                <label>Loại:</label>
+                <input type="text" id="resourceTypeInput" placeholder="VD: PDF, Video, v.v.">
+                <div class="modal-buttons">
+                    <button type="submit">💾 Lưu</button>
+                    <button type="button" id="cancelResourceBtn">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section danh sách sinh viên -->
+    <section id="students">
+        <h2>👩‍🏫 Danh sách sinh viên</h2>
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Họ tên</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <h3>Bảng ID sinh viên</h3>
+        <table id="idTable" style="display:none; margin-top:20px;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <script src="Js/Assignment.js"></script>
+    <script src="Js/DashboardLecturer.js"></script>
+</body>
+</html>

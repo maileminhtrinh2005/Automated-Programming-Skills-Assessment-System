@@ -67,8 +67,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<UserAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<ICRUD, CRUD>();
-
-builder.Services.AddScoped<Login>();
+builder.Services.AddScoped<ILogin, Login>();
+builder.Services.AddScoped<IChat, ChatSv>();
 
 builder.Services.AddCors(options =>
 {

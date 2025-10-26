@@ -3,21 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using SharedLibrary.Jwt;
 using System;
 using System.Security.Claims;
-using UserService.Application.DTO; 
-using UserService.Application.Interface; 
-using UserService.Infrastructure; 
+using UserService.Application.DTO;
+using UserService.Application.Interface;
 
-namespace UserService.Controllers 
-{ 
+namespace UserService.Controllers
+{
     [ApiController]
-    [Route("api/[Controller]")] 
-    public class UserController : Controller 
-    { 
+    [Route("api/[Controller]")]
+    public class UserController : Controller
+    {
         private readonly ICRUD _crud;
         private readonly ILogin _login;
         private readonly IChat _chat;
         private readonly IJwtService _jwtService;
-        public UserController(ICRUD crud, ILogin login, IChat chat, IJwtService jwtService) 
+        public UserController(ICRUD crud, ILogin login, IChat chat, IJwtService jwtService)
         {
             _jwtService = jwtService;
             _chat = chat;
@@ -26,14 +25,14 @@ namespace UserService.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("AddUser")] 
-        public async Task<IActionResult> AddUser(UserDTO user) 
-        { 
-            if (user != null) 
+        [HttpPost("AddUser")]
+        public async Task<IActionResult> AddUser(UserDTO user)
+        {
+            if (user != null)
             {
-                await _crud.AddUser(user); 
-            } 
-            return Ok(); 
+                await _crud.AddUser(user);
+            }
+            return Ok();
         }
         [AllowAnonymous]
         [HttpPost("Login")]
@@ -102,6 +101,12 @@ namespace UserService.Controllers
 
             return Ok(new { message = "🗑️ Xóa thành công!" });
         }
+        [HttpPut("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changeDto)
+        {
+            if (changeDto == null)
+                return BadRequest(new { message = "Thiếu dữ liệu đổi mật khẩu" });
+
             var result = await _crud.ChangePassword(changeDto);
             if (!result)
                 return Unauthorized(new { message = "❌ Sai tài khoản hoặc mật khẩu cũ!" });
@@ -135,5 +140,8 @@ namespace UserService.Controllers
             _chat.SendMessageToAdmin(chat.Message);
             return Ok(new { message = "✅ Tin nhắn đã được gửi đến admin!" });
         }
+
+
+
     }
 }
