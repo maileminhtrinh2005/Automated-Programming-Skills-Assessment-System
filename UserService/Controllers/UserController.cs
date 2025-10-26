@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using SharedLibrary.Jwt;
+using System;
+using System.Security.Claims;
 using UserService.Application.DTO; 
 using UserService.Application.Interface; 
 using UserService.Infrastructure; 
@@ -11,15 +13,19 @@ namespace UserService.Controllers
     [Route("api/[Controller]")] 
     public class UserController : Controller 
     { 
-
-        private readonly Login _login; 
-        private readonly ICRUD _crud; 
-        public UserController(ICRUD crud, Login login) 
+        private readonly ICRUD _crud;
+        private readonly ILogin _login;
+        private readonly IChat _chat;
+        private readonly IJwtService _jwtService;
+        public UserController(ICRUD crud, ILogin login, IChat chat, IJwtService jwtService) 
         {
+            _jwtService = jwtService;
+            _chat = chat;
             _login = login;
-            _crud = crud; 
+            _crud = crud;
+        }
 
-        } 
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddUser")] 
         public async Task<IActionResult> AddUser(UserDTO user) 
         { 
@@ -30,19 +36,38 @@ namespace UserService.Controllers
             return Ok(); 
         }
         [AllowAnonymous]
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var user = await _login.LoginAsync(loginDto);
 
-        [HttpPost("Login")] 
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto) 
-        { 
-            if (!ModelState.IsValid) 
-                return BadRequest(ModelState);  
-            bool isValid = await _login.LoginC(loginDto); 
-            if (isValid) { // 👉 Có thể thêm JWT ở đây (mình sẽ giúp nếu bạn muốn)
-                return Ok(new { message = "✅ Login successful", username = loginDto.Username });
-            } 
-            return Unauthorized(new { message = "❌ Invalid username or password" }); 
+            if (user == null)
+            {
+                return Unauthorized(new { message = "❌ Invalid username or password" });
+            }
+
+            if (user.Role == null)
+            {
+                user.Role = await _crud.GetRoleById(user.RoleID);
+            }
+
+            var token = _jwtService.GenerateToken(user.UserID, user.Role?.RoleName ?? "Student");
+
+
+            return Ok(new
+            {
+                message = "✅ Login successful",
+                username = user.Username,
+                roleId = user.RoleID,
+                roleName = user.Role?.RoleName,
+                token = token
+
+            });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -55,6 +80,8 @@ namespace UserService.Controllers
 
             return Ok(users);
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDTO user)
         {
@@ -66,6 +93,7 @@ namespace UserService.Controllers
             return Ok(new { message = "✅ Cập nhật thành công!" });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -74,9 +102,38 @@ namespace UserService.Controllers
 
             return Ok(new { message = "🗑️ Xóa thành công!" });
         }
+            var result = await _crud.ChangePassword(changeDto);
+            if (!result)
+                return Unauthorized(new { message = "❌ Sai tài khoản hoặc mật khẩu cũ!" });
+
+            return Ok(new { message = "✅ Đổi mật khẩu thành công!" });
+        }
 
 
+        [Authorize(Roles = "Lecturer")]
+        [HttpGet("GetAllStudents")]
+        public async Task<IActionResult> GetAllStudents()
+        {
+            var role = "Student";
+            var students = await _crud.GetAllStudents(role);
 
+            if (students == null || !students.Any())
+            {
+                // Trả về 404 nếu không tìm thấy sinh viên nào
+                return NotFound(new { message = "Không tìm thấy sinh viên nào trong hệ thống." });
+            }
 
+            // Trả về 200 OK cùng danh sách sinh viên
+            return Ok(students);
+        }
+        [HttpPost("SendMessageToAdmin")]
+        public IActionResult SendMessageToAdmin([FromBody] ChatMessageDTO chat)
+        {
+            if (chat == null || string.IsNullOrWhiteSpace(chat.Message))
+                return BadRequest(new { message = "❌ Nội dung tin nhắn trống." });
+
+            _chat.SendMessageToAdmin(chat.Message);
+            return Ok(new { message = "✅ Tin nhắn đã được gửi đến admin!" });
+        }
     }
 }

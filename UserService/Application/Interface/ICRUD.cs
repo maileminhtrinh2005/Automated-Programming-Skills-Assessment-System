@@ -17,5 +17,9 @@ namespace UserService.Application.Interface
         Task<User?> LoginAsync(LoginDTO loginDto);
         Task<User> GetUserByUsername(string username);
 
+        Task<bool> ChangePassword(ChangePasswordDTO changeDto);
+        Task<IEnumerable<UserDTO>> GetAllStudents(string rolename);
+        Task<Role> GetRoleById(int roleId);
+
     }
 }

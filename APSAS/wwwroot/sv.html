@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách sinh viên</title>
+</head>
+<body>
+    <h2>👩‍🏫 Danh sách sinh viên</h2>
+    <table border="1" cellpadding="6">
+        <thead><tr><th>Username</th><th>Họ tên</th></tr></thead>
+        <tbody id="studentTable"></tbody>
+    </table>
+
+    <script>
+        let inactivityTime = 0;
+        const maxInactivity = 60 * 5000; // 5 phút
+
+        // Reset bộ đếm khi người dùng hoạt động
+        function resetTimer() {
+            inactivityTime = 0;
+        }
+
+        window.onload = () => {
+            // Khi có thao tác chuột hoặc bàn phím => reset timer
+            document.onmousemove = resetTimer;
+            document.onkeypress = resetTimer;
+
+            // Tăng dần thời gian không hoạt động
+            setInterval(() => {
+                inactivityTime += 1000;
+
+                if (inactivityTime >= maxInactivity) {
+                    alert("⏰ Hết phiên làm việc do không hoạt động!");
+                    localStorage.removeItem("token");
+                    window.location.href = "DN.html";
+                }
+            }, 1000);
+        };
+        const apiUrl = "http://localhost:5261/GetAllStudents"; // StudentService API
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "Lecturer") {
+      alert("Bạn không có quyền truy cập!");
+      window.location.href = "login.html";
+    }
+
+    async function loadStudents() {
+      const res = await fetch(apiUrl, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      const tbody = document.getElementById("studentTable");
+      tbody.innerHTML = data.map(s =>
+        `<tr><td>${s.username}</td><td>${s.fullName}</td></tr>`
+      ).join("");
+    }
+
+        loadStudents();
+
+    </script>
+</body>
+</html>

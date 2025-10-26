@@ -24,50 +24,44 @@ namespace UserService.Infrastructure
                 Username = user.Username,
                 Email = user.Email,
                 FullName = user.FullName,
-
-                RoleID = 1,
-
+                RoleID = (user.RoleID == 1 || user.RoleID == 2) ? user.RoleID : 3,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
 
-
-            // 🔐 Hash mật khẩu trước khi lưu
-
             newUser.PasswordHash = _passwordHasher.HashPassword(newUser, user.PasswordHash);
 
             _dbcontext.user.Add(newUser);
-
-
+            await _dbcontext.SaveChangesAsync();
             return true;
         }
 
+
         public async Task<User> GetUserByUsername(string username)
         {
-            return await _dbcontext.user.FirstOrDefaultAsync(u => u.Username == username);
-
+            // Thêm Include(u => u.Role) vào đây
+            return await _dbcontext.user
+                                 .Include(u => u.Role)
+                                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<IEnumerable<UserDTO>> GetAllUsers()
         {
             var users = await _dbcontext.user
-
-
+                .Include(u => u.Role)
                 .Select(u => new UserDTO
                 {
                     UserID = u.UserID,
                     Username = u.Username,
                     Email = u.Email,
                     FullName = u.FullName,
-
-                    PasswordHash = u.PasswordHash  
-
+                    RoleID = u.RoleID,
+                    RoleName = u.Role.RoleName
                 })
                 .ToListAsync();
 
             return users;
         }
-
 
 
 
@@ -116,9 +110,47 @@ namespace UserService.Infrastructure
         {
             throw new NotImplementedException();
         }
+        public async Task<bool> ChangePassword(ChangePasswordDTO changeDto)
+        {
+            var user = await _dbcontext.user.FirstOrDefaultAsync(u => u.Username == changeDto.Username);
+            if (user == null)
+                return false;
+
+            var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, changeDto.OldPassword);
+            if (verify != PasswordVerificationResult.Success)
+                return false;
+
+            // Hash mật khẩu mới
+            user.PasswordHash = _passwordHasher.HashPassword(user, changeDto.NewPassword);
+            user.UpdatedAt = DateTime.Now;
+
+            _dbcontext.user.Update(user);
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<UserDTO>> GetAllStudents(string rolename)
+        {
+            var students = await _dbcontext.user
+                .Where(u => u.Role.RoleName == rolename) // ✅ chỉ lấy từ bảng User, không cần Role
+                .Select(u => new UserDTO
+                {
+                    UserID = u.UserID,
+                    Username = u.Username,
+                    FullName = u.FullName,
+
+                })
+                .ToListAsync();
+
+            return students;
+        }
+
+        public async Task<Role> GetRoleById(int roleId)
+        {
+            return await _dbcontext.role.FindAsync(roleId);
+        }
 
 
-      
 
     }
 }

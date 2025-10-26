@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-
-using UserService.Application.DTO;
-
+using RabbitMQ.Client;
+using SharedLibrary.Jwt;
+using ShareLibrary;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using UserService.Application.Interface;
 using UserService.Infrastructure;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +25,32 @@ builder.Services.AddSingleton<RabbitMQEventBus>();
 builder.Services.AddScoped<ChatMessageHandler>();
 builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
+// L?y c?u hình JWT t? appsettings.json
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("JwtOptions"));
 
+// ??ng ký JwtService ?? Inject vào controller
+builder.Services.AddSingleton<IJwtService, JwtService>();
+
+// ? C?u hình Authentication dùng JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+        };
+    });
+
+// B?t Authorization middleware
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 
@@ -64,6 +92,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
