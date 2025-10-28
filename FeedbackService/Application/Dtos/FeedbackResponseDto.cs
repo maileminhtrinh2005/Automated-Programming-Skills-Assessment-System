@@ -2,7 +2,7 @@
 
 public class FeedbackResponseDto
 {
-    public string Summary { get; set; } = string.Empty;
+    public string? Summary { get; set; } = string.Empty;
     public int Score { get; set; }
     public List<RubricItemDto>? RubricBreakdown { get; set; }
     public List<TestCaseNoteDto>? TestCaseFeedback { get; set; }

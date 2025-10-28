@@ -1,4 +1,4 @@
-﻿using FeedbackService.Application.Events;
+﻿
 using Microsoft.Extensions.Hosting;
 using NotificationService.Infrastructure.Handlers;
 using ShareLibrary;
@@ -21,7 +21,7 @@ namespace NotificationService.Infrastructure
             _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
 
             // 👇 Thêm dòng này để nhận cả feedback giảng viên đã review
-            _eventBus.Subscribe<FeedbackReviewedEvent, NotificationEventHandler>() ;
+         
 
             Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackGeneratedEvent & FeedbackReviewedEvent");
             return Task.CompletedTask;

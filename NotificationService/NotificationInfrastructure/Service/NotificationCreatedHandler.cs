@@ -1,5 +1,4 @@
-﻿using FeedbackService.Application.Events;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using NotificationService.Domain.Entities;
 using NotificationService.Hubs;
 using NotificationService.Infrastructure.Persistence;
@@ -8,9 +7,13 @@ using ShareLibrary.Event;
 
 namespace NotificationService.Infrastructure.Handlers
 {
+    /// <summary>
+    /// Lắng nghe NotificationCreatedEvent và FeedbackGeneratedEvent từ RabbitMQ.
+    /// Khi nhận, lưu vào DB và đẩy thông báo qua SignalR.
+    /// </summary>
     public class NotificationCreatedHandler :
-        IEventHandler<NotificationCreatedEvent>
-       
+        IEventHandler<NotificationCreatedEvent>,
+        IEventHandler<FeedbackGeneratedEvent> // ✅ Dùng chung cho cả auto/manual feedback
     {
         private readonly AppDbContext _db;
         private readonly IHubContext<NotificationHub, INotificationClient> _hub;
@@ -21,6 +24,7 @@ namespace NotificationService.Infrastructure.Handlers
             _hub = hub;
         }
 
+        // 📩 Khi NotificationService tự nhận event tạo thông báo
         public Task Handle(NotificationCreatedEvent e)
         {
             Console.WriteLine("==========================================");
@@ -33,21 +37,25 @@ namespace NotificationService.Infrastructure.Handlers
             return Task.CompletedTask;
         }
 
-        // 🟢 THÊM PHẦN NÀY: nhận event FeedbackReviewedEvent từ FeedbackService
-        public async Task Handle(FeedbackReviewedEvent e)
+        // 🟢 Khi FeedbackService gửi FeedbackGeneratedEvent (AI hoặc nhập tay)
+        public async Task Handle(FeedbackGeneratedEvent e)
         {
             Console.WriteLine("==========================================");
-            Console.WriteLine("[NotificationService] Received FeedbackReviewedEvent");
-            Console.WriteLine($"StudentId: {e.StudentId}");
-            Console.WriteLine($"FeedbackText: {e.FeedbackText}");
+            Console.WriteLine("[NotificationService] 📩 Received FeedbackGeneratedEvent");
+            Console.WriteLine($"StudentId : {e.StudentId}");
+            Console.WriteLine($"Title     : {e.Title}");
+            Console.WriteLine($"Message   : {e.Message}");
             Console.WriteLine("==========================================");
 
-            // 1️⃣ Lưu vào DB (tận dụng entity cũ)
+            // 1️⃣ Lưu DB
             var rec = new GeneratedNotificationRecord
             {
-                Title = $"Nhận xét mới cho bài nộp #{e.SubmissionId}",
-                Message = e.FeedbackText,
-                CreatedAtUtc = DateTime.UtcNow
+                StudentId = e.StudentId,
+                Title = e.Title ?? $"Kết quả bài nộp #{e.SubmissionId}",
+                Message = string.IsNullOrWhiteSpace(e.Message)
+                    ? "Không có nội dung phản hồi."
+                    : e.Message,
+                CreatedAtUtc = e.CreatedAtUtc
             };
 
             await _db.GeneratedNotifications.AddAsync(rec);
@@ -55,12 +63,21 @@ namespace NotificationService.Infrastructure.Handlers
 
             Console.WriteLine($"✅ [NotificationService] Saved feedback notification Id={rec.Id}");
 
-            // 2️⃣ Gửi SignalR cho client theo StudentId
-            await _hub.Clients.Group(e.StudentId.ToString())
+            // 2️⃣ Gửi SignalR — nếu có StudentId thì gửi nhóm, ngược lại gửi All
+            if (e.StudentId > 0)
+            {
+                await _hub.Clients.Group(e.StudentId.ToString())
+                    .NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
 
-                 .NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
+                Console.WriteLine($"📡 [SignalR] Pushed feedback to student {e.StudentId}");
+            }
+            else
+            {
+                await _hub.Clients.All
+                    .NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
 
-            Console.WriteLine($"📡 [NotificationService] Pushed feedback to student {e.StudentId}");
+                Console.WriteLine("📡 [SignalR] Pushed feedback to all clients (no specific student)");
+            }
         }
     }
 }

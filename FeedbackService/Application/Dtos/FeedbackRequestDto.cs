@@ -13,14 +13,14 @@ public class FeedbackRequestDto
 
 public class TestResultDto
 {
-    public string Name { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty; // Passed / Failed
+    public string? Name { get; set; }
+    public string? Status { get; set; }
     public string? Input { get; set; }
-    public string? Expected { get; set; }
-    public string? Actual { get; set; }
-    public string? Stdout { get; set; }
-    public string? Stderr { get; set; }
-    public int? ElapsedMs { get; set; }
+    public string? Output { get; set; }
+    public string? ErrorMessage { get; set; }
+    public double ExecutionTime { get; set; }
+    public double MemoryUsed { get; set; }
+    public double Weight { get; set; }
 }
 // cham test case
 public class TestcaseItem

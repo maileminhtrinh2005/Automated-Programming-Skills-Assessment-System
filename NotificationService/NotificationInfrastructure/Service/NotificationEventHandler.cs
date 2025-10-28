@@ -1,4 +1,4 @@
-﻿using FeedbackService.Application.Events;
+﻿
 using Microsoft.AspNetCore.SignalR;
 using NotificationService.Domain.Entities;
 using NotificationService.Hubs;
@@ -10,8 +10,8 @@ namespace NotificationService.Infrastructure.Handlers
 {
 
     public class NotificationEventHandler :
-        IEventHandler<FeedbackGeneratedEvent>,
-        IEventHandler<FeedbackReviewedEvent> 
+        IEventHandler<FeedbackGeneratedEvent>
+  
     {
         private readonly AppDbContext _db;
         private readonly IHubContext<NotificationHub, INotificationClient> _hub;
@@ -27,10 +27,9 @@ namespace NotificationService.Infrastructure.Handlers
         {
             Console.WriteLine("[NotificationService] 📩 Received FeedbackGeneratedEvent");
 
-            var message = string.IsNullOrWhiteSpace(e.Feedback)
-                ? "Không có nội dung phản hồi."
-                : e.Feedback;
-
+            var message = string.IsNullOrWhiteSpace(e.Message)
+                                ? "Không có nội dung phản hồi."
+                                : e.Message;
             var rec = new GeneratedNotificationRecord
             {
                 Title = $"Kết quả bài nộp #{e.SubmissionId}",
@@ -46,37 +45,6 @@ namespace NotificationService.Infrastructure.Handlers
         }
 
 
-        public async Task Handle(FeedbackReviewedEvent e)
-        {
-            Console.WriteLine("==========================================");
-            Console.WriteLine("[NotificationService] 📬 Received FeedbackReviewedEvent");
-            Console.WriteLine($"StudentId: {e.StudentId}");
-            Console.WriteLine($"InstructorId: {e.InstructorId}");
-            Console.WriteLine($"Assignment: {e.AssignmentTitle}");
-            Console.WriteLine($"FeedbackText: {e.FeedbackText}");
-            Console.WriteLine($"Comment: {e.Comment}");
-            Console.WriteLine("==========================================");
-
-            var rec = new GeneratedNotificationRecord
-            {
-                StudentId = e.StudentId,
-                AssignmentTitle = e.AssignmentTitle,
-                Title = $"Giảng viên đã gửi nhận xét cho bài {e.AssignmentTitle}",
-                Message = $"{e.FeedbackText}\nGhi chú: {e.Comment}",
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            await _db.GeneratedNotifications.AddAsync(rec);
-            await _db.SaveChangesAsync();
-
-            Console.WriteLine($"✅ [NotificationService] Saved reviewed feedback notification Id={rec.Id}");
-
-            // 🎯 Gửi riêng đến nhóm SignalR của sinh viên đó
-            await _hub.Clients.Group(e.StudentId.ToString())
-
-                   .NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
-
-            Console.WriteLine($"📡 [SignalR] Reviewed feedback pushed to student {e.StudentId}");
-        }
+      
     }
 }

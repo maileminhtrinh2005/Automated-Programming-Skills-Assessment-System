@@ -1,10 +1,9 @@
 ﻿using FeedbackService.Application.Dtos;
-using FeedbackService.Application.Events;
 using FeedbackService.Application.Interfaces;
 using FeedbackService.Domain.Entities;
 using FeedbackService.Infrastructure.Persistence;
-using ShareLibrary;                 // Dùng chung IEventBus
-using ShareLibrary.Event;           // ✅ Event chung được định nghĩa tại ShareLibrary
+using ShareLibrary;
+using ShareLibrary.Event;
 using System;
 
 namespace FeedbackService.Application.Services
@@ -20,6 +19,7 @@ namespace FeedbackService.Application.Services
             _eventBus = eventBus;
         }
 
+        // 🧾 Lưu feedback nhập tay vào DB
         public async Task<ManualFeedbackResponseDto> CreateAsync(ManualFeedbackRequestDto dto, CancellationToken ct = default)
         {
             var entity = new ManualFeedback
@@ -46,29 +46,32 @@ namespace FeedbackService.Application.Services
             };
         }
 
+        // 📤 Gửi feedback nhập tay sang NotificationService qua RabbitMQ
         public async Task SendReviewedFeedbackAsync(ManualFeedbackDto dto)
         {
-            Console.WriteLine("=== [FeedbackService] Preparing FeedbackReviewedEvent ===");
+            Console.WriteLine("=== [FeedbackService] Preparing FeedbackGeneratedEvent (Manual) ===");
             Console.WriteLine($"SubmissionId: {dto.SubmissionId}");
             Console.WriteLine($"StudentId: {dto.StudentId}");
             Console.WriteLine($"FeedbackText: {dto.FeedbackText}");
             Console.WriteLine($"Comment: {dto.Comment}");
             Console.WriteLine("=========================================================");
 
-            var ev = new FeedbackReviewedEvent
+            // 🔹 Dùng FeedbackGeneratedEvent thay vì FeedbackReviewedEvent
+            var ev = new FeedbackGeneratedEvent
             {
+                StudentId = dto.StudentId,
                 SubmissionId = dto.SubmissionId,
-                StudentId = dto.StudentId,     
-                InstructorId = dto.InstructorId,        
-                AssignmentTitle = "Unknown",
-                FeedbackText = dto.FeedbackText,
-                Comment = dto.Comment,
-                ReviewedAt = DateTime.UtcNow
+                Score = 0,
+                Title = $"Giảng viên đã gửi nhận xét cho bài nộp #{dto.SubmissionId}",
+                Message = $"{dto.FeedbackText}\nGhi chú: {dto.Comment}",
+                CreatedAtUtc = DateTime.UtcNow
             };
 
-            Console.WriteLine("=== [FeedbackService] Publishing FeedbackReviewedEvent ===");
+            Console.WriteLine("=== [FeedbackService] Publishing FeedbackGeneratedEvent ===");
             _eventBus.Publish(ev);
-            Console.WriteLine($"[FeedbackService] ✅ Published FeedbackReviewedEvent for student {dto.StudentId}");
+            Console.WriteLine($"[FeedbackService] ✅ Published FeedbackGeneratedEvent for student {dto.StudentId}");
+
+            await Task.CompletedTask;
         }
     }
 }

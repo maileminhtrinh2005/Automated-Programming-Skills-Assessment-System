@@ -1,5 +1,4 @@
-﻿// FeedbackService/FeedbackInfrastructure/Service/GenerateFeedbackHandler.cs
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ShareLibrary;
@@ -7,7 +6,9 @@ using ShareLibrary.Event;
 
 namespace FeedbackService.Infrastructure.Handlers
 {
+    /// <summary>
     /// Lắng nghe TestCaseFetchEvent -> log thông tin test case -> Publish FeedbackGeneratedEvent (đơn giản)
+    /// </summary>
     public class GenerateFeedbackHandler : IEventHandler<TestCaseFetchEvent>
     {
         private readonly IEventBus _eventBus;
@@ -52,13 +53,15 @@ namespace FeedbackService.Infrastructure.Handlers
                 string.Join("\n", (e.TestCaseList ?? []).Select((tc, i) =>
                     $"- #{i + 1}: Id={tc.TestCaseId}, Weight={tc.Weight}, Expected={tc.ExpectedOutput}"));
 
-            // 🔹 Tạo event để gửi qua RabbitMQ
+            // 🔹 Tạo event để gửi qua RabbitMQ (chuyển sang dùng Title + Message)
             var feedbackEvent = new FeedbackGeneratedEvent
             {
                 SubmissionId = e.SubmissionId,
+                StudentId = 0, // chưa có thông tin
                 Score = 0,
-                ResultStatus = "FeedbackGenerated",
-                Feedback = feedbackText  // ✅ dùng feedbackText thay vì result
+                Title = $"Tự động sinh feedback cho Assignment #{e.AssignmentId}",
+                Message = feedbackText,
+                CreatedAtUtc = DateTime.UtcNow
             };
 
             Console.WriteLine("[FeedbackService] >>> Publishing FeedbackGeneratedEvent");
@@ -69,4 +72,3 @@ namespace FeedbackService.Infrastructure.Handlers
         }
     }
 }
-
