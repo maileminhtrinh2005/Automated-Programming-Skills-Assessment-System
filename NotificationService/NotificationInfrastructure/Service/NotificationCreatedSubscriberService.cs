@@ -18,12 +18,12 @@ namespace NotificationService.Infrastructure
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // Các event đã có
-          //  _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
+            _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
 
             // 👇 Thêm dòng này để nhận cả feedback giảng viên đã review
             _eventBus.Subscribe<FeedbackReviewedEvent, NotificationEventHandler>() ;
 
-            Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackReviewedEvent");
+            Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackGeneratedEvent & FeedbackReviewedEvent");
             return Task.CompletedTask;
         }
     }

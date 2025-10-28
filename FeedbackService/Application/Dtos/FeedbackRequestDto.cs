@@ -2,12 +2,13 @@
 
 public class FeedbackRequestDto
 {
-    public string StudentId { get; set; } = string.Empty;
+    public int StudentId { get; set; } 
     public string AssignmentTitle { get; set; } = string.Empty;
     public string? Rubric { get; set; }
     public string SourceCode { get; set; } = string.Empty;
     public int LanguageId { get; set; }
     public List<TestResultDto> TestResults { get; set; } = new(); // BẮT BUỘC
+    public int SubmissionId { get; set; }
 }
 
 public class TestResultDto

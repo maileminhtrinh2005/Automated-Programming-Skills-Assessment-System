@@ -22,34 +22,30 @@ namespace NotificationService.Infrastructure.Handlers
             _hub = hub;
         }
 
-      
+
         public async Task Handle(FeedbackGeneratedEvent e)
         {
-            Console.WriteLine("==========================================");
             Console.WriteLine("[NotificationService] 📩 Received FeedbackGeneratedEvent");
-            Console.WriteLine($"SubmissionId: {e.SubmissionId}");
-            Console.WriteLine($"Feedback: {e.Feedback}");
-            Console.WriteLine("==========================================");
+
+            var message = string.IsNullOrWhiteSpace(e.Feedback)
+                ? "Không có nội dung phản hồi."
+                : e.Feedback;
 
             var rec = new GeneratedNotificationRecord
             {
                 Title = $"Kết quả bài nộp #{e.SubmissionId}",
-                Message = e.Feedback,
+                Message = message,
                 CreatedAtUtc = DateTime.UtcNow
             };
 
             await _db.GeneratedNotifications.AddAsync(rec);
             await _db.SaveChangesAsync();
 
-            Console.WriteLine($"✅ [NotificationService] Saved auto feedback notification Id={rec.Id}");
-
-            await _hub.Clients.All.NotifyNew(
-                new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
-
+            await _hub.Clients.All.NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
             Console.WriteLine($"📡 [SignalR] Auto feedback pushed to clients");
         }
 
-      
+
         public async Task Handle(FeedbackReviewedEvent e)
         {
             Console.WriteLine("==========================================");

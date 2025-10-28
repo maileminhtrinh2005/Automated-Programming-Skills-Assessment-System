@@ -12,6 +12,16 @@ namespace NotificationService.Hubs
 
     public class NotificationHub : Hub<INotificationClient>
     {
-        // Bạn có thể thêm Group/Authorize nếu cần gửi theo user
+        public async Task JoinGroup(string studentId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, studentId);
+            Console.WriteLine($"[SignalR] Client {Context.ConnectionId} joined group {studentId}");
+        }
+        public async Task LeaveGroup(string studentId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, studentId);
+            Console.WriteLine($"[SignalR] Client {Context.ConnectionId} left group {studentId}");
+        }
     }
+
 }

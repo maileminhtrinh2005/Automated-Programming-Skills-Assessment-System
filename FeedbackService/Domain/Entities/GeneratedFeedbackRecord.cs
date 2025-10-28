@@ -5,7 +5,7 @@ public class GeneratedFeedbackRecord
     public int Id { get; set; }
 
     // context bài nộp
-    public string StudentId { get; set; } = default!;
+    public int StudentId { get; set; } = default!;
     public string AssignmentTitle { get; set; } = default!;
 
     // dữ liệu cơ bản để list nhanh

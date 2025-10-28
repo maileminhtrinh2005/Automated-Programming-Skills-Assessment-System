@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>🔔 Notification Tester</h1>
-        <p>Listening to <b>SignalR</b> from <code>NotificationService (http://localhost:5261)</code></p>
+        <p>Listening to <b>SignalR</b> from NotificationService (<code>http://localhost:5216</code>)</p>
         <button id="connectBtn">🔌 Connect</button>
 
         <div id="bell">
@@ -19,6 +19,7 @@
         <div id="notifications"></div>
     </div>
 
+    <audio id="notifSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
     <script src="Js/Notification.js"></script>
 </body>
 </html>

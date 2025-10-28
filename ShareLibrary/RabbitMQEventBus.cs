@@ -14,16 +14,14 @@ namespace ShareLibrary
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private readonly JsonSerializerOptions _jsonOptions;
+        private const string ExchangeName = "apsas_event_bus"; // 🔸 Exchange chung
 
-        public RabbitMQEventBus(
-            IConnectionFactory connectionFactory,
-            IServiceScopeFactory scopeFactory)
+        public RabbitMQEventBus(IConnectionFactory connectionFactory, IServiceScopeFactory scopeFactory)
         {
             _connectionFactory = connectionFactory;
             _scopeFactory = scopeFactory;
             _handlers = new Dictionary<string, List<Type>>();
 
-            // Configure JSON serialization options for better compatibility
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -31,48 +29,25 @@ namespace ShareLibrary
                 WriteIndented = false
             };
 
-            try
-            {
-                _connection = _connectionFactory.CreateConnection();
-                _channel = _connection.CreateModel();
+            _connection = _connectionFactory.CreateConnection();
+            _channel = _connection.CreateModel();
 
-               // _logger.LogInformation("RabbitMQ connection established");
-            }
-            catch 
-            {
-               // _logger.LogError(ex, "Could not connect to RabbitMQ");
-                throw;
-            }
+            // 🟢 Tạo exchange dùng chung
+            _channel.ExchangeDeclare(exchange: ExchangeName, type: ExchangeType.Direct, durable: true);
         }
 
         public void Publish<T>(T @event) where T : class
         {
             var eventName = @event.GetType().Name;
-           // _logger.LogInformation("Publishing event {EventName}", eventName);
+            var message = JsonSerializer.Serialize(@event, _jsonOptions);
+            var body = Encoding.UTF8.GetBytes(message);
 
-            try
-            {
-                _channel.QueueDeclare(queue: eventName,
-                                     durable: true,
-                                     exclusive: false,
-                                     autoDelete: false);
+            _channel.BasicPublish(exchange: ExchangeName,   // 🟢 dùng exchange thay vì ""
+                                  routingKey: eventName,
+                                  basicProperties: null,
+                                  body: body);
 
-                var message = JsonSerializer.Serialize(@event, _jsonOptions);
-               // _logger.LogDebug("Publishing event JSON: {EventJson}", message);
-                var body = Encoding.UTF8.GetBytes(message);
-
-                _channel.BasicPublish(exchange: "",
-                                     routingKey: eventName,
-                                     basicProperties: null,
-                                     body: body);
-
-                //_logger.LogInformation("Event {EventName} published successfully", eventName);
-            }
-            catch (Exception ex)
-            {
-              //  _logger.LogError(ex, "Error publishing event {EventName}", eventName);
-                throw;
-            }
+            Console.WriteLine($"[RabbitMQ] Published {eventName}");
         }
 
         public void Subscribe<T, TH>() where T : class where TH : IEventHandler<T>
@@ -89,6 +64,11 @@ namespace ShareLibrary
                                      exclusive: false,
                                      autoDelete: false);
 
+                // 🟢 Liên kết queue với exchange
+                _channel.QueueBind(queue: eventName,
+                                   exchange: ExchangeName,
+                                   routingKey: eventName);
+
                 var consumer = new EventingBasicConsumer(_channel);
                 consumer.Received += async (model, ea) =>
                 {
@@ -102,59 +82,32 @@ namespace ShareLibrary
                                      consumer: consumer);
             }
 
-            if (_handlers[eventName].Any(h => h == handlerType))
-            {
-             //   _logger.LogWarning("Handler Type {HandlerType} already registered for {EventName}", handlerType.Name, eventName);
-                return;
-            }
+            if (_handlers[eventName].All(h => h != handlerType))
+                _handlers[eventName].Add(handlerType);
 
-            _handlers[eventName].Add(handlerType);
-           // _logger.LogInformation("Subscribed to event {EventName} with {HandlerType}", eventName, handlerType.Name);
+            Console.WriteLine($"[RabbitMQ] Subscribed to {eventName} with {handlerType.Name}");
         }
 
         private async Task ProcessEvent(string eventName, string message)
         {
             if (!_handlers.ContainsKey(eventName))
-            {
-             //   _logger.LogWarning("No handler registered for {EventName}", eventName);
                 return;
-            }
 
             using var scope = _scopeFactory.CreateScope();
             var handlers = _handlers[eventName];
 
             foreach (var handlerType in handlers)
             {
-                try
-                {
-                    var handler = scope.ServiceProvider.GetService(handlerType);
-                    if (handler == null)
-                    {
-                      //  _logger.LogWarning("Handler {HandlerType} not registered in DI", handlerType.Name);
-                        continue;
-                    }
+                var handler = scope.ServiceProvider.GetService(handlerType);
+                if (handler == null) continue;
 
-                    // Get the event type from the handler's generic argument
-                    var eventType = handlerType.GetInterfaces()
-                        .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
-                        ?.GetGenericArguments().FirstOrDefault();
+                var eventType = handlerType.GetInterfaces()
+                    .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
+                    ?.GetGenericArguments().FirstOrDefault();
 
-                    if (eventType == null)
-                    {
-                     //   _logger.LogError("Could not determine event type for handler {HandlerType}", handlerType.Name);
-                        continue;
-                    }
-
-                    var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
-                  //  _logger.LogDebug("Deserializing event {EventName} JSON: {EventJson}", eventName, message);
-                    var eventData = JsonSerializer.Deserialize(message, eventType, _jsonOptions);
-
-                    await (Task)concreteType.GetMethod("Handle").Invoke(handler, new[] { eventData });
-                }
-                catch (Exception ex)
-                {
-                   // _logger.LogError(ex, "Error processing event {EventName}", eventName);
-                }
+                var eventData = JsonSerializer.Deserialize(message, eventType, _jsonOptions);
+                var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
+                await (Task)concreteType.GetMethod("Handle")!.Invoke(handler, new[] { eventData });
             }
         }
 

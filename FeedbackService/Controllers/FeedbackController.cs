@@ -95,7 +95,7 @@ public class FeedbackController : ControllerBase
             // 🔹 Gọi Gemini để sinh nhận xét tổng quát
             var aiRequest = new FeedbackRequestDto
             {
-                StudentId = req.StudentId.ToString(),
+                StudentId = req.StudentId,
                 AssignmentTitle = assignment.Title,
                 Rubric = "Đúng 60, Hiệu năng 20, Style 20",
                 SourceCode = submission.SourceCode,

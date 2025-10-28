@@ -43,7 +43,7 @@ namespace FeedbackService.Infrastructure.Handlers
             }
             Console.WriteLine("==========================================");
 
-
+            // 🔹 Tạo text feedback tóm tắt test case
             var feedbackText =
                 $"Assignment: {e.AssignmentId}\n" +
                 $"Submission: {e.SubmissionId}\n" +
@@ -52,12 +52,13 @@ namespace FeedbackService.Infrastructure.Handlers
                 string.Join("\n", (e.TestCaseList ?? []).Select((tc, i) =>
                     $"- #{i + 1}: Id={tc.TestCaseId}, Weight={tc.Weight}, Expected={tc.ExpectedOutput}"));
 
+            // 🔹 Tạo event để gửi qua RabbitMQ
             var feedbackEvent = new FeedbackGeneratedEvent
             {
-                SubmissionId = Guid.NewGuid(),
-                Score = 0, 
-                ResultStatus = "ReceivedTestCases",
-                Feedback = feedbackText
+                SubmissionId = e.SubmissionId,
+                Score = 0,
+                ResultStatus = "FeedbackGenerated",
+                Feedback = feedbackText  // ✅ dùng feedbackText thay vì result
             };
 
             Console.WriteLine("[FeedbackService] >>> Publishing FeedbackGeneratedEvent");
@@ -68,3 +69,4 @@ namespace FeedbackService.Infrastructure.Handlers
         }
     }
 }
+

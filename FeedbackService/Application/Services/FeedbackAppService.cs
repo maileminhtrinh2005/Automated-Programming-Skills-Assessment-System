@@ -128,10 +128,13 @@ public class FeedbackAppService : IFeedbackAppService
 
         var evt = new FeedbackGeneratedEvent
         {
-            SubmissionId = Guid.NewGuid(),
+            StudentId = req.StudentId,
+            SubmissionId = req.SubmissionId,
             Score = result.Score,
             ResultStatus = "FeedbackGenerated",
-            Feedback = result.Summary ?? "(no summary)"
+            Feedback = result.Summary // ✅ Dùng summary của AI
+                      
+                       ?? "Không có nội dung phản hồi."
         };
 
         _bus.Publish(evt);
