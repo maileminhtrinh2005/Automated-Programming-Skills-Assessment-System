@@ -18,10 +18,12 @@ namespace SubmissionService.Controllers
         [HttpGet("GetYourSubmission/{id}")] // id hoc sinh //1 
         public async Task<IActionResult> GetYourSubmissionAndResult(int id)
         {
+          
 
             if (id <= 0) return BadRequest();
             var submissions = await _submissionManager.GetSubmissionsByStudentId(id);
             if (submissions==null) { return NotFound(); }
+            
             return Ok(submissions);
         }
 

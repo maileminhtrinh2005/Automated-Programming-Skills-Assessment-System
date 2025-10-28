@@ -64,9 +64,17 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
         {
             parts = new[] {
                 new { text =
-                    "You are an APSAS grading assistant. Return JSON ONLY that matches the schema. " +
-                    "Give concise pedagogy-focused feedback mapped to test cases and rubric. " +
-                    "Language: Vietnamese."
+                    "You are an APSAS grading assistant. " +
+            "Analyze ONLY the provided input data (source code, test results, and rubric). " +
+            "Your task is to give structured feedback and evaluation strictly based on that data — do NOT invent or assume anything not present. " +
+            "Focus on accuracy, clarity, and constructiveness in your comments. " +
+            "Respond in JSON format ONLY, matching this schema:\n" +
+            "{ \"summary\": string, \"score\": number, " +
+            "\"rubricBreakdown\": [ {\"criterion\": string, \"score\": number, \"max\": number} ], " +
+            "\"testCaseFeedback\": [ {\"name\": string, \"comment\": string} ], " +
+            "\"suggestions\": [string], \"nextSteps\": [string] } " +
+            "All comments and explanations must be in Vietnamese, concise, and derived from the provided test results or rubric. " +
+            "If data is missing or unclear, indicate that politely (e.g. 'Không có đủ dữ liệu để đánh giá phần này.')."
                 }
             }
         };
@@ -76,6 +84,7 @@ public class GeminiFeedbackGenerator : IFeedbackGenerator
             new { text = $"Student: {req.StudentId}\nAssignment: {req.AssignmentTitle}\nLanguageId: {req.LanguageId}\nRubric: {req.Rubric ?? "(none)"}" },
             new { text = "SOURCE CODE:\n```" + (req.SourceCode ?? "") + "```" },
             new { text = "TEST RESULTS (JSON):\n" + testResultsText },
+            new { text = "Nhiệm vụ: Hãy đóng vai giảng viên, đưa ra phần 'Nhận xét tất cả bài này' tổng quan về chất lượng bài làm, các điểm mạnh/yếu, và điểm số tổng kết." },
             new { text = "Hãy trả về JSON đúng schema:\n{ \"summary\": string, \"score\": number, \"rubricBreakdown\":[{\"criterion\": string, \"score\": number, \"max\": number}], \"testCaseFeedback\":[{\"name\": string, \"comment\": string}], \"suggestions\": [string], \"nextSteps\": [string] }" }
         };
 

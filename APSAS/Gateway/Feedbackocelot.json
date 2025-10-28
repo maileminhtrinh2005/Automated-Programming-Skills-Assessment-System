@@ -1,29 +1,6 @@
 {
   "Routes": [
-    {
-      "UpstreamPathTemplate": "/Feedback.html",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8088
-        }
-      ],
-      "DownstreamPathTemplate": "/Feedback.html"
-    },
-    {
-      "UpstreamPathTemplate": "/Feedback/health",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5064
-        }
-      ],
-      "DownstreamPathTemplate": "/api/Feedback/health"
-    },
+   
     {
       "UpstreamPathTemplate": "/feedbacksubmit",
       "UpstreamHttpMethod": [ "POST" ],
@@ -34,8 +11,16 @@
           "Port": 5064
         }
       ],
-      "DownstreamPathTemplate": "/api/Feedback/feedbacksubmit"
+      "DownstreamPathTemplate": "/api/Feedback/feedbacksubmit",
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": false,
+        "UseCookieContainer": false,
+        "UseTracing": false,
+        "MaxConnectionsPerServer": 100,
+        "Timeout": 180000
+      }
     },
+
     {
       "UpstreamPathTemplate": "/Feedback/manual",
       "UpstreamHttpMethod": [ "POST" ],
@@ -48,6 +33,7 @@
       ],
       "DownstreamPathTemplate": "/api/Feedback/manual"
     },
+
     {
       "UpstreamPathTemplate": "/Feedback/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
@@ -59,7 +45,61 @@
         }
       ],
       "DownstreamPathTemplate": "/api/Feedback/{everything}"
+    },
+    {
+      "UpstreamPathTemplate": "/manual/sendreviewed",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064 // ⚠️ Đúng port FeedbackService của bạn
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/manual/sendreviewed"
+    },
+
+    {
+      "UpstreamPathTemplate": "/feedback/generate/bulk",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/generate/bulk"
+    },
+
+    // testcase
+    {
+      "UpstreamPathTemplate": "/feedbacksubmit",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/testcasesubmit",
+      "HttpHandlerOptions": { "Timeout": 180000 }
+    },
+    {
+      "UpstreamPathTemplate": "/feedbacktestcase",
+      "UpstreamHttpMethod": [ "POST" ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Testcasefeedback/testcasesubmit",
+      "HttpHandlerOptions": { "Timeout": 180000 }
     }
+
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"

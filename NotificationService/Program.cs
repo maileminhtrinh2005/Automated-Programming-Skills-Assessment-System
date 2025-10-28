@@ -20,6 +20,7 @@ builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()
        {
@@ -62,12 +63,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseWebSockets();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowGateway");
 
 app.UseAuthorization();
-app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<NotificationHub>("/notificationhub");
 app.MapControllers();
 
 app.Run();

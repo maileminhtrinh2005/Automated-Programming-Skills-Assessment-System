@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using FeedbackService.Application.Events;
+using Microsoft.Extensions.Hosting;
+using NotificationService.Infrastructure.Handlers;
 using ShareLibrary;
 using ShareLibrary.Event;
-using NotificationService.Infrastructure.Handlers;
 
 namespace NotificationService.Infrastructure
 {
@@ -16,9 +17,13 @@ namespace NotificationService.Infrastructure
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // dang ki + chay background ,,, khi nao co tin se xuw li
-            _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
-            Console.WriteLine("[NotificationService] Subscribed to FeedbackGeneratedEvent");
+            // Các event đã có
+          //  _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
+
+            // 👇 Thêm dòng này để nhận cả feedback giảng viên đã review
+            _eventBus.Subscribe<FeedbackReviewedEvent, NotificationEventHandler>() ;
+
+            Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackReviewedEvent");
             return Task.CompletedTask;
         }
     }

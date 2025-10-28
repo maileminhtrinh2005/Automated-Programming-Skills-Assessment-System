@@ -1,4 +1,4 @@
-
+﻿
 using FeedbackService.Application.Interfaces;
 using FeedbackService.Application.Services;
 using FeedbackService.Infrastructure;
@@ -16,6 +16,8 @@ using ShareLibrary.Event;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 // EF Core DbContext
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
@@ -25,6 +27,10 @@ builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("Gemi
 builder.Services.AddHttpClient<GeminiFeedbackGenerator>();
 builder.Services.AddScoped<IFeedbackGenerator, GeminiFeedbackGenerator>();
 builder.Services.AddScoped<IFeedbackAppService, FeedbackAppService>();
+builder.Services.AddHttpClient<ITestcaseFeedbackGenerator, GeminiTestcaseFeedbackGenerator>();
+//builder.Services.AddScoped<ITestcaseFeedbackGenerator, TestcaseFeedbackGenerator>();
+
+builder.Services.AddScoped<IManualFeedbackService, ManualFeedbackService>();
 
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>

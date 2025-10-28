@@ -58,12 +58,20 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-
+app.UseDefaultFiles();
 app.UseAuthorization();
 app.UseStaticFiles();
-
-
+app.MapWhen(ctx => ctx.Request.Path.StartsWithSegments("/.well-known"), sub =>
+{
+    sub.Run(async ctx =>
+    {
+        ctx.Response.StatusCode = StatusCodes.Status204NoContent;
+        await ctx.Response.CompleteAsync();
+    });
+});
 app.MapControllers();
+app.UseStaticFiles();
+
 await app.UseOcelot();
 
 app.Run();

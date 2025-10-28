@@ -23,8 +23,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Submission> Submissions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=HAI2\\SQLEXPRESS;Database=Submission;Trusted_Connection=True;TrustServerCertificate=True");
-
+       // => optionsBuilder.UseSqlServer("Server=HAI2\\SQLEXPRESS;Database=Submission;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=APSASSubmissionDb;Integrated Security=True;Trust Server Certificate=True");
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Language>(entity =>

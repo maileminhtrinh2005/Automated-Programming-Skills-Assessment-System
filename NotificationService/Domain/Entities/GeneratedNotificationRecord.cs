@@ -3,7 +3,7 @@
 public class GeneratedNotificationRecord
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string StudentId { get; set; } = default!;
+    public int StudentId { get; set; } = default!;
     public string AssignmentTitle { get; set; } = default!;
     public string Title { get; set; } = default!;
     public string Message { get; set; } = default!;

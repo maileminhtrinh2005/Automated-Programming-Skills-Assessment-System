@@ -1,15 +1,26 @@
-﻿using ShareLibrary;
+﻿using FeedbackService.Application.Events;
+using Microsoft.AspNetCore.SignalR;
+using NotificationService.Domain.Entities;
+using NotificationService.Hubs;
+using NotificationService.Infrastructure.Persistence;
+using ShareLibrary;
 using ShareLibrary.Event;
 
 namespace NotificationService.Infrastructure.Handlers
 {
-    /// <summary>
-    /// Xử lý sự kiện NotificationCreatedEvent
-    /// - Được kích hoạt khi có thông báo mới được tạo.
-    /// - Có thể dùng để gửi email, push notification, hoặc log lại thông báo.
-    /// </summary>
-    public class NotificationCreatedHandler : IEventHandler<NotificationCreatedEvent>
+    public class NotificationCreatedHandler :
+        IEventHandler<NotificationCreatedEvent>
+       
     {
+        private readonly AppDbContext _db;
+        private readonly IHubContext<NotificationHub, INotificationClient> _hub;
+
+        public NotificationCreatedHandler(AppDbContext db, IHubContext<NotificationHub, INotificationClient> hub)
+        {
+            _db = db;
+            _hub = hub;
+        }
+
         public Task Handle(NotificationCreatedEvent e)
         {
             Console.WriteLine("==========================================");
@@ -22,6 +33,34 @@ namespace NotificationService.Infrastructure.Handlers
             return Task.CompletedTask;
         }
 
-      
+        // 🟢 THÊM PHẦN NÀY: nhận event FeedbackReviewedEvent từ FeedbackService
+        public async Task Handle(FeedbackReviewedEvent e)
+        {
+            Console.WriteLine("==========================================");
+            Console.WriteLine("[NotificationService] Received FeedbackReviewedEvent");
+            Console.WriteLine($"StudentId: {e.StudentId}");
+            Console.WriteLine($"FeedbackText: {e.FeedbackText}");
+            Console.WriteLine("==========================================");
+
+            // 1️⃣ Lưu vào DB (tận dụng entity cũ)
+            var rec = new GeneratedNotificationRecord
+            {
+                Title = $"Nhận xét mới cho bài nộp #{e.SubmissionId}",
+                Message = e.FeedbackText,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            await _db.GeneratedNotifications.AddAsync(rec);
+            await _db.SaveChangesAsync();
+
+            Console.WriteLine($"✅ [NotificationService] Saved feedback notification Id={rec.Id}");
+
+            // 2️⃣ Gửi SignalR cho client theo StudentId
+            await _hub.Clients.Group(e.StudentId.ToString())
+
+                 .NotifyNew(new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc));
+
+            Console.WriteLine($"📡 [NotificationService] Pushed feedback to student {e.StudentId}");
+        }
     }
 }

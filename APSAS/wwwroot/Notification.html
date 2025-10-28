@@ -1,150 +1,24 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <title>APSAS Feedback • Gateway 5261</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.ico">
-    <style>
-        :root {
-            --bg: #f8fafc;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --primary: #2563eb;
-            --ok: #059669;
-            --warn: #dc2626;
-            --violet: #7c3aed;
-        }
-
-        body {
-            font-family: system-ui,Arial,sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            margin: 28px auto;
-            max-width: 980px;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin: 0 0 8px;
-        }
-
-        p.small {
-            color: var(--muted);
-            text-align: center;
-            margin: 0 0 22px;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-top: 12px;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            border-radius: 10px;
-            border: 1px solid #cbd5e1;
-            font-family: ui-monospace,Menlo,Consolas,monospace
-        }
-
-        textarea {
-            min-height: 160px;
-            resize: vertical
-        }
-
-        .row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 14px 0
-        }
-
-        button {
-            flex: 1;
-            min-width: 140px;
-            border: 0;
-            border-radius: 10px;
-            padding: 12px 14px;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer
-        }
-
-            button:hover {
-                opacity: .92
-            }
-
-        #btnHealth {
-            background: var(--ok)
-        }
-
-        #btnSubmit {
-            background: var(--primary)
-        }
-
-        #btnManual {
-            background: var(--violet)
-        }
-
-        #btnClear {
-            background: var(--warn)
-        }
-
-        pre {
-            background: #0b1220;
-            color: #e2e8f0;
-            padding: 14px;
-            border-radius: 12px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-size: 14px
-        }
-
-        .meta {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            color: var(--muted);
-            font-size: 13px
-        }
-
-            .meta code {
-                background: #e2e8f0;
-                color: #111827;
-                padding: 2px 6px;
-                border-radius: 6px
-            }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px
-        }
-
-        .card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px
-        }
-
-        .muted {
-            color: var(--muted);
-            font-size: 13px
-        }
-
-        .readonly {
-            background: #f1f5f9
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <title>🔔 APSAS Notification Tester</title>
+    <link rel="stylesheet" href="notification.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 </head>
 <body>
-    <h1>APSAS Feedback • Gateway Tester</h1> <p class="small">Trang này gọi qua Gateway: <code>http://localhost:5261</code>. Hãy mở: <code>http://localhost:5261/Feedback.html</code></p> <div class="meta"> <span>Gateway base:</span> <code id="gw"></code> </div> <!-- PANEL 1: BODY gửi /feedback/submit --> <label>Request Body (POST /feedback/submit)</label> <textarea id="body">{ "studentId": "SV001", "assignmentTitle": "Two Sum", "rubric": "Đúng 60, Hiệu năng 20, Style 20", "sourceCode": "// code của sinh viên...", "languageId": 52, "testResults": [ { "name": "Case 1", "status": "Passed", "input": "[2,7,11,15], 9", "expected": "[0,1]", "actual": "[0,1]" }, { "name": "Case 2", "status": "Failed", "input": "[3,2,4], 6", "expected": "[1,2]", "actual": "[]" } ] }</textarea> <div class="row"> <button id="btnHealth">🩺 GET /feedback/health</button> <button id="btnSubmit">📤 POST /feedback/submit</button> <button id="btnManual" disabled>✍️ POST /feedback/manual</button> <button id="btnClear">🗑️ Clear</button> </div> <div class="grid"> <!-- PANEL 2: KẾT QUẢ AI (READ-ONLY) --> <div class="card"> <h3>Kết quả AI (read-only)</h3> <div class="muted">Summary & Score trả về từ <code>/feedback/submit</code>. Không sửa tại đây.</div> <label>AI Summary</label> <textarea id="aiSummary" class="readonly" readonly rows="10" placeholder="(chưa có)"></textarea> <label>AI Score</label> <input id="aiScore" class="readonly" type="number" readonly placeholder="(chưa có)" /> <label>Raw response</label> <pre id="out">(chưa có kết quả)</pre> </div> <!-- PANEL 3: MANUAL EDITOR --> <div class="card"> <h3>Manual Editor</h3> <div class="muted">Sau khi có AI, các trường sẽ tự điền. Bạn có thể sửa trước khi POST /feedback/manual.</div> <label>StudentId</label> <input id="mStudentId" type="text" placeholder="SV..." /> <label>AssignmentTitle</label> <input id="mAssignmentTitle" type="text" placeholder="Tên bài tập" /> <label>InstructorId</label> <input id="mInstructorId" type="text" placeholder="GV001" /> <label>Nội dung (Content)</label> <textarea id="mContent" rows="10" placeholder="Nội dung phản hồi do giảng viên chỉnh"></textarea> <label>Score</label> <input id="mScore" type="number" min="0" max="100" placeholder="0-100" /> <div class="muted">Bấm nút tím “POST /feedback/manual” ở trên để lưu.</div> </div> </div>
-    <script>const $ = s => document.querySelector(s); const gwBase = "http://localhost:5261"; $('#gw').textContent = gwBase; const url = p => gwBase + (p.startsWith('/') ? p : '/' + p); const out = $('#out'); const bodyEl = $('#body'); // Read-only AI boxes const aiSummaryEl = $('#aiSummary'); const aiScoreEl = $('#aiScore'); // Manual editor fields const mStudentId = $('#mStudentId'); const mAssignment = $('#mAssignmentTitle'); const mInstructor = $('#mInstructorId'); const mContent = $('#mContent'); const mScore = $('#mScore'); // State từ lần submit gần nhất let lastReq = null; // object request đã gửi lên /feedback/submit let lastAI = null; // object response từ /feedback/submit async function callApi(u, method = 'GET', data = null) { out.textContent = ${method} ${u}\n...; const opts = { method, headers: {} }; if (data) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(data); } try { const res = await fetch(u, opts); const txt = await res.text(); try { out.textContent = ${method} ${u}\nStatus: ${res.status}\n\n + JSON.stringify(JSON.parse(txt), null, 2); } catch { out.textContent = ${method} ${u}\nStatus: ${res.status}\n\n${txt}; } return { ok: res.ok, status: res.status, json: tryParseJson(txt) }; } catch (e) { out.textContent = ${method} ${u}\nERROR: ${e}; return { ok: false, err: e }; } } function tryParseJson(t) { try { return JSON.parse(t); } catch { return null; } } // GET /feedback/health $('#btnHealth').onclick = () => callApi(url('/feedback/health')); // POST /feedback/submit $('#btnSubmit').onclick = async () => { let payload; try { payload = JSON.parse(bodyEl.value); } catch (e) { out.textContent = '❌ JSON body không hợp lệ: ' + e.message; return; } const resp = await callApi(url('feedbacksubmit'), 'POST', payload); if (!resp.ok) return; lastReq = payload; lastAI = resp.json || {}; // Đổ read-only const aiSummary = (lastAI.summary ?? lastAI.Summary ?? '') + ''; const aiScore = (lastAI.score ?? lastAI.Score ?? ''); aiSummaryEl.value = aiSummary; aiScoreEl.value = aiScore; // Đổ Manual Editor mặc định từ request + AI mStudentId.value = payload.studentId || payload.StudentId || ''; mAssignment.value = payload.assignmentTitle || payload.AssignmentTitle || ''; mContent.value = aiSummary; mScore.value = aiScore; // mở nút manual $('#btnManual').disabled = false; }; // POST /feedback/manual (dựa vào Manual Editor, KHÔNG đụng textarea body) $('#btnManual').onclick = async () => { const manual = { studentId: mStudentId.value || '', assignmentTitle: mAssignment.value || '', instructorId: mInstructor.value || '', score: mScore.value ? Number(mScore.value) : null, content: mContent.value || '' }; // Đặt lại phần “Request Body” chỉ để bạn nhìn payload gửi (không bắt buộc) bodyEl.value = JSON.stringify(manual, null, 2); await callApi(url('/feedback/manual'), 'POST', manual); }; // Clear $('#btnClear').onclick = () => { out.textContent = "(đã xoá)"; aiSummaryEl.value = ""; aiScoreEl.value = ""; mStudentId.value = ""; mAssignment.value = ""; mInstructor.value = ""; mContent.value = ""; mScore.value = ""; $('#btnManual').disabled = true; lastReq = null; lastAI = null; };</script>
+    <div class="container">
+        <h1>🔔 Notification Tester</h1>
+        <p>Listening to <b>SignalR</b> from <code>NotificationService (http://localhost:5261)</code></p>
+        <button id="connectBtn">🔌 Connect</button>
+
+        <div id="bell">
+            🔔<span id="badge">0</span>
+        </div>
+
+        <div id="notifications"></div>
+    </div>
+
+    <script src="Js/Notification.js"></script>
 </body>
 </html>

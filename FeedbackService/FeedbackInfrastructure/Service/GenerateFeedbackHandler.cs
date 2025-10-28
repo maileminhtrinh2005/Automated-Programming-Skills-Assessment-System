@@ -1,13 +1,14 @@
-﻿// FeedbackService.Infrastructure/Handlers/GenerateFeedbackHandler.cs
+﻿// FeedbackService/FeedbackInfrastructure/Service/GenerateFeedbackHandler.cs
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using ShareLibrary;
 using ShareLibrary.Event;
 
 namespace FeedbackService.Infrastructure.Handlers
 {
-    /// Nghe CodeSubmittedEvents -> chấm điểm -> Publish FeedbackGeneratedEvent
-    public class GenerateFeedbackHandler : IEventHandler<CodeSubmittedEvents>
+    /// Lắng nghe TestCaseFetchEvent -> log thông tin test case -> Publish FeedbackGeneratedEvent (đơn giản)
+    public class GenerateFeedbackHandler : IEventHandler<TestCaseFetchEvent>
     {
         private readonly IEventBus _eventBus;
 
@@ -16,35 +17,52 @@ namespace FeedbackService.Infrastructure.Handlers
             _eventBus = eventBus;
         }
 
-        public async Task Handle(CodeSubmittedEvents e)
+        public async Task Handle(TestCaseFetchEvent e)
         {
             Console.WriteLine("==========================================");
-            Console.WriteLine("[FeedbackService] Received CodeSubmittedEvents");
+            Console.WriteLine("[FeedbackService] Received TestCaseFetchEvent");
             Console.WriteLine($"AssignmentId : {e.AssignmentId}");
-            Console.WriteLine($"Status       : {e.Status}");
-            Console.WriteLine($"Output       : {e.Output}");
-            Console.WriteLine($"ExecTime     : {e.ExecutionTime}s | Mem: {e.MemoryUsed}KB");
+            Console.WriteLine($"LanguageId   : {e.LanguageId}");
+            Console.WriteLine($"SubmissionId : {e.SubmissionId}");
+            Console.WriteLine($"#TestCases   : {e.TestCaseList?.Count ?? 0}");
+            Console.WriteLine("---- Test cases preview ----");
+
+            if (e.TestCaseList != null && e.TestCaseList.Count > 0)
+            {
+                int idx = 1;
+                foreach (var tc in e.TestCaseList)
+                {
+                    Console.WriteLine($"  [{idx++}] Id={tc.TestCaseId}, Weight={tc.Weight}");
+                    Console.WriteLine($"       Input   : {tc.Input}");
+                    Console.WriteLine($"       Expected: {tc.ExpectedOutput}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("  (no test cases)");
+            }
             Console.WriteLine("==========================================");
 
-            var feedbackText =
-                $"Output: {e.Output}\n" +
-                $"Status: {e.Status}\n" +
-                $"ExecutionTime: {e.ExecutionTime}s\n" +
-                $"MemoryUsed: {e.MemoryUsed}KB";
 
-            double score = e.Status == "Accepted" ? 10.0 : 0.0;
+            var feedbackText =
+                $"Assignment: {e.AssignmentId}\n" +
+                $"Submission: {e.SubmissionId}\n" +
+                $"LanguageId: {e.LanguageId}\n" +
+                $"TestCases : {e.TestCaseList?.Count ?? 0}\n" +
+                string.Join("\n", (e.TestCaseList ?? []).Select((tc, i) =>
+                    $"- #{i + 1}: Id={tc.TestCaseId}, Weight={tc.Weight}, Expected={tc.ExpectedOutput}"));
 
             var feedbackEvent = new FeedbackGeneratedEvent
             {
                 SubmissionId = Guid.NewGuid(),
-                Score = score,
-                ResultStatus = e.Status,
-                Feedback = feedbackText,
+                Score = 0, 
+                ResultStatus = "ReceivedTestCases",
+                Feedback = feedbackText
             };
-            Console.WriteLine("[FeedbackService] >>> About to publish FeedbackGeneratedEvent");
-            // Lưu ý: dùng đúng overload Publish(event)
+
+            Console.WriteLine("[FeedbackService] >>> Publishing FeedbackGeneratedEvent");
             _eventBus.Publish(feedbackEvent);
-            Console.WriteLine("[FeedbackService] Published FeedbackGeneratedEvent");
+            Console.WriteLine("[FeedbackService] ✅ Published FeedbackGeneratedEvent");
 
             await Task.CompletedTask;
         }

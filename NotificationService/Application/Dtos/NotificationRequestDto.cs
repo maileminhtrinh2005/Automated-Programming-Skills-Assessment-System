@@ -2,7 +2,7 @@
 
 public class NotificationRequestDto
 {
-    public string StudentId { get; set; } = string.Empty;
+    public int StudentId { get; set; } 
     public string AssignmentTitle { get; set; } = string.Empty;
     public string? Rubric { get; set; }
     public string SourceCode { get; set; } = string.Empty;

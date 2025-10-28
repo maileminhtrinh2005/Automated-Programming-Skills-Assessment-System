@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SubmissionService.Application.Interface;
 using SubmissionService.Infrastructure;
 using ShareLibrary;
@@ -18,6 +18,7 @@ builder.Services.AddSwaggerGen();
 
 
 
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -31,7 +32,7 @@ builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 builder.Services.AddScoped<SubmissionManager>();
 builder.Services.AddScoped<RunCodeHandle>();
 
-
+builder.Services.AddScoped<ResultManager>(); // 
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()
@@ -58,7 +59,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
