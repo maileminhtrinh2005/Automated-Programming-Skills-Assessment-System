@@ -53,7 +53,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5064 // ⚠️ Đúng port FeedbackService của bạn
+          "Port": 5064
         }
       ],
       "DownstreamPathTemplate": "/api/Feedback/manual/sendreviewed"
@@ -72,22 +72,22 @@
       "DownstreamPathTemplate": "/api/Feedback/generate/bulk"
     },
 
-    // testcase
+
+    //{
+    //  "UpstreamPathTemplate": "/feedbacksubmit",
+    //  "UpstreamHttpMethod": [ "POST" ],
+    //  "DownstreamScheme": "http",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 5064
+    //    }
+    //  ],
+    //  "DownstreamPathTemplate": "/api/Feedback/testcasesubmit",
+    //  "HttpHandlerOptions": { "Timeout": 180000 }
+    //},
     {
-      "UpstreamPathTemplate": "/feedbacksubmit",
-      "UpstreamHttpMethod": [ "POST" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5064
-        }
-      ],
-      "DownstreamPathTemplate": "/api/Feedback/testcasesubmit",
-      "HttpHandlerOptions": { "Timeout": 180000 }
-    },
-    {
-      "UpstreamPathTemplate": "/feedbacktestcase",
+      "UpstreamPathTemplate": "/testcasesubmit",
       "UpstreamHttpMethod": [ "POST" ],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
