@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
 using NotificationService.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace NotificationService.Controllers;
 
