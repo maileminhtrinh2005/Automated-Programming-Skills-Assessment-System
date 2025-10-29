@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
 
@@ -8,6 +9,7 @@ namespace NotificationService.Controllers;
 [Route("api/Notification")]
 public class NotificationController(INotificationAppService app) : ControllerBase
 {
+    [Authorize(Roles = "Student, Admin")]
     [HttpPost("GetNotification")]
     public async Task<IActionResult> FromFeedback([FromBody] NotificationRequestDto body, CancellationToken ct)
         => Ok(await app.CreateFromFeedbackAsync(body, ct));

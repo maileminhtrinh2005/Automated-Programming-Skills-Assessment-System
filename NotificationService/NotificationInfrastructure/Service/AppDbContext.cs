@@ -19,8 +19,8 @@ namespace NotificationService.Infrastructure.Persistence
                 e.Property(x => x.Title).HasMaxLength(200);
                 e.Property(x => x.Message).HasColumnType("nvarchar(max)");
                 e.Property(x => x.CreatedAtUtc).HasColumnType("datetime2");
+                e.Property(x => x.IsRead).HasDefaultValue(false);
 
-    
             });
         }
     }

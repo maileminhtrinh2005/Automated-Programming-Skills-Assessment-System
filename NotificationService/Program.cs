@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
 using NotificationService.Hubs;
@@ -6,7 +8,9 @@ using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Handlers;
 using NotificationService.Infrastructure.Persistence;
 using RabbitMQ.Client;
+using SharedLibrary.Jwt;
 using ShareLibrary;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,6 +24,34 @@ builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
+
+
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("JwtOptions"));
+
+// ??ng ký JwtService ?? Inject vào controller
+builder.Services.AddSingleton<IJwtService, JwtService>();
+
+// ? C?u hình Authentication dùng JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+        };
+    });
+
+// B?t Authorization middleware
+builder.Services.AddAuthorization();
+
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()

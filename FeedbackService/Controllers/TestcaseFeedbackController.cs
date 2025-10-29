@@ -1,6 +1,7 @@
 ﻿using FeedbackService.Application.Constants;
 using FeedbackService.Application.Dtos;
 using FeedbackService.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FeedbackService.Controllers;
@@ -17,6 +18,7 @@ public class TestcaseFeedbackController : ControllerBase
     }
 
     // 🧩 CHẤM CHI TIẾT — từng test case
+    [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("testcasesubmit")]
     public async Task<IActionResult> Submit([FromBody] TestcaseFeedbackRequestDto req, CancellationToken ct)
     {
