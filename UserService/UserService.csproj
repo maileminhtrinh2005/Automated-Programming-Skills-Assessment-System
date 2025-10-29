@@ -15,11 +15,8 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
-<<<<<<< HEAD
 	<ItemGroup>
 		<ProjectReference Include="..\ShareLibrary\ShareLibrary.csproj" />
 	</ItemGroup>
-=======
->>>>>>> trinh
 
 </Project>

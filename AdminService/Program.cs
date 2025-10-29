@@ -4,6 +4,10 @@ using AdminService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 using ShareLibrary;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using SharedLibrary.Jwt;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,35 @@ builder.Services.AddSignalR();
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// L?y c?u hình JWT t? appsettings.json
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("JwtOptions"));
+
+// ??ng ký JwtService ?? Inject vào controller
+builder.Services.AddSingleton<IJwtService, JwtService>();
+
+// ? C?u hình Authentication dùng JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+        };
+    });
+
+// B?t Authorization middleware
+builder.Services.AddAuthorization();
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -52,8 +85,8 @@ if (app.Environment.IsDevelopment())
 }
 //app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chathub");

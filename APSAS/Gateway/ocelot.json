@@ -169,6 +169,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "UpstreamPathTemplate": "/feedbacksubmit",
       "UpstreamHttpMethod": [
         "POST"
@@ -266,6 +267,8 @@
       }
     },
     {
+=======
+>>>>>>> 17c2c168397d5e2b848860d069dfd02b055ee12a
       "UpstreamPathTemplate": "/GetNotification",
       "UpstreamHttpMethod": [
         "POST"
@@ -311,7 +314,11 @@
       "DownstreamPathTemplate": "/api/Notification/{everything}"
     },
     {
+<<<<<<< HEAD
       "UpstreamPathTemplate": "/notificationhub/negotiate",
+=======
+      "UpstreamPathTemplate": "/notificationsHub/negotiate",
+>>>>>>> 17c2c168397d5e2b848860d069dfd02b055ee12a
       "UpstreamHttpMethod": [
         "POST",
         "OPTIONS"
@@ -323,10 +330,17 @@
           "Port": 5216
         }
       ],
+<<<<<<< HEAD
       "DownstreamPathTemplate": "/notificationhub/negotiate"
     },
     {
       "UpstreamPathTemplate": "/notificationhub",
+=======
+      "DownstreamPathTemplate": "/hubs/notifications/negotiate"
+    },
+    {
+      "UpstreamPathTemplate": "/notificationsHub",
+>>>>>>> 17c2c168397d5e2b848860d069dfd02b055ee12a
       "UpstreamHttpMethod": [
         "GET"
       ],
@@ -337,7 +351,11 @@
           "Port": 5216
         }
       ],
+<<<<<<< HEAD
       "DownstreamPathTemplate": "/notificationhub"
+=======
+      "DownstreamPathTemplate": "/hubs/notifications"
+>>>>>>> 17c2c168397d5e2b848860d069dfd02b055ee12a
     },
     {
       "DownstreamPathTemplate": "/api/Submission/Submit",

@@ -5,29 +5,31 @@ using UserService.Domain;
 
 namespace UserService.Infrastructure
 {
-
-    public class Login
+    public class Login : ILogin
     {
+        private readonly UserAppDbContext _dbcontext;
         private readonly ICRUD _crud;
         private readonly PasswordHasher<User> _passwordHasher;
-
-        // ✅ sửa constructor để nhận ICRUD (chứ không phải CRUD cụ thể)
-        public Login(ICRUD crud)
+        public Login(UserAppDbContext dbcontext, ICRUD cRUD)
         {
-            _crud = crud;
-            _passwordHasher = new PasswordHasher<User>(); // khởi tạo hasher
+            _dbcontext = dbcontext;
+            _crud = cRUD;
+            _passwordHasher = new PasswordHasher<User>();
         }
 
-        public async Task<bool> LoginC(LoginDTO loginDTO)
+        public async Task<User?> LoginAsync(LoginDTO loginDto)
         {
-            var user = await _crud.GetUserByUsername(loginDTO.Username);
+
+            var user = await _crud.GetUserByUsername(loginDto.Username);
             if (user == null)
-                return false;
+                return null;
 
-            // ✅ Dùng VerifyHashedPassword để so sánh mật khẩu
-            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDTO.PasswordHash);
-
-            return result == PasswordVerificationResult.Success;
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDto.Password);
+            if (result == PasswordVerificationResult.Success)
+            {
+                return user;
+            }
+            return null;
 
         }
     }
