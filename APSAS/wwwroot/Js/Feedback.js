@@ -29,15 +29,15 @@ async function apiFetch(path, options = {}) {
 // ======== CHECK ACCESS ========
 function checkAccess() {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
     if (!token) {
         window.location.href = "DN.html";
         return false;
     }
+    return true;
 }
 
-// ======== AUTO LOAD WHEN PAGE OPENS ========
-window.addEventListener("DOMContentLoaded", () => {
+// ======== PAGE LOAD ========
+window.addEventListener("DOMContentLoaded", async () => {
     checkAccess();
 
     const params = new URLSearchParams(window.location.search);
@@ -45,7 +45,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (studentId) {
         console.log("📌 Student ID nhận từ Dashboard:", studentId);
-        generateProgressFeedback(studentId);
+        localStorage.setItem("selectedStudentId", studentId);
+        out("✅ Sẵn sàng. Danh sách bài tập đã được tải. Nhấn 'Nhận xét tổng quát' để xem feedback.");
+        await loadSubmissionsOnly(studentId);
     } else {
         alert("⚠️ Không tìm thấy Student ID! Hãy quay lại Dashboard.");
     }
@@ -92,10 +94,38 @@ function renderSubmissions(subs) {
     });
 }
 
+// ======== CHỈ LOAD DANH SÁCH BÀI TẬP ========
+async function loadSubmissionsOnly(studentId) {
+    try {
+        out("📥 Đang tải danh sách bài tập...");
+        const submissions = await fetchSubmissionsByStudent(studentId);
+        if (!Array.isArray(submissions) || submissions.length === 0)
+            return out("❌ Không có submission nào.");
+
+        const detailedSubs = [];
+        for (const s of submissions) {
+            const assignment = await fetchAssignmentById(s.assignmentId);
+            detailedSubs.push({
+                submissionId: s.submissionId,
+                assignmentTitle: assignment?.title || "Không rõ",
+                score: s.score ?? "-",
+                status: s.status ?? "-",
+                createdAt: s.createdAt || s.submittedAt || "-"
+            });
+        }
+
+        renderSubmissions(detailedSubs);
+        out("✅ Đã tải danh sách bài tập.");
+    } catch (err) {
+        out("❌ " + err.message);
+        console.error(err);
+    }
+}
+
 // ======== GENERATE FEEDBACK (TỔNG QUÁT) ========
 async function generateProgressFeedback(studentId) {
     try {
-        out(`⏳ Đang lấy dữ liệu submissions cho sinh viên ${studentId}...`);
+        out(`⏳ Đang sinh nhận xét tổng quát cho sinh viên ${studentId}...`);
 
         const submissions = await fetchSubmissionsByStudent(studentId);
         if (!Array.isArray(submissions) || submissions.length === 0)
@@ -118,11 +148,9 @@ async function generateProgressFeedback(studentId) {
             });
         }
 
-        renderSubmissions(detailedSubs);
-
         const payload = { studentId, submissions: detailedSubs };
+        console.log("📡 POST:", `${GATEWAY}/feedback/generate/bulk`, payload);
 
-        out("📤 Gửi dữ liệu sang FeedbackService để nhận xét tổng quát...");
         const res = await apiFetch(`/feedback/generate/bulk`, {
             method: "POST",
             body: JSON.stringify(payload)
@@ -133,8 +161,8 @@ async function generateProgressFeedback(studentId) {
 
         $("aiSummary").value = data.summary || "(Không có)";
         $("aiScore").value = data.overallProgress || "";
-        out(JSON.stringify(data, null, 2));
         $("manualFeedback").value = data.summary || "";
+        out(JSON.stringify(data, null, 2));
 
     } catch (err) {
         console.error(err);
@@ -142,7 +170,7 @@ async function generateProgressFeedback(studentId) {
     }
 }
 
-// ======== GENERATE FEEDBACK (CHI TIẾT TEST CASE) ========
+// ======== CHI TIẾT TEST CASE ========
 async function generateDetailFeedback(submissionId) {
     try {
         out("⏳ Đang lấy chi tiết submission " + submissionId + "...");
@@ -154,22 +182,7 @@ async function generateDetailFeedback(submissionId) {
         if (!testResultsRaw.length)
             throw new Error("Submission này chưa có test case result nào.");
 
-        const testResults = testResultsRaw.map((r, i) => ({
-            Name: r.name || `Case ${i + 1}`,
-            Status: r.status || (r.passed ? "Passed" : "Failed"),
-            Input: r.input || "",
-            ExpectedOutput: r.expectedOutput || "",
-            Output: r.output || "",
-            ExecutionTime: r.executionTime || 0,
-            MemoryUsed: r.memoryUsed || 0,
-            ErrorMessage: r.errorMessage || "",
-            Weight: r.weight || 1.0
-        }));
-
-        const payload = {
-            SubmissionId: submissionId,
-            TestResults: testResults
-        };
+        const payload = { SubmissionId: submissionId, TestResults: testResultsRaw };
 
         out("📤 Gửi sang FeedbackService (chi tiết từng testcase)...");
         const res = await apiFetch(`/feedbacktestcase`, {
@@ -182,48 +195,22 @@ async function generateDetailFeedback(submissionId) {
 
         $("aiSummary").value = data.summary || "(Không có)";
         $("aiScore").value = data.score ?? "";
-        out(JSON.stringify(data, null, 2));
         $("manualFeedback").value = data.summary || "";
-
-        const tb = $("tblDetails").querySelector("tbody");
-        tb.innerHTML = "";
-        (data.testCaseFeedback || []).forEach((t, i) => {
-            tb.innerHTML += `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${t.status || (t.comment?.includes("Pass") ? "Passed" : "Failed")}</td>
-                    <td>${t.input || "-"}</td>
-                    <td>${t.expectedOutput || "-"}</td>
-                    <td>${t.comment || "-"}</td>
-                </tr>`;
-        });
-
-        out("✅ Đã nhận xét chi tiết cho submission " + submissionId);
-
+        out(JSON.stringify(data, null, 2));
     } catch (err) {
         out("❌ " + err.message);
         console.error(err);
     }
 }
 
-// ======== MANUAL FEEDBACK (GIẢNG VIÊN GỬI LẠI) ========
-document.getElementById("btnSendReviewed")?.addEventListener("click", async () => {
+// ======== GIẢNG VIÊN GỬI LẠI FEEDBACK ========
+$("btnSendReviewed")?.addEventListener("click", async () => {
     try {
-        const params = new URLSearchParams(window.location.search);
-        const studentId = parseInt(params.get("studentId") || localStorage.getItem("selectedStudentId") || 0);
-        const feedbackText = document.getElementById("manualFeedback")?.value.trim();
+        const studentId = localStorage.getItem("selectedStudentId");
+        const feedbackText = $("manualFeedback")?.value.trim();
+        if (!feedbackText) return alert("⚠️ Vui lòng nhập nội dung nhận xét trước khi gửi.");
 
-        if (!feedbackText) {
-            alert("⚠️ Vui lòng nhập nội dung nhận xét trước khi gửi.");
-            return;
-        }
-
-        const payload = {
-            studentId,
-            feedbackText,
-            comment: "Giảng viên đã chỉnh sửa và gửi lại nhận xét."
-        };
-
+        const payload = { studentId, feedbackText, comment: "Giảng viên đã chỉnh sửa và gửi lại nhận xét." };
         console.log("📤 Sending reviewed feedback:", payload);
 
         const res = await apiFetch(`/manual/sendreviewed`, {
@@ -231,20 +218,19 @@ document.getElementById("btnSendReviewed")?.addEventListener("click", async () =
             body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-            alert("✅ Đã gửi nhận xét thành công!");
-            console.log("✅ Reviewed feedback sent successfully!");
-        } else {
-            const err = await res.text();
-            alert("❌ Gửi thất bại: " + err);
-            console.error("❌ Gửi thất bại:", err);
-        }
+        if (res.ok) alert("✅ Đã gửi nhận xét thành công!");
+        else alert("❌ Gửi thất bại: " + (await res.text()));
     } catch (err) {
+        alert("❌ Lỗi khi gửi nhận xét.");
         console.error(err);
-        alert("❌ Lỗi trong quá trình gửi nhận xét.");
     }
 });
 
 // ======== BUTTONS ========
 $("btnClear").onclick = () => location.reload();
 $("btnHealth").onclick = () => out("✅ Gateway hoạt động tốt tại " + GATEWAY);
+$("btnGenerate").onclick = () => {
+    const studentId = localStorage.getItem("selectedStudentId");
+    if (!studentId) return alert("⚠️ Không có studentId!");
+    generateProgressFeedback(studentId);
+};

@@ -34,7 +34,9 @@ namespace NotificationService.Infrastructure.Handlers
             {
                 Title = $"Kết quả bài nộp #{e.SubmissionId}",
                 Message = message,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = DateTime.UtcNow,
+                 StudentId = e.StudentId,
+                IsRead = false
             };
 
             await _db.GeneratedNotifications.AddAsync(rec);

@@ -8,18 +8,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔔 Notification Tester</h1>
-        <p>Listening to <b>SignalR</b> from NotificationService (<code>http://localhost:5216</code>)</p>
-        <button id="connectBtn">🔌 Connect</button>
+        <h1>🔔 APSAS Notification Tester</h1>
+        <p>Kết nối <b>SignalR</b> tới NotificationService (<code>http://localhost:5216</code>)</p>
+
+        <div class="btn-group">
+            <button id="connectBtn">🔌 Kết nối</button>
+            <button id="markAllBtn">🟩 Đã xem tất cả</button>
+        </div>
 
         <div id="bell">
-            🔔<span id="badge">0</span>
+            🔔 <span id="badge">0</span>
         </div>
 
         <div id="notifications"></div>
     </div>
 
     <audio id="notifSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
     <script src="Js/Notification.js"></script>
 </body>
 </html>

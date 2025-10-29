@@ -55,7 +55,8 @@ namespace NotificationService.Infrastructure.Handlers
                 Message = string.IsNullOrWhiteSpace(e.Message)
                     ? "Không có nội dung phản hồi."
                     : e.Message,
-                CreatedAtUtc = e.CreatedAtUtc
+                CreatedAtUtc = e.CreatedAtUtc,
+                 IsRead = false
             };
 
             await _db.GeneratedNotifications.AddAsync(rec);

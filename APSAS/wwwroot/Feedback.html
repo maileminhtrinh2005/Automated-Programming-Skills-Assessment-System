@@ -13,12 +13,10 @@
     <!-- Generate Feedback -->
     <div class="card">
         <h3>Generate Feedback</h3>
-        <!--<label>Student ID</label>
-        <input id="qStudentId" placeholder="VD: 101" />-->
 
         <div class="btn-group">
             <button id="btnHealth">🩺 Health</button>
-            <button id="btnProgress">📈 Nhận xét tổng quát</button>
+            <button id="btnGenerate">📈 Nhận xét tổng quát</button>
             <button id="btnClear">🗑️ Clear</button>
         </div>
 
@@ -43,10 +41,10 @@
         <div class="card">
             <h3>Feedback AI Result</h3>
             <label>Tóm tắt / Nhận xét</label>
-            <textarea id="aiSummary" class="readonly" readonly rows="6"></textarea>
+            <textarea id="aiSummary" class="readonly" readonly rows="6" placeholder="Chưa có nhận xét..."></textarea>
 
             <label>Tiến bộ / Trạng thái</label>
-            <input id="aiScore" class="readonly" readonly />
+            <input id="aiScore" class="readonly" readonly placeholder="Chưa có tiến bộ nào..." />
 
             <label>Kết quả chi tiết</label>
             <pre id="out">(chưa có dữ liệu)</pre>
@@ -66,7 +64,7 @@
             </table>
         </div>
 
-        <!-- 🔽 Thêm phần Gửi nhận xét (giảng viên chỉnh sửa feedback) -->
+        <!-- Gửi nhận xét (giảng viên chỉnh sửa feedback) -->
         <div class="card">
             <h3>Gửi nhận xét (Giảng viên chỉnh sửa)</h3>
             <label for="manualFeedback">Nội dung nhận xét (có thể chỉnh sửa):</label>
