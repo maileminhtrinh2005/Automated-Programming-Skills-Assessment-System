@@ -11,5 +11,5 @@ public class GeneratedNotificationRecord
     public string RawJson { get; set; } = default!;
     public DateTime CreatedAtUtc { get; set; }
     public bool IsRead { get; set; } = false;
-    public string UserName { get; set; } = string.Empty;
+  //  public string UserName { get; set; } = string.Empty;
 }

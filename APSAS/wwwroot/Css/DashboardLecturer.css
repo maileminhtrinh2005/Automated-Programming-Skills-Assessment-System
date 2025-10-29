@@ -1,4 +1,5 @@
-﻿body {
+﻿/* ======== STYLE CHUNG CHO DASHBOARD SINH VIÊN ======== */
+body {
     font-family: Arial, sans-serif;
     background-color: #f4f6f8;
     padding: 40px;
@@ -25,3 +26,35 @@ th, td {
 th {
     background-color: #ddd;
 }
+
+/* ======== STYLE RIÊNG CHO NÚT "XEM BÀI TẬP" ======== */
+.username-cell {
+    display: flex;
+    flex-direction: column; /* Đặt username trên, nút bên dưới */
+    align-items: flex-start; /* Căn trái */
+    padding: 6px 12px;
+    gap: 8px; /* Khoảng cách giữa username và nút */
+}
+
+/* Nút “Xem bài tập” — ẩn mặc định */
+.btn-view-task {
+    font-size: 13px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: none;
+}
+
+    .btn-view-task:hover {
+        background-color: #45a049;
+        transform: scale(1.05);
+    }
+
+    /* Khi được bật bằng JS */
+    .btn-view-task.show {
+        display: inline-block;
+    }

@@ -3,55 +3,100 @@ const GATEWAY = "http://localhost:5261";
 const $ = (id) => document.getElementById(id);
 const out = (msg) => $("out").textContent = msg;
 
-// ========== FETCH FUNCTIONS ==========
+// ======== TOKEN & API FETCH HELPER ========
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+async function apiFetch(path, options = {}) {
+    const token = getToken();
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    };
+
+    const res = await fetch(`${GATEWAY}${path}`, { ...options, headers });
+
+    if (res.status === 401) {
+        alert("⏰ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.clear();
+        window.location.href = "DN.html";
+    }
+    return res;
+}
+
+// ======== CHECK ACCESS ========
+function checkAccess() {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (!token) {
+        window.location.href = "DN.html";
+        return false;
+    }
+}
+
+// ======== AUTO LOAD WHEN PAGE OPENS ========
+window.addEventListener("DOMContentLoaded", () => {
+    checkAccess();
+
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get("studentId") || localStorage.getItem("selectedStudentId");
+
+    if (studentId) {
+        console.log("📌 Student ID nhận từ Dashboard:", studentId);
+        generateProgressFeedback(studentId);
+    } else {
+        alert("⚠️ Không tìm thấy Student ID! Hãy quay lại Dashboard.");
+    }
+});
+
+// ======== FETCH FUNCTIONS ========
 async function fetchSubmissionsByStudent(studentId) {
-    const res = await fetch(`${GATEWAY}/GetYourSubmission/${studentId}`);
+    const res = await apiFetch(`/GetYourSubmission/${studentId}`);
     if (!res.ok) throw new Error("Không lấy được submissions");
     return res.json();
 }
 
 async function fetchAssignmentById(id) {
-    const res = await fetch(`${GATEWAY}/GetAssignmentByid/${id}`);
+    const res = await apiFetch(`/GetAssignmentByid/${id}`);
     if (!res.ok) return null;
     return res.json();
 }
 
 async function fetchResultBySubmission(submissionId) {
-    const res = await fetch(`${GATEWAY}/GetYourResult/${submissionId}`);
+    const res = await apiFetch(`/GetYourResult/${submissionId}`);
     if (!res.ok) return null;
     return res.json();
 }
 
-// ========== RENDER SUBMISSION LIST ==========
+// ======== RENDER SUBMISSIONS ========
 function renderSubmissions(subs) {
     const tbody = $("tblSubmissions").querySelector("tbody");
     tbody.innerHTML = "";
     subs.forEach((s, i) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${s.assignmentTitle || "Không rõ"}</td>
-      <td>${s.score ?? "-"}</td>
-      <td>${s.status ?? "-"}</td>
-      <td>${s.createdAt ?? "-"}</td>
-      <td><button class="btnDetail" data-id="${s.submissionId}">🔍 Xem chi tiết</button></td>
-    `;
+            <td>${i + 1}</td>
+            <td>${s.assignmentTitle || "Không rõ"}</td>
+            <td>${s.score ?? "-"}</td>
+            <td>${s.status ?? "-"}</td>
+            <td>${s.createdAt ?? "-"}</td>
+            <td><button class="btnDetail" data-id="${s.submissionId}">🔍 Xem chi tiết</button></td>
+        `;
         tbody.appendChild(row);
     });
 
-    // Gán sự kiện nút xem chi tiết
     document.querySelectorAll(".btnDetail").forEach(btn => {
         btn.onclick = () => generateDetailFeedback(btn.dataset.id);
     });
 }
 
-// ========== NHẬN XÉT TỔNG QUÁT ==========
-async function generateProgressFeedback() {
+// ======== GENERATE FEEDBACK (TỔNG QUÁT) ========
+async function generateProgressFeedback(studentId) {
     try {
-        const studentId = $("qStudentId").value.trim();
-        if (!studentId) return alert("⚠️ Nhập Student ID trước");
+        out(`⏳ Đang lấy dữ liệu submissions cho sinh viên ${studentId}...`);
 
-        out("⏳ Đang lấy dữ liệu submissions...");
         const submissions = await fetchSubmissionsByStudent(studentId);
         if (!Array.isArray(submissions) || submissions.length === 0)
             return out("❌ Không có submission nào.");
@@ -78,9 +123,8 @@ async function generateProgressFeedback() {
         const payload = { studentId, submissions: detailedSubs };
 
         out("📤 Gửi dữ liệu sang FeedbackService để nhận xét tổng quát...");
-        const res = await fetch(`${GATEWAY}/feedback/generate/bulk`, {
+        const res = await apiFetch(`/feedback/generate/bulk`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
@@ -91,31 +135,28 @@ async function generateProgressFeedback() {
         $("aiScore").value = data.overallProgress || "";
         out(JSON.stringify(data, null, 2));
         $("manualFeedback").value = data.summary || "";
+
     } catch (err) {
         console.error(err);
         out("❌ " + err.message);
     }
 }
 
-// ========== NHẬN XÉT CHI TIẾT ==========
+// ======== GENERATE FEEDBACK (CHI TIẾT TEST CASE) ========
 async function generateDetailFeedback(submissionId) {
     try {
         out("⏳ Đang lấy chi tiết submission " + submissionId + "...");
 
-        // 1️⃣ Gọi API lấy result
         const result = await fetchResultBySubmission(submissionId);
         if (!result) throw new Error("Không lấy được result");
 
-        // 2️⃣ Chuẩn hoá danh sách testResults (API có thể trả mảng hoặc object)
         const testResultsRaw = Array.isArray(result) ? result : (result.testResults || []);
-
         if (!testResultsRaw.length)
             throw new Error("Submission này chưa có test case result nào.");
 
-        // 3️⃣ Map dữ liệu theo đúng schema backend cần (bổ sung Status nếu thiếu)
         const testResults = testResultsRaw.map((r, i) => ({
             Name: r.name || `Case ${i + 1}`,
-            Status: r.status || (r.passed ? "Passed" : "Failed"),  // ✅ fix lỗi thiếu Status
+            Status: r.status || (r.passed ? "Passed" : "Failed"),
             Input: r.input || "",
             ExpectedOutput: r.expectedOutput || "",
             Output: r.output || "",
@@ -125,44 +166,38 @@ async function generateDetailFeedback(submissionId) {
             Weight: r.weight || 1.0
         }));
 
-        // 4️⃣ Payload gửi sang FeedbackService
         const payload = {
-            SubmissionId: submissionId,   // ✅ đúng chữ hoa
-            TestResults: testResults      // ✅ đúng chữ hoa
+            SubmissionId: submissionId,
+            TestResults: testResults
         };
 
         out("📤 Gửi sang FeedbackService (chi tiết từng testcase)...");
-
-        // 5️⃣ Gửi request đến Gateway
-        const res = await fetch(`${GATEWAY}/feedbacktestcase`, {
+        const res = await apiFetch(`/feedbacktestcase`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
 
-        // 6️⃣ Hiển thị kết quả tổng quát
         $("aiSummary").value = data.summary || "(Không có)";
         $("aiScore").value = data.score ?? "";
         out(JSON.stringify(data, null, 2));
-        $("manualFeedback").value = data.summary || ""; // them nhan xet vao o nhap tay
-        // 7️⃣ Hiển thị chi tiết từng test case
+        $("manualFeedback").value = data.summary || "";
+
         const tb = $("tblDetails").querySelector("tbody");
         tb.innerHTML = "";
         (data.testCaseFeedback || []).forEach((t, i) => {
             tb.innerHTML += `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${t.status || (t.comment?.includes("Pass") ? "Passed" : "Failed")}</td>
-                <td>${t.input || "-"}</td>
-                <td>${t.expectedOutput || "-"}</td>
-                <td>${t.comment || "-"}</td>
-            </tr>`;
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${t.status || (t.comment?.includes("Pass") ? "Passed" : "Failed")}</td>
+                    <td>${t.input || "-"}</td>
+                    <td>${t.expectedOutput || "-"}</td>
+                    <td>${t.comment || "-"}</td>
+                </tr>`;
         });
 
-        // ✅ Thông báo thành công
         out("✅ Đã nhận xét chi tiết cho submission " + submissionId);
 
     } catch (err) {
@@ -171,15 +206,11 @@ async function generateDetailFeedback(submissionId) {
     }
 }
 
-// ========== EVENT BINDINGS ==========
-$("btnProgress").onclick = generateProgressFeedback;
-$("btnClear").onclick = () => location.reload();
-$("btnHealth").onclick = () => out("✅ Gateway hoạt động tốt tại " + GATEWAY);
-// ========== GỬI NHẬN XÉT SAU KHI GIẢNG VIÊN CHỈNH SỬA ==========
+// ======== MANUAL FEEDBACK (GIẢNG VIÊN GỬI LẠI) ========
 document.getElementById("btnSendReviewed")?.addEventListener("click", async () => {
     try {
-        const submissionId = parseInt(document.getElementById("qSubmissionId")?.value || 0);
-        const studentId = parseInt(document.getElementById("qStudentId")?.value || 0);
+        const params = new URLSearchParams(window.location.search);
+        const studentId = parseInt(params.get("studentId") || localStorage.getItem("selectedStudentId") || 0);
         const feedbackText = document.getElementById("manualFeedback")?.value.trim();
 
         if (!feedbackText) {
@@ -188,17 +219,15 @@ document.getElementById("btnSendReviewed")?.addEventListener("click", async () =
         }
 
         const payload = {
-            submissionId: submissionId,
-            studentId: studentId,
-            feedbackText: feedbackText,
+            studentId,
+            feedbackText,
             comment: "Giảng viên đã chỉnh sửa và gửi lại nhận xét."
         };
 
         console.log("📤 Sending reviewed feedback:", payload);
 
-        const res = await fetch(`${GATEWAY}/manual/sendreviewed`, {
+        const res = await apiFetch(`/manual/sendreviewed`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
@@ -216,3 +245,6 @@ document.getElementById("btnSendReviewed")?.addEventListener("click", async () =
     }
 });
 
+// ======== BUTTONS ========
+$("btnClear").onclick = () => location.reload();
+$("btnHealth").onclick = () => out("✅ Gateway hoạt động tốt tại " + GATEWAY);

@@ -1,5 +1,4 @@
-﻿
-// ======== SESSION TIMEOUT ========
+﻿// ======== SESSION TIMEOUT ========
 let inactivityTime = 0;
 const maxInactivity = 5 * 60 * 1000; // 5 phút
 
@@ -37,8 +36,7 @@ function checkAccess() {
 
 // ======== LOAD STUDENTS ========
 const apiUrl = "http://localhost:5261/GetAllStudents";
-
-let studentsData = []; // Lưu dữ liệu sinh viên
+let studentsData = [];
 
 async function loadStudents() {
     const token = localStorage.getItem("token");
@@ -51,14 +49,16 @@ async function loadStudents() {
         if (!res.ok) throw new Error("Không thể tải dữ liệu sinh viên!");
 
         const data = await res.json();
-        studentsData = data; // Lưu dữ liệu
+        studentsData = data;
 
         const tbody = document.querySelector("#studentTable tbody");
         tbody.innerHTML = data.map(s =>
-            `<tr>
+            `<tr id="row-${s.userID}">
                 <td>${s.username}</td>
                 <td>${s.fullName}</td>
-                <td><button onclick="showID(${s.userID}, '${s.username}')">Xem ID</button></td>
+                <td>
+                    <button onclick="showID(${s.userID}, '${s.username}')">Xem ID</button>
+                </td>
             </tr>`
         ).join("");
 
@@ -67,20 +67,28 @@ async function loadStudents() {
     }
 }
 
-// Hiển thị bảng ID chỉ của sinh viên được chọn
+// ======== HIỂN THỊ ID + NÚT XEM BÀI TẬP ========
 function showID(userID, username) {
     const idTable = document.getElementById("idTable");
     const tbody = idTable.querySelector("tbody");
 
+    // Hiển thị bảng có thêm nút "Xem bài tập"
     tbody.innerHTML = `
         <tr>
             <td>${userID}</td>
             <td>${username}</td>
+            <td>
+                <button onclick="openFeedback(${userID})" class="btn-view-task">
+                    Xem bài tập
+                </button>
+            </td>
         </tr>
     `;
 
-    idTable.style.display = "table"; // Hiển thị bảng
+    idTable.style.display = "table"; // Hiện bảng ID
 }
 
-
-
+// ======== MỞ TRANG FEEDBACK ========
+function openFeedback(studentId) {
+    window.location.href = `Feedback.html?studentId=${studentId}`;
+}
