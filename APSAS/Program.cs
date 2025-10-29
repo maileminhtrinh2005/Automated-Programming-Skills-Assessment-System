@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
@@ -12,9 +12,20 @@ var allRoutes = new JArray();
 
 foreach (var file in ocelotFiles)
 {
-    var json = JObject.Parse(File.ReadAllText(file));
-    if (json["Routes"] is JArray routes)
-        allRoutes.Merge(routes);
+    // var json = JObject.Parse(File.ReadAllText(file));
+    //   if (json["Routes"] is JArray routes)
+    //    allRoutes.Merge(routes);
+    try
+    {
+        var json = JObject.Parse(File.ReadAllText(file));
+        if (json["Routes"] is JArray routes)
+            allRoutes.Merge(routes);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Lỗi đọc file {file}: {ex.Message}");
+    }
+
 }
 
 // 
