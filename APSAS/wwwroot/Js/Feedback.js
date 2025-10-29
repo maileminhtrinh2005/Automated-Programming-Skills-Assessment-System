@@ -228,7 +228,7 @@ $("btnSendReviewed")?.addEventListener("click", async () => {
 
 // ======== BUTTONS ========
 $("btnClear").onclick = () => location.reload();
-$("btnHealth").onclick = () => out("✅ Gateway hoạt động tốt tại " + GATEWAY);
+
 $("btnGenerate").onclick = () => {
     const studentId = localStorage.getItem("selectedStudentId");
     if (!studentId) return alert("⚠️ Không có studentId!");

@@ -1,14 +1,115 @@
-﻿body {
-    font-family: system-ui, sans-serif;
-    background: #f8fafc;
-    color: #0f172a;
-    max-width: 650px;
-    margin: 40px auto;
+﻿/* ======== TOÀN TRANG ======== */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #e0e7ff, #f8fafc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ======== KHUNG CHÍNH (CARD TO Ở GIỮA MÀN HÌNH) ======== */
+main {
+    width: 75%; /* chiếm khoảng 75% chiều ngang màn hình */
+    max-width: 1300px; /* tối đa 1300px */
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    padding: 40px 60px;
+    overflow-y: auto;
+    max-height: 90vh; /* giữ trong tầm nhìn, có thể cuộn nếu dài */
+}
+
+/* ======== HEADER ======== */
+h1 {
+    color: #2563eb;
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+/* ======== PHẦN CARD NHỎ ======== */
+.section-card {
+    background: #ffffff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 28px;
+}
+
+/* ======== TIÊU ĐỀ PHẦN ======== */
+h2 {
+    color: #1e293b;
+    border-left: 6px solid #2563eb;
+    padding-left: 10px;
+    margin-bottom: 16px;
+}
+
+/* ======== BẢNG ======== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
     text-align: center;
 }
 
-h1 {
-    color: #2563eb;
+th {
+    background: #e2e8f0;
+    font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+    background: #f1f5f9;
+}
+
+/* ======== GRID FEEDBACK ======== */
+.feedback-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.feedback-left, .feedback-right {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ======== INPUT + TEXTAREA ======== */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    resize: vertical;
+}
+
+.readonly {
+    background: #f1f5f9;
+}
+
+/* ======== NÚT ======== */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
 button {
@@ -18,94 +119,38 @@ button {
     padding: 10px 16px;
     border-radius: 6px;
     cursor: pointer;
-    margin-bottom: 16px;
     transition: background 0.2s ease;
+    font-weight: 500;
 }
 
     button:hover {
         background: #1d4ed8;
     }
 
-#bell {
-    font-size: 42px;
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    margin: 16px;
-    user-select: none;
+/* ======== TEST CASE TABLE ======== */
+#tblDetails th {
+    background: #cbd5e1;
 }
 
-#badge {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    background: #ef4444;
-    color: white;
-    font-size: 13px;
-    border-radius: 50%;
-    padding: 3px 7px;
-}
-
-#notifications {
-    text-align: left;
-    background: white;
-    padding: 16px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    max-height: 360px;
-    overflow-y: auto;
-}
-
-.notification {
-    border-left: 4px solid #2563eb;
-    background: #f1f5f9;
-    padding: 10px 14px;
-    margin-bottom: 10px;
+#out {
+    background: #f8fafc;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
     border-radius: 6px;
-    animation: fadein 0.4s ease-in;
+    height: 150px;
+    overflow-y: auto;
+    text-align: left;
+    margin-bottom: 16px;
 }
 
-    .notification time {
-        color: #64748b;
-        font-size: 0.85em;
+/* ======== RESPONSIVE ======== */
+@media (max-width: 900px) {
+    main {
+        width: 95%;
+        padding: 20px;
     }
 
-/* Hiệu ứng xuất hiện */
-@keyframes fadein {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
+    .feedback-grid {
+        grid-template-columns: 1fr;
     }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Chuông rung khi có noti */
-@keyframes shake {
-    0% {
-        transform: rotate(0);
-    }
-
-    25% {
-        transform: rotate(-20deg);
-    }
-
-    50% {
-        transform: rotate(20deg);
-    }
-
-    75% {
-        transform: rotate(-10deg);
-    }
-
-    100% {
-        transform: rotate(0);
-    }
-}
-
-.shake {
-    animation: shake 0.6s ease;
 }
