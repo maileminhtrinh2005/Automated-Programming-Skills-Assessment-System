@@ -1,9 +1,12 @@
 ﻿using AssignmentService.Application.DTO;
 using AssignmentService.Application.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AssignmentService.Controllers
 {
+    
     [ApiController]
     [Route("api/Assignment")]
     public class AssignmentController : ControllerBase
@@ -14,18 +17,26 @@ namespace AssignmentService.Controllers
             _assignment = assignment;
         }
 
-
+        [Authorize(Roles = "Admin,Lecturer")]
         [HttpPost("AddAssignment")]
-        public async Task<IActionResult> AddAssignment(AssignmentRequest request)
+        public async Task<IActionResult> AddAssignment([FromBody]AssignmentRequest request)
         {
             if (request == null) { return BadRequest(); }
-            
+
+            var teacherIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(teacherIdStr, out var teacherId))
+            {
+                return BadRequest("Invalid user id in token.");
+            }
+            request.UserId = teacherId;
+
             bool check = await _assignment.AddAssignment(request);
-            if (!check) {return  BadRequest(); }
+            if (!check) { return BadRequest(); }
 
             return Ok();
         }
 
+        [Authorize]
         [HttpGet("GetAssignmentById/{id}")] // id baif tapj assignmentid 
         public async Task<IActionResult> GetAssignmentById(int id)
         {
@@ -39,8 +50,9 @@ namespace AssignmentService.Controllers
             return Ok(assignment);
         }
 
+        [Authorize(Roles = "Lecturer")]
         [HttpPost("UpdateAssignment")]
-        public async Task<IActionResult> UpdateAssignment(AssignmentRequest request)
+        public async Task<IActionResult> UpdateAssignment([FromBody]AssignmentRequest request)
         {
             if (request == null) return BadRequest();
             if (! await _assignment.UpdateAssignment(request)) return BadRequest();
@@ -48,6 +60,7 @@ namespace AssignmentService.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Lecturer")]
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteAssignment(int id)
         {
@@ -68,10 +81,12 @@ namespace AssignmentService.Controllers
             }
         }
 
+
+        [Authorize]
         [HttpGet("GetAllAssignment")]
         public async Task<IActionResult> GetAllAssignment()
         {
-
+            Console.WriteLine("alooo");
             var assignmentList = await _assignment.GetAllAssignment();
             if (assignmentList == null) return NotFound();
             return Ok(assignmentList);

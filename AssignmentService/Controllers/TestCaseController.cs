@@ -2,6 +2,7 @@
 
 using AssignmentService.Application.DTO;
 using AssignmentService.Application.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace assignmentservice.controllers
@@ -16,6 +17,7 @@ namespace assignmentservice.controllers
             _testcase = testcase;
         }
 
+        [Authorize(Roles = "Lecturer")]
         [HttpPost("AddTestCase")]
         public async Task<IActionResult> addtestcase([FromBody]TestCaseRequest request)
         {
@@ -34,6 +36,8 @@ namespace assignmentservice.controllers
             return Ok("All testcases added successfully");
         }
 
+
+        [Authorize]
         [ HttpGet("GetTestCaseById/{id}")]// id asssignemt 
         public async Task<IActionResult> GetTestCaseById(int id)
         {

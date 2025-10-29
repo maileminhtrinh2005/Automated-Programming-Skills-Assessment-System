@@ -4,47 +4,10 @@
     <meta charset="UTF-8">
     <title>Dashboard Giảng Viên</title>
     <link rel="stylesheet" href="Css/DashboardLecturer.css">
+    <link rel="stylesheet" href="Css/LecturerAssignment.css" />
     <link rel="stylesheet" href="Css/Dashboard.css"> <!-- nếu muốn dùng chung style nav -->
-    <style>
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #333;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 10px;
-            z-index: 1000;
-        }
-
-            .top-nav a {
-                color: white;
-                text-decoration: none;
-                font-weight: bold;
-            }
-
-                .top-nav a:hover {
-                    color: #ffcc00;
-                }
-
-        section, h2, table {
-            padding-top: 60px;
-        }
-        /* tránh navbar che nội dung */
-    </style>
 </head>
-<body style="background-image: url('Image/'); background-size: cover; background-repeat: no-repeat;">
+<body>
 
     <!-- 🔹 Thanh điều hướng -->
     <nav class="top-nav">
@@ -68,11 +31,12 @@
             <h3 id="modalTitle"></h3>
             <p id="modalDescription"></p>
             <div class="modal-buttons">
+                <button id="editResourceBtn">Chỉnh sửa resource</button>
+                <button id="editAssignmentBtn">Chỉnh sửa chi tiết</button>
                 <button id="viewResourceBtn">Hướng dẫn</button>
                 <button id="doAssignmentBtn">Làm bài</button>
-                <button id="editAssignmentBtn">Chỉnh sửa chi tiết</button>
             </div>
-            <button id="closeModalBtn" class="close">Đóng</button>
+            <button id="closeModalBtn" class="close">X</button>
         </div>
     </div>
 
@@ -96,7 +60,7 @@
                 </select>
                 <div class="modal-buttons">
                     <button type="submit">💾 Lưu</button>
-                    <button type="button" id="cancelAddBtn">Hủy</button>
+                    <button type="button" id="cancelAddBtn" class="close">X</button>
                 </div>
             </form>
         </div>
@@ -122,7 +86,7 @@
             </section>
             <div class="modal-buttons">
                 <button id="saveEditBtn">💾 Lưu</button>
-                <button id="cancelEditBtn">Hủy</button>
+                <button id="cancelEditBtn" class="close">X</button>
             </div>
         </div>
     </div>
@@ -140,9 +104,19 @@
                 <input type="text" id="resourceTypeInput" placeholder="VD: PDF, Video, v.v.">
                 <div class="modal-buttons">
                     <button type="submit">💾 Lưu</button>
-                    <button type="button" id="cancelResourceBtn">Hủy</button>
+                    <button type="button" id="cancelResourceBtn" class="close">X</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="viewResourceModal" class="modal">
+        <div class="modal-content">
+            <button id="closeViewResourceBtn" class="close">X</button>
+            <h3>Hướng dẫn bài tập</h3>
+            <p><strong>Tiêu đề:</strong> <span id="viewResourceTitle"></span></p>
+            <p><strong>Loại:</strong> <span id="viewResourceType"></span></p>
+            <p><strong>Link:</strong> <a id="viewResourceLink" href="#" target="_blank">Xem tài liệu</a></p>
         </div>
     </div>
 
@@ -171,7 +145,7 @@
         </table>
     </section>
 
-    <script src="Js/Assignment.js"></script>
+    <script src="Js/LecturerAssignment.js"></script>
     <script src="Js/DashboardLecturer.js"></script>
 </body>
 </html>

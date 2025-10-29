@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SubmissionService.Application.DTOs;
 using SubmissionService.Application.Service;
+using System.Security.Claims;
 
 namespace SubmissionService.Controllers
 {
@@ -13,12 +15,19 @@ namespace SubmissionService.Controllers
         {
             _submissionManager = sub;
         }
+        [Authorize(Roles ="Student")]
         [HttpPost("Submit")]
         public async Task<IActionResult> Submit(Request request)
         {
 
             try
             {
+                var studentIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!int.TryParse(studentIdStr, out var studentId))
+                {
+                    return BadRequest("Invalid user id in token.");
+                }
+                request.StudentId = studentId;
                 bool success = await _submissionManager.Submit(request);
                 if (!success)
                 {
@@ -41,6 +50,7 @@ namespace SubmissionService.Controllers
         }
 
 
+        [Authorize(Roles ="Student,Lecturer")]
         [HttpPost("RunCode")]
         public async Task<IActionResult> RunCode([FromBody] Request request)
         {

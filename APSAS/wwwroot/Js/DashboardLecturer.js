@@ -16,7 +16,7 @@ window.onload = () => {
         if (inactivityTime >= maxInactivity) {
             alert("⏰ Hết phiên làm việc do không hoạt động!");
             localStorage.removeItem("token");
-            window.location.href = "login.html";
+            window.location.href = "DN.html";
         }
     }, 1000);
 

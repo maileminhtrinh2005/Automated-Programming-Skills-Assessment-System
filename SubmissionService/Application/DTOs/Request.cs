@@ -2,6 +2,7 @@
 {
     public class Request
     {
+        public int StudentId { get; set; }
         public string SourceCode { get; set; } = string.Empty;
         public int LanguageId { get; set; }
         public int AssignmentId { get; set; }   

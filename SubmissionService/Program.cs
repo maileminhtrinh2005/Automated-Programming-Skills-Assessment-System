@@ -5,6 +5,10 @@ using ShareLibrary;
 using RabbitMQ.Client;
 using SubmissionService.Infrastructure.Persistence;
 using SubmissionService.Application.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using SharedLibrary.Jwt;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +54,31 @@ builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 
 
+// lay cau hinh jwt
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("JwtOptions"));
+// dang ki jwt
+builder.Services.AddSingleton<IJwtService, JwtService>();
+//cau hinh 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions?.Issuer,
+            ValidAudience = jwtOptions?.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey ?? ""))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -60,6 +89,8 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

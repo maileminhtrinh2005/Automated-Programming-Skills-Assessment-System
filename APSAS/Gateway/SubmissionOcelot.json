@@ -31,7 +31,7 @@
     // ddoan nay lay danh sach bai lam,  duoi la danh sach ket qua cho tung bai
 
     {
-      "DownstreamPathTemplate": "/api/Result/GetYourSubmission/{id}",
+      "DownstreamPathTemplate": "/api/Result/GetSubmissions/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -39,10 +39,9 @@
           "Port": 5090
         }
       ],
-      "UpstreamPathTemplate": "/GetYourSubmission/{id}",
+      "UpstreamPathTemplate": "/GetSubmissions/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
-
     {
       "DownstreamPathTemplate": "/api/Result/GetYourResult/{id}",
       "DownstreamScheme": "http",
@@ -54,8 +53,19 @@
       ],
       "UpstreamPathTemplate": "/GetYourResult/{id}",
       "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Result/GetMySubmission",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/GetMySubmission",
+      "UpstreamHttpMethod": [ "GET" ]
     }
-
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5261"

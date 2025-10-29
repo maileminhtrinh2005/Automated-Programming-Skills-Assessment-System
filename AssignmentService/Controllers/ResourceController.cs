@@ -1,5 +1,6 @@
 ﻿using AssignmentService.Application.DTO;
 using AssignmentService.Application.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssignmentService.Controllers
@@ -14,7 +15,7 @@ namespace AssignmentService.Controllers
             _resourceManager = resourceManager;
         }
 
-
+        [Authorize(Roles ="Admin,Lecturer")]
         [HttpPost("AddResource")]
         public async Task<IActionResult> AddResource([FromBody] ResourceRequest request)
         {
@@ -24,6 +25,7 @@ namespace AssignmentService.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpGet("GetResourceById/{id}")]
         public async Task<IActionResult> GetResourceByAssignmentId(int id)
         {

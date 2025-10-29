@@ -24,7 +24,7 @@ namespace SubmissionService.Infrastructure
             var submission = new Submission
             {
                 AssignmentId = submissiondto.AssignmentId,
-                StudentId = 1, // tam thoi chua co
+                StudentId = submissiondto.StudentId,
                 Code = submissiondto.Code,
                 LanguageId = submissiondto.LanguageId,
                 SubmittedAt = DateTime.Now,
@@ -61,7 +61,8 @@ namespace SubmissionService.Infrastructure
                     LanguageId = s.LanguageId,
                     SubmittedAt = s.SubmittedAt,
                     Status = s.Status,
-                    Score = s.Score
+                    Score = s.Score,
+                    LanguageName=s.Language.LanguageName
                 }).ToListAsync();
 
             return submissions;

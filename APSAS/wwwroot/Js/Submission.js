@@ -1,9 +1,8 @@
 ﻿const gatewayUrl = "http://localhost:5261"; // API Gateway URL
 let selectedLanguageId = 71; // mặc định Python
 let testcaseExample = " ";
-
-const urlParams = new URLSearchParams(window.location.search);
-const assignmentId = urlParams.get("id");
+const token = localStorage.getItem("token");
+const assignmentId = localStorage.getItem("currentAssignmentId");
 
 // 🟢 Load assignment
 async function loadAssignment() {
@@ -12,7 +11,9 @@ async function loadAssignment() {
         return;
     }
     try {
-        const res = await fetch(`${gatewayUrl}/GetAssignmentById/${assignmentId}`);
+        const res = await fetch(`${gatewayUrl}/GetAssignmentById/${assignmentId}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
         if (!res.ok) throw new Error("Không tải được bài tập");
         const data = await res.json();
 
@@ -51,13 +52,16 @@ async function submitCode() {
     try {
         const res = await fetch(`${gatewayUrl}/Submit`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify(body)
         });
         if (res.ok) {
 
             alert("Nộp bài thành công!");
-            window.location.href = `/Dashboard.html`;
+            window.location.href = `/StudentDashboard.html`;
             return;
         }
 
@@ -81,7 +85,10 @@ async function runCode() {
     try {
         const res = await fetch(`${gatewayUrl}/RunCode`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify(body)
         });
 
@@ -119,7 +126,10 @@ async function runWithTestcase() {
     try {
         const res = await fetch(`${gatewayUrl}/RunCode`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify(body)
         });
 

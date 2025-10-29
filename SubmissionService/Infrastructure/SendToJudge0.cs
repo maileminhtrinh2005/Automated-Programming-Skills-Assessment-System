@@ -16,7 +16,7 @@ namespace SubmissionService.Infrastructure
 
         public async Task<ResultDTO?> RunCode(string sourceCode, int languageId, string stdin, string urlJudge0)
         {
-            if (sourceCode.IsNullOrEmpty() || languageId<0 || urlJudge0.IsNullOrEmpty()) return null;
+            if (sourceCode=="" || languageId<0 || urlJudge0=="") return null;
 
             var body = new
             {

@@ -10,5 +10,6 @@
         public DateTime SubmittedAt { get; set; }
         public string Status { get; set; } = string.Empty;
         public double Score { get; set; }
+        public string LanguageName { get; set; }=string.Empty;
     }
 }

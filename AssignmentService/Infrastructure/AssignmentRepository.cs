@@ -25,7 +25,7 @@ namespace AssignmentService.Infrastructure
                 SampleTestCases=request.SampleTestCase,
                 Deadline = request.Deadline,
                 Difficulty = request.Difficulty,
-                CreatedBy = 1, // tamj thoiw chua co
+                CreatedBy = request.UserId,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };

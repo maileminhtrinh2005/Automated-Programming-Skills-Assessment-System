@@ -32,6 +32,7 @@ namespace SubmissionService.Application.Service
             if (request == null) { Console.WriteLine("nguuuuu"); return false; }
             var body = new SubmissionDTO
             {
+                StudentId = request.StudentId,
                 AssignmentId = request.AssignmentId,
                 Code = request.SourceCode ?? "",
                 LanguageId = request.LanguageId,
@@ -51,7 +52,7 @@ namespace SubmissionService.Application.Service
 
         public async Task<ResultDTO?> RunCode(string sourceCode, int languageId, string stdin)
         {
-            if (sourceCode.IsNullOrEmpty() || languageId < 0) return null;
+            if (sourceCode== "" || languageId < 0) return null;
 
             var result = await _judge0.RunCode(sourceCode, languageId, stdin, _urlJugde0);
 

@@ -4,7 +4,7 @@ namespace SubmissionService.Application.Interface
 {
     public interface IResultRepository
     {
-        public Task<List<ResultDTO>> GetResults( int submissionId);
+        public Task<List<ResultDTO>?> GetResults( int submissionId);
 
 
         public Task<List<ResultDTO>> GetAllYourSubmissions(int studenstId);
