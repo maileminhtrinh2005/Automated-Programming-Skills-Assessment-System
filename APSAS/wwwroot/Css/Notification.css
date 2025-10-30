@@ -1,98 +1,36 @@
-﻿body {
-    font-family: Arial, sans-serif;
-    background-color: #f6f7fb;
-    color: #222;
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    text-align: center;
-}
-
-.btn-group {
-    margin-top: 10px;
+﻿.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    justify-content: space-between; /* Đẩy 2 nhóm ra 2 bên */
+    align-items: center;
+    padding: 10px 40px; /* Thêm khoảng trống 2 bên lề */
+    z-index: 1000;
+    box-sizing: border-box; /* Thêm dòng này để padding không làm vỡ layout */
 }
 
-button {
-    background: #2563eb;
+/* Định dạng cho nhóm các link */
+.nav-links {
+    display: flex;
+    gap: 20px; /* Khoảng cách giữa các link */
+}
+
+.top-nav a {
     color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-    button:hover {
-        background: #1d4ed8;
+    .top-nav a:hover {
+        color: #ffcc00;
     }
 
-#bell {
-    font-size: 40px;
-    cursor: pointer;
+/* Định dạng cho chuông (đã ổn) */
+#bellContainer {
     position: relative;
-    display: inline-block;
-    margin-top: 15px;
-}
-
-#badge {
-    background: red;
-    color: white;
-    border-radius: 50%;
-    padding: 4px 8px;
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    font-size: 14px;
-}
-
-.notification {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    padding: 12px;
-    margin-top: 10px;
-    text-align: left;
-    transition: all 0.3s ease;
-}
-
-    .notification b {
-        color: #1e40af;
-    }
-
-.mark-btn {
-    background: #22c55e;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin-top: 8px;
-    cursor: pointer;
-}
-
-    .mark-btn:hover {
-        background: #16a34a;
-    }
-
-.shake {
-    animation: shake 0.5s;
-}
-
-@keyframes shake {
-    0%, 100% {
-        transform: rotate(0deg);
-    }
-
-    25% {
-        transform: rotate(-15deg);
-    }
-
-    75% {
-        transform: rotate(15deg);
-    }
+    display: flex;
+    align-items: center;
 }

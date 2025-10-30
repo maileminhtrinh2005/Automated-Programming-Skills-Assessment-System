@@ -26,7 +26,6 @@ async function apiFetch(path, options = {}) {
 
 // ======== LOAD TRANG ========
 window.addEventListener("DOMContentLoaded", async () => {
-    // Nếu studentId chưa có, lấy từ key cũ
     let studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
 
     if (!studentId) {
@@ -36,22 +35,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log("📦 Student ID:", studentId);
-
-    try {
-        await loadSubmissionsOnly(studentId);
-    } catch (err) {
-        console.error("❌ Lỗi khi load submissions:", err);
-        alert("Không thể tải danh sách bài tập. Vui lòng thử lại!");
-    }
+    await loadSubmissionsOnly(studentId);
 });
 
 // ======== FETCH DATA ========
 async function fetchSubmissionsByStudent(studentId) {
     const res = await apiFetch(`/GetYourSubmission/${studentId}`);
     if (!res.ok) throw new Error("Không lấy được submissions");
-    const data = await res.json();
-    console.log("📥 Submissions nhận được:", data);
-    return data;
+    return res.json();
 }
 
 async function fetchAssignmentById(id) {
@@ -84,13 +75,20 @@ function renderSubmissions(subs) {
             <td>${s.score ?? "-"}</td>
             <td>${s.status ?? "-"}</td>
             <td>${s.createdAt ?? "-"}</td>
-            <td><button class="btnDetail" data-id="${s.submissionId}">🔍 Xem</button></td>
+            <td>
+                <button class="btnDetail" data-id="${s.submissionId}">
+                    🧠 Nhận xét chi tiết
+                </button>
+            </td>
         `;
         tbody.appendChild(row);
     });
 
     document.querySelectorAll(".btnDetail").forEach(btn => {
-        btn.onclick = () => generateDetailFeedback(btn.dataset.id);
+        btn.onclick = async () => {
+            const submissionId = btn.dataset.id;
+            await generateDetailFeedback(submissionId);
+        };
     });
 }
 
@@ -110,10 +108,76 @@ async function loadSubmissionsOnly(studentId) {
         });
     }
 
-    console.log("✅ Dữ liệu sau khi tổng hợp:", detailedSubs);
     renderSubmissions(detailedSubs);
 }
 
+// ======== NHẬN XÉT CHI TIẾT (TỰ LẤY RESULT) ========
+async function generateDetailFeedback(submissionId) {
+    try {
+        out(`🔍 Đang lấy result cho submission ${submissionId}...`);
+        const result = await fetchResultBySubmission(submissionId);
+
+        // Kiểm tra dữ liệu hợp lệ
+        if (!result || (Array.isArray(result) && result.length === 0))
+            return alert("❌ Không tìm thấy dữ liệu test case.");
+
+        // Nếu API trả mảng trực tiếp (chưa có field testResults)
+        const testResults = Array.isArray(result)
+            ? result
+            : (result.testResults || []);
+
+        if (testResults.length === 0)
+            return alert("❌ Không có test case nào trong result.");
+
+        // ✅ Chuẩn hóa cấu trúc dữ liệu cho đúng với TestResultDto
+        const normalizedResults = testResults.map(tr => ({
+            status: tr.status || tr.Status || "Unknown",
+            input: tr.input || tr.Input || "",
+            expectedOutput: tr.expectedOutput || tr.ExpectedOutput || "",
+            actualOutput: tr.actualOutput || tr.ActualOutput || "",
+            executionTime: tr.executionTime || tr.ExecutionTime || 0
+        }));
+
+        const payload = {
+            submissionId,
+            testResults: normalizedResults
+        };
+
+        out("📤 Gửi sang FeedbackService để sinh nhận xét chi tiết...");
+        const res = await apiFetch(`/testcasesubmit`, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        // Bắt lỗi phản hồi
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(errText);
+        }
+
+        const data = await res.json();
+
+        // ✅ Hiển thị kết quả nhận xét
+        $("feedbackCard").style.display = "block";
+        $("summaryText").textContent = data.summary || "(Không có nhận xét)";
+        $("progressText").textContent = data.overallProgress || "(Không có)";
+        $("manualFeedback").value = data.summary || "";
+
+        // Hiển thị màu trạng thái
+        const prog = $("progressText");
+        prog.className = "";
+        const p = (data.overallProgress || "").toLowerCase();
+        if (p.includes("tốt") || p.includes("good")) prog.classList.add("progress-good");
+        else if (p.includes("cải thiện") || p.includes("medium")) prog.classList.add("progress-medium");
+        else prog.classList.add("progress-bad");
+
+        out("✅ Nhận xét chi tiết:", data);
+
+    } catch (err) {
+        alert("❌ Lỗi khi sinh nhận xét chi tiết: " + err.message);
+        console.error(err);
+    }
+}
 // ======== NHẬN XÉT TỔNG QUÁT ========
 async function generateProgressFeedback(studentId) {
     try {
