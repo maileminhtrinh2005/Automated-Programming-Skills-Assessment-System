@@ -90,5 +90,13 @@ function showID(userID, username) {
 
 // ======== MỞ TRANG FEEDBACK ========
 function openFeedback(studentId) {
-    window.location.href = `Feedback.html?studentId=${studentId}`;
+    // Lưu ID sinh viên vào localStorage
+    localStorage.setItem("selectedStudentId", studentId);
+
+    // 🔧 Đồng bộ key để Feedback.html đọc được
+    localStorage.setItem("studentId", studentId);
+
+    // Chuyển sang trang Feedback
+    window.location.href = "Feedback.html";
 }
+

@@ -4,7 +4,7 @@ namespace FeedbackService.Application.Dtos
 {
     public class BulkFeedbackRequestDto
     {
-        public string StudentId { get; set; }
+        public int StudentId { get; set; }
         public List<SubmissionForFeedbackDto> Submissions { get; set; } = new();
     }
 

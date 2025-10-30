@@ -1,4 +1,4 @@
-﻿<!doctype html>
+﻿<!--<!doctype html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -10,15 +10,96 @@
     <main>
         <header>
             <h1>📘 XEM BÀI TẬP</h1>
-            
+
+        </header>-->
+<!-- 🗂️ Danh sách bài tập -->
+<!--<section class="section-card">
+    <h2> Danh sách bài tập</h2>
+
+
+
+    <table id="tblSubmissions">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tên bài</th>
+                <th>Điểm</th>
+                <th>Trạng thái</th>
+                <th>Thời gian</th>
+                <th>Chi tiết</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>-->
+<!-- 📈 Nhận xét tổng quát + 📊 Chi tiết test case -->
+<!--<section class="feedback-grid">
+    <div class="feedback-left">
+        <h2>📈 Nhận xét tổng quát</h2>
+
+        <label for="aiSummary">Tóm tắt / Nhận xét</label>
+        <textarea id="aiSummary" class="readonly" readonly rows="6" placeholder="Chưa có nhận xét..."></textarea>
+
+        <label for="aiScore">Tiến bộ / Trạng thái</label>
+        <input id="aiScore" class="readonly" readonly placeholder="Chưa có tiến bộ nào..." />
+
+        <div class="btn-group top-btns">
+            <button id="btnGenerate">📈 Nhận xét tổng quát</button>
+            <button id="btnClear">🗑️ Clear</button>
+        </div>
+    </div>
+
+    <div class="feedback-right">
+        <h2>📊 Chi tiết từng test case</h2>
+
+        <pre id="out">(chưa có dữ liệu)</pre>
+        <table id="tblDetails">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Status</th>
+                    <th>Input</th>
+                    <th>Expected</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>-->
+<!-- ✉️ Gửi nhận xét -->
+<!--<section class="section-card">
+            <h2>✉️ Gửi nhận xét (Giảng viên chỉnh sửa)</h2>
+            <label for="manualFeedback">Nhập / chỉnh sửa nội dung feedback:</label>
+            <textarea id="manualFeedback" rows="6" placeholder="Nhập hoặc chỉnh sửa nội dung feedback..."></textarea>
+
+            <div class="btn-group">
+                <button id="btnSendReviewed">✉️ Gửi nhận xét</button>
+                <button id="btnClear">🗑️ Clear</button>
+            </div>
+        </section>
+    </main>
+    <script src="Js/Feedback.js"></script>
+</body>
+</html>-->
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>📘 Xem bài tập</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="Css/Feedback.css" />
+</head>
+<body>
+    <main>
+        <header>
+            <h1>📘 XEM BÀI TẬP</h1>
+           
         </header>
 
         <!-- 🗂️ Danh sách bài tập -->
         <section class="section-card">
-            <h2> Danh sách bài tập</h2>
-
-          
-
+            <h2>🗂️ Danh sách bài tập</h2>
             <table id="tblSubmissions">
                 <thead>
                     <tr>
@@ -34,39 +115,20 @@
             </table>
         </section>
 
-        <!-- 📈 Nhận xét tổng quát + 📊 Chi tiết test case -->
-        <section class="feedback-grid">
-            <div class="feedback-left">
-                <h2>📈 Nhận xét tổng quát</h2>
+        <!-- 📈 Nhận xét tổng quát -->
+        <section class="section-card">
+            <h2>📈 Nhận xét tổng quát</h2>
 
-                <label for="aiSummary">Tóm tắt / Nhận xét</label>
-                <textarea id="aiSummary" class="readonly" readonly rows="6" placeholder="Chưa có nhận xét..."></textarea>
-
-                <label for="aiScore">Tiến bộ / Trạng thái</label>
-                <input id="aiScore" class="readonly" readonly placeholder="Chưa có tiến bộ nào..." />
-
-                <div class="btn-group top-btns">
-                    <button id="btnGenerate">📈 Nhận xét tổng quát</button>
-                    <button id="btnClear">🗑️ Clear</button>
-                </div>
+            <!-- Thẻ hiển thị trực quan -->
+            <div id="feedbackCard" class="summary-card" style="display:none;">
+                <h3>📘 Nhận xét AI</h3>
+                <p id="summaryText">(Chưa có nhận xét...)</p>
+                <p><b>📊 Tiến bộ:</b> <span id="progressText">(Chưa có dữ liệu)</span></p>
             </div>
 
-            <div class="feedback-right">
-                <h2>📊 Chi tiết từng test case</h2>
-
-                <pre id="out">(chưa có dữ liệu)</pre>
-                <table id="tblDetails">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Status</th>
-                            <th>Input</th>
-                            <th>Expected</th>
-                            <th>Comment</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="btn-group top-btns">
+                <button id="btnGenerate">📈 Sinh nhận xét tổng quát</button>
+                <button id="btnClear">🗑️ Clear</button>
             </div>
         </section>
 
@@ -78,10 +140,11 @@
 
             <div class="btn-group">
                 <button id="btnSendReviewed">✉️ Gửi nhận xét</button>
-                <button id="btnClear">🗑️ Clear</button>
+                <button id="btnClear2">🗑️ Clear</button>
             </div>
         </section>
     </main>
+
     <script src="Js/Feedback.js"></script>
 </body>
 </html>

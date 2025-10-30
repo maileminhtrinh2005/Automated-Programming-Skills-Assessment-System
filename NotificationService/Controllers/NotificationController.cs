@@ -31,7 +31,7 @@ public class NotificationController : ControllerBase
         => Ok(await _app.GetAllAsync(take, ct));
 
     // 🟢 Lấy thông báo chưa đọc
-    [Authorize]
+  //  [Authorize]
     [HttpGet("unread")]
     public IActionResult GetUnread(int studentId)
     {
@@ -44,7 +44,7 @@ public class NotificationController : ControllerBase
     }
 
     // 🟢 Đánh dấu là đã đọc
-    [Authorize]
+   // [Authorize]
     [HttpPost("markasread")]
     public async Task<IActionResult> MarkAsRead([FromQuery] Guid id)
     {

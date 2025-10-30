@@ -169,7 +169,6 @@
       ]
     },
     {
-
       "UpstreamPathTemplate": "/feedbacksubmit",
       "UpstreamHttpMethod": [
         "POST"
@@ -250,7 +249,7 @@
       "DownstreamPathTemplate": "/api/Feedback/generate/bulk"
     },
     {
-      "UpstreamPathTemplate": "/feedbacktestcase",
+      "UpstreamPathTemplate": "/testcasesubmit",
       "UpstreamHttpMethod": [
         "POST"
       ],
@@ -267,7 +266,6 @@
       }
     },
     {
-
       "UpstreamPathTemplate": "/GetNotification",
       "UpstreamHttpMethod": [
         "POST"
@@ -282,26 +280,10 @@
       "DownstreamPathTemplate": "/api/Notification/GetNotification"
     },
     {
-      "UpstreamPathTemplate": "/Notification/api/notification",
-      "UpstreamHttpMethod": [
-        "GET"
-      ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5216
-        }
-      ],
-      "DownstreamPathTemplate": "/api/notification"
-    },
-    {
-      "UpstreamPathTemplate": "/Notification/{everything}",
+      "UpstreamPathTemplate": "/api/Notification/{everything}",
       "UpstreamHttpMethod": [
         "GET",
-        "POST",
-        "PUT",
-        "DELETE"
+        "POST"
       ],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
