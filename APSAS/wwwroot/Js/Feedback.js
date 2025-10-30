@@ -116,30 +116,26 @@ async function generateDetailFeedback(submissionId) {
     try {
         out(`🔍 Đang lấy result cho submission ${submissionId}...`);
         const result = await fetchResultBySubmission(submissionId);
+        const submissions = await fetchSubmissionsByStudent(localStorage.getItem("studentId"));
+        const submission = submissions.find(s => s.submissionId == submissionId);
 
-        // Kiểm tra dữ liệu hợp lệ
-        if (!result || (Array.isArray(result) && result.length === 0))
+        if (!result || result.length === 0)
             return alert("❌ Không tìm thấy dữ liệu test case.");
 
-        // Nếu API trả mảng trực tiếp (chưa có field testResults)
-        const testResults = Array.isArray(result)
-            ? result
-            : (result.testResults || []);
+        const testResults = Array.isArray(result) ? result : result.testResults || [];
 
-        if (testResults.length === 0)
-            return alert("❌ Không có test case nào trong result.");
-
-        // ✅ Chuẩn hóa cấu trúc dữ liệu cho đúng với TestResultDto
         const normalizedResults = testResults.map(tr => ({
             status: tr.status || tr.Status || "Unknown",
-            input: tr.input || tr.Input || "",
-            expectedOutput: tr.expectedOutput || tr.ExpectedOutput || "",
-            actualOutput: tr.actualOutput || tr.ActualOutput || "",
+            input: tr.input || tr.Input || "Không có input",
+            expectedOutput: tr.expectedOutput || tr.ExpectedOutput || "Không có output mong đợi",
+            actualOutput: tr.actualOutput || tr.ActualOutput || "Không có output thực tế",
             executionTime: tr.executionTime || tr.ExecutionTime || 0
         }));
 
         const payload = {
             submissionId,
+            assignmentTitle: submission?.assignmentTitle || "Không rõ",
+            sourceCode: submission?.code || "Không có source code",
             testResults: normalizedResults
         };
 
@@ -149,21 +145,14 @@ async function generateDetailFeedback(submissionId) {
             body: JSON.stringify(payload)
         });
 
-        // Bắt lỗi phản hồi
-        if (!res.ok) {
-            const errText = await res.text();
-            throw new Error(errText);
-        }
-
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
 
-        // ✅ Hiển thị kết quả nhận xét
         $("feedbackCard").style.display = "block";
         $("summaryText").textContent = data.summary || "(Không có nhận xét)";
         $("progressText").textContent = data.overallProgress || "(Không có)";
         $("manualFeedback").value = data.summary || "";
 
-        // Hiển thị màu trạng thái
         const prog = $("progressText");
         prog.className = "";
         const p = (data.overallProgress || "").toLowerCase();
