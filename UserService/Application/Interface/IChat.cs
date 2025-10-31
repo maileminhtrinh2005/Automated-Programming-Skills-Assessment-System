@@ -3,6 +3,5 @@
     public interface IChat
     {
         void SendMessageToAdmin(string message);
-        IEnumerable<string> ReceiveMessages();
     }
 }

@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>APSAS - Đăng nhập</title>
+    <link rel="stylesheet" href="Css/Login.css">
+</head>
+<body>
+
+    <!-- LOGIN FORM -->
+    <div class="card fade" id="loginCard">
+        <h2>Đăng nhập</h2>
+        <input type="text" id="username" placeholder="Tên đăng nhập">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button id="loginBtn">Đăng nhập</button>
+        <button id="toChangePwdBtn" class="secondary">Đổi mật khẩu</button>
+        <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <!-- CHANGE PASSWORD FORM -->
+    <div class="card hidden fade" id="changeCard">
+        <h2>Đổi mật khẩu</h2>
+        <input type="text" id="cpUsername" placeholder="Tên đăng nhập">
+        <input type="password" id="oldPassword" placeholder="Mật khẩu cũ">
+        <input type="password" id="newPassword" placeholder="Mật khẩu mới">
+        <button id="changeBtn">Cập nhật mật khẩu</button>
+        <button id="backToLoginBtn" class="secondary">⬅ Quay lại</button>
+        <div class="msg" id="changeMsg"></div>
+    </div>
+
+    <script src="Js/Login.js"></script>
+</body>
+</html>

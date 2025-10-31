@@ -1,89 +1,167 @@
 ﻿const GATEWAY_URL = "http://localhost:5261";
-const ADMIN_HUB_URL = "http://localhost:5097/chathub";
-const $ = id => document.getElementById(id);
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+window._usersMap = {};
 
-function showMessage(el, text, kind = "info") {
-    el.textContent = text;
-    el.className = "message " + (kind === "success" ? "success" : kind === "error" ? "error" : "");
+// Phân quyền JWT
+if (!token || role !== "Admin") {
+    alert("🚫 Bạn không có quyền truy cập!");
+    localStorage.clear();
+    window.location.href = "DN.html";
+}
+
+async function secureFetch(url, options = {}) {
+    options.headers = {
+        ...(options.headers || {}),
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
+    return await fetch(url, options);
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = "DN.html";
 }
 
 // ========== API CONFIG ==========
-function addAPIConfig() { alert("Chức năng thêm API (chưa implement)."); }
 function toggleApiForm(mode) {
-    $("addApiForm").style.display = mode === 'add' ? 'block' : 'none';
-    $("updateApiForm").style.display = mode === 'update' ? 'block' : 'none';
+    document.getElementById("addApiForm").style.display = mode === 'add' ? 'block' : 'none';
+    document.getElementById("updateApiForm").style.display = mode === 'update' ? 'block' : 'none';
+    document.getElementById("apiListContainer").style.display = mode === 'list' ? 'block' : 'none';
+    if (mode === 'list') loadAPIList();
 }
-function loadAPIList() { alert("Chức năng hiển thị API list (chưa implement)."); }
-function updateAPIConfig() { alert("Chức năng update API (chưa implement)."); }
 
-// ========== USER MANAGEMENT ==========
-window._usersMap = {};
+async function addAPIConfig() {
+    const name = document.getElementById("apiName").value.trim();
+    const baseUrl = document.getElementById("baseUrl").value.trim();
+    const msg = document.getElementById("apiMessage");
+    if (!name || !baseUrl) {
+        msg.textContent = "⚠️ Vui lòng nhập đủ thông tin";
+        msg.className = "message error";
+        return;
+    }
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/AddAPI`, {
+            method: "POST",
+            body: JSON.stringify({ name, baseUrl })
+        });
+        if (!res.ok) throw new Error("Thêm API thất bại");
+        msg.textContent = "✅ Thêm API thành công";
+        msg.className = "message success";
+        document.getElementById("apiName").value = "";
+        document.getElementById("baseUrl").value = "";
+    } catch (err) {
+        msg.textContent = "🚫 " + err.message;
+        msg.className = "message error";
+    }
+}
 
+async function updateAPIConfig() {
+    const id = document.getElementById("apiId").value.trim();
+    const name = document.getElementById("apiNameUpdate").value.trim();
+    const baseUrl = document.getElementById("baseUrlUpdate").value.trim();
+    const msg = document.getElementById("apiUpdateMessage");
+    if (!id || !name || !baseUrl) {
+        msg.textContent = "⚠️ Vui lòng nhập đủ thông tin";
+        msg.className = "message error";
+        return;
+    }
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/UpdateAPI/${id}`, {
+            method: "PUT",
+            body: JSON.stringify({ name, baseUrl })
+        });
+        if (!res.ok) throw new Error("Cập nhật API thất bại");
+        msg.textContent = "✅ Cập nhật API thành công";
+        msg.className = "message success";
+    } catch (err) {
+        msg.textContent = "🚫 " + err.message;
+        msg.className = "message error";
+    }
+}
+
+async function loadAPIList() {
+    const container = document.getElementById("apiListContent");
+    container.innerHTML = "<p>⏳ Đang tải API...</p>";
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/GetAllAPI`);
+        if (!res.ok) throw new Error("Không thể tải API");
+        const apis = await res.json();
+        if (!apis.length) {
+            container.innerHTML = "<p>Không có API nào.</p>";
+            return;
+        }
+        let html = "<table><tr><th>ID</th><th>Tên API</th><th>Base URL</th></tr>";
+        apis.forEach(api => {
+            html += `<tr><td>${api.apiID}</td><td>${api.name}</td><td>${api.baseURL}</td></tr>`;
+        });
+        html += "</table>";
+        container.innerHTML = html;
+    } catch (err) {
+        container.innerHTML = `<p style="color:red;">🚫 ${err.message}</p>`;
+    }
+}
+
+// ========== USERS ==========
 document.getElementById("submitUserBtn").addEventListener("click", async () => {
-    const username = $("username").value.trim();
-    const email = $("email").value.trim();
-    const fullname = $("fullname").value.trim();
-    const password = $("password").value.trim();
-    const roleid = parseInt($("roleid").value);
-    const msg = $("userMessage");
+    const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const fullname = document.getElementById("fullname").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const roleid = parseInt(document.getElementById("roleid").value);
+    const msg = document.getElementById("userMessage");
 
     if (!username || !email || !password) {
-        showMessage(msg, "⚠️ Vui lòng nhập đủ thông tin!", "error");
+        msg.textContent = "⚠️ Vui lòng nhập đủ thông tin!";
+        msg.className = "message error";
         return;
     }
 
     try {
-        const res = await fetch(`${GATEWAY_URL}/AddUser`, {
+        const res = await secureFetch(`${GATEWAY_URL}/AddUser`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username,
-                email,
-                fullName: fullname,
-                passwordHash: password,
-                roleID: roleid
+                username, email, fullName: fullname,
+                passwordHash: password, roleID: roleid
             })
         });
-
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        showMessage(msg, "✅ Thêm người dùng thành công!", "success");
-        $("username").value = $("email").value = $("fullname").value = $("password").value = "";
+        if (!res.ok) throw new Error("Thêm user thất bại");
+        msg.textContent = "✅ Thêm người dùng thành công!";
+        msg.className = "message success";
+        document.getElementById("username").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("fullname").value = "";
+        document.getElementById("password").value = "";
         loadUsers();
     } catch (err) {
-        showMessage(msg, `🚫 ${err.message}`, "error");
+        msg.textContent = "🚫 " + err.message;
+        msg.className = "message error";
     }
 });
 
 async function loadUsers() {
-    const container = $("userTableContainer");
+    const container = document.getElementById("userTableContainer");
     container.innerHTML = "<p>⏳ Đang tải danh sách người dùng...</p>";
     window._usersMap = {};
-
     try {
-        const res = await fetch(`${GATEWAY_URL}/GetAllUsers`);
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const res = await secureFetch(`${GATEWAY_URL}/GetAllUsers`);
+        if (!res.ok) throw new Error("Không thể tải người dùng");
         const users = await res.json();
-
-        users.forEach(u => window._usersMap[u.userID] = u);
-
-        let html = `
-            <table>
-                <tr>
-                    <th>ID</th><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Actions</th>
-                </tr>`;
+        users.forEach(u => { window._usersMap[u.userID] = u; });
+        let html = "<table><tr><th>ID</th><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Actions</th></tr>";
         users.forEach(u => {
-            html += `
-                <tr>
-                    <td>${u.userID}</td>
-                    <td>${u.username}</td>
-                    <td>${u.email || ''}</td>
-                    <td>${u.fullName || ''}</td>
-                    <td>${u.roleName || u.roleID || ''}</td>
-                    <td>
-                        <button class="btn-edit" onclick="openEditModal(${u.userID})">Sửa</button>
-                        <button class="btn-delete" onclick="deleteUser(${u.userID})">Xóa</button>
-                    </td>
-                </tr>`;
+            html += `<tr>
+                        <td>${u.userID}</td>
+                        <td>${u.username}</td>
+                        <td>${u.email || ''}</td>
+                        <td>${u.fullName || ''}</td>
+                        <td>${u.roleName || u.roleID || ''}</td>
+                        <td>
+                            <button class="btn-edit" onclick="openEditModal(${u.userID})">Sửa</button>
+                            <button class="btn-delete" onclick="deleteUser(${u.userID})">Xóa</button>
+                        </td>
+                    </tr>`;
         });
         html += "</table>";
         container.innerHTML = html;
@@ -93,30 +171,34 @@ async function loadUsers() {
 }
 
 function openEditModal(userId) {
-    const u = window._usersMap[userId];
-    if (!u) return alert("Không tìm thấy user để sửa.");
-    $("editUserId").value = u.userID;
-    $("editUsername").value = u.username || "";
-    $("editEmail").value = u.email || "";
-    $("editFullname").value = u.fullName || "";
-    $("editPassword").value = "";
-    $("editRole").value = u.roleID || u.roleId || 3;
-    $("editOverlay").style.display = "flex";
+    const user = window._usersMap[userId];
+    if (!user) { alert("Không tìm thấy user."); return; }
+    document.getElementById("editUserId").value = user.userID;
+    document.getElementById("editUsername").value = user.username || "";
+    document.getElementById("editEmail").value = user.email || "";
+    document.getElementById("editFullname").value = user.fullName || "";
+    document.getElementById("editPassword").value = "";
+    document.getElementById("editRole").value = user.roleID || 3;
+    document.getElementById("editMessage").textContent = "";
+    document.getElementById("editOverlay").style.display = "flex";
 }
 
-function closeEditModal() { $("editOverlay").style.display = "none"; }
+function closeEditModal() {
+    document.getElementById("editOverlay").style.display = "none";
+}
 
 async function confirmUpdateUser() {
-    const id = parseInt($("editUserId").value);
-    const username = $("editUsername").value.trim();
-    const email = $("editEmail").value.trim();
-    const fullName = $("editFullname").value.trim();
-    const password = $("editPassword").value.trim();
-    const roleID = parseInt($("editRole").value);
-    const msg = $("editMessage");
+    const id = parseInt(document.getElementById("editUserId").value);
+    const username = document.getElementById("editUsername").value.trim();
+    const email = document.getElementById("editEmail").value.trim();
+    const fullName = document.getElementById("editFullname").value.trim();
+    const password = document.getElementById("editPassword").value.trim();
+    const roleID = parseInt(document.getElementById("editRole").value);
+    const msg = document.getElementById("editMessage");
 
     if (!username || !email) {
-        showMessage(msg, "⚠️ Username và Email không được để trống.", "error");
+        msg.textContent = "⚠️ Username và Email không được để trống.";
+        msg.className = "message error";
         return;
     }
 
@@ -124,38 +206,100 @@ async function confirmUpdateUser() {
     if (password) payload.passwordHash = password;
 
     try {
-        const res = await fetch(`${GATEWAY_URL}/UpdateUser`, {
+        const res = await secureFetch(`${GATEWAY_URL}/UpdateUser`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        showMessage(msg, "✅ Cập nhật thành công!", "success");
-        setTimeout(() => { closeEditModal(); loadUsers(); }, 600);
+        if (!res.ok) throw new Error("Cập nhật user thất bại");
+        msg.textContent = "✅ Cập nhật thành công";
+        msg.className = "message success";
+        loadUsers();
+        setTimeout(closeEditModal, 1000);
     } catch (err) {
-        showMessage(msg, `🚫 ${err.message}`, "error");
+        msg.textContent = "🚫 " + err.message;
+        msg.className = "message error";
     }
 }
 
 async function deleteUser(userId) {
-    if (!confirm("Bạn có chắc muốn xóa user này?")) return;
+    if (!confirm("Bạn chắc chắn muốn xóa người dùng này?")) return;
     try {
-        const res = await fetch(`${GATEWAY_URL}/DeleteUser/${userId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        alert("✅ Xóa thành công!");
+        const res = await secureFetch(`${GATEWAY_URL}/DeleteUser/${userId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Xóa thất bại");
         loadUsers();
     } catch (err) {
-        alert("🚫 Lỗi xóa user: " + err.message);
+        alert("🚫 " + err.message);
     }
 }
 
 function confirmDeleteFromModal() {
-    const id = parseInt($("editUserId").value);
-    if (!id) return alert("ID user không hợp lệ.");
-    if (!confirm("Bạn có chắc muốn xóa user này?")) return;
+    const id = parseInt(document.getElementById("editUserId").value);
     deleteUser(id);
     closeEditModal();
 }
 
-// Tự động tải danh sách user khi load trang
-window.onload = loadUsers;
+window.onload = () => {
+    toggleApiForm('add');
+    loadUsers();
+};
+
+
+// ========== ADMIN CHAT (SIGNALR) ==========
+
+// Chờ DOM load xong mới chạy chat
+document.addEventListener("DOMContentLoaded", () => {
+    // ... (code load user, v.v. nếu có) ...
+
+    // Khởi tạo Chat
+    setupAdminChat();
+});
+
+// Lấy các element
+const chatBox = document.getElementById("studentMessages");
+
+// 1. Kết nối tới Hub của AdminService
+const hubConnection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5140/chathub") // URL thật của AdminService
+    .withAutomaticReconnect()
+    .build();
+
+// 2. Hàm thêm tin nhắn vào UI
+function appendAdminChatMessage(message, sender) {
+    // Xóa tin "Đang tải..." nếu là tin đầu tiên
+    if (chatBox.querySelector("p")?.textContent.startsWith("⏳")) {
+        chatBox.innerHTML = "";
+    }
+
+    const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 1;
+
+    const p = document.createElement("p");
+    // Dùng innerHTML để render thẻ strong
+    p.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    chatBox.appendChild(p);
+
+    // Tự cuộn xuống dưới
+    if (isScrolledToBottom) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+}
+
+// 3. Hàm setup chính
+async function setupAdminChat() {
+
+    // *** ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT BẠN ĐANG THIẾU ***
+    // Lắng nghe tín hiệu "ReceiveMessage" mà C# đang gửi
+    hubConnection.on("ReceiveMessage", (user, message) => {
+        // user ở đây sẽ là "student" (hoặc "user" tùy bạn đặt trong ChatSv.cs)
+        appendAdminChatMessage(message, user);
+    });
+
+    // 4. Bắt đầu kết nối
+    try {
+        await hubConnection.start();
+        chatBox.innerHTML = ""; // Xóa "Connecting..."
+        appendAdminChatMessage("✅ Đã kết nối tới chat server.", "System");
+    } catch (err) {
+        console.error(err);
+        chatBox.innerHTML = "<p>❌ Không thể kết nối chat.</p>";
+    }
+}

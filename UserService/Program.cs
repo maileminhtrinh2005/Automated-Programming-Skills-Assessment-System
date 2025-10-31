@@ -22,8 +22,6 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 );
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddSingleton<RabbitMQEventBus>();
-builder.Services.AddScoped<ChatMessageHandler>();
-builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 // L?y c?u hình JWT t? appsettings.json
 builder.Services.Configure<JwtOptions>(
