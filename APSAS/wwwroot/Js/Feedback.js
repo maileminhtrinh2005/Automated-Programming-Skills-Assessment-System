@@ -1,218 +1,243 @@
 ﻿console.log("✅ Feedback.js loaded successfully!");
 const GATEWAY = "http://localhost:5261";
 const $ = (id) => document.getElementById(id);
-const out = (msg) => $("out").textContent = msg;
+const out = console.log;
 
-// ========== FETCH FUNCTIONS ==========
+// ======== TOKEN & API FETCH ========
+function getToken() {
+    return localStorage.getItem("token");
+}
+
+async function apiFetch(path, options = {}) {
+    const token = getToken();
+    const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+    };
+
+    const res = await fetch(`${GATEWAY}${path}`, { ...options, headers });
+    if (res.status === 401) {
+        alert("⏰ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.clear();
+        window.location.href = "DN.html";
+    }
+    return res;
+}
+
+// ======== LOAD TRANG ========
+window.addEventListener("DOMContentLoaded", async () => {
+    let studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
+
+    if (!studentId) {
+        alert("⚠️ Không tìm thấy Student ID, hãy quay lại Dashboard!");
+        window.location.href = "DashboardLecturer.html";
+        return;
+    }
+
+    console.log("📦 Student ID:", studentId);
+    await loadSubmissionsOnly(studentId);
+});
+
+// ======== FETCH DATA ========
 async function fetchSubmissionsByStudent(studentId) {
-    const res = await fetch(`${GATEWAY}/GetYourSubmission/${studentId}`);
+    const res = await apiFetch(`/GetYourSubmission/${studentId}`);
     if (!res.ok) throw new Error("Không lấy được submissions");
     return res.json();
 }
 
 async function fetchAssignmentById(id) {
-    const res = await fetch(`${GATEWAY}/GetAssignmentByid/${id}`);
+    const res = await apiFetch(`/GetAssignmentByid/${id}`);
     if (!res.ok) return null;
     return res.json();
 }
 
 async function fetchResultBySubmission(submissionId) {
-    const res = await fetch(`${GATEWAY}/GetYourResult/${submissionId}`);
+    const res = await apiFetch(`/GetYourResult/${submissionId}`);
     if (!res.ok) return null;
     return res.json();
 }
 
-// ========== RENDER SUBMISSION LIST ==========
+// ======== RENDER DANH SÁCH ========
 function renderSubmissions(subs) {
     const tbody = $("tblSubmissions").querySelector("tbody");
     tbody.innerHTML = "";
+
+    if (!subs || subs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">❌ Không có bài nộp nào</td></tr>`;
+        return;
+    }
+
     subs.forEach((s, i) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${s.assignmentTitle || "Không rõ"}</td>
-      <td>${s.score ?? "-"}</td>
-      <td>${s.status ?? "-"}</td>
-      <td>${s.createdAt ?? "-"}</td>
-      <td><button class="btnDetail" data-id="${s.submissionId}">🔍 Xem chi tiết</button></td>
-    `;
+            <td>${i + 1}</td>
+            <td>${s.assignmentTitle || "Không rõ"}</td>
+            <td>${s.score ?? "-"}</td>
+            <td>${s.status ?? "-"}</td>
+            <td>${s.createdAt ?? "-"}</td>
+            <td>
+                <button class="btnDetail" data-id="${s.submissionId}">
+                    🧠 Nhận xét chi tiết
+                </button>
+            </td>
+        `;
         tbody.appendChild(row);
     });
 
-    // Gán sự kiện nút xem chi tiết
     document.querySelectorAll(".btnDetail").forEach(btn => {
-        btn.onclick = () => generateDetailFeedback(btn.dataset.id);
+        btn.onclick = async () => {
+            const submissionId = btn.dataset.id;
+            await generateDetailFeedback(submissionId);
+        };
     });
 }
 
-// ========== NHẬN XÉT TỔNG QUÁT ==========
-async function generateProgressFeedback() {
-    try {
-        const studentId = $("qStudentId").value.trim();
-        if (!studentId) return alert("⚠️ Nhập Student ID trước");
+// ======== LOAD SUBMISSIONS ========
+async function loadSubmissionsOnly(studentId) {
+    const submissions = await fetchSubmissionsByStudent(studentId);
+    const detailedSubs = [];
 
-        out("⏳ Đang lấy dữ liệu submissions...");
+    for (const s of submissions) {
+        const assignment = await fetchAssignmentById(s.assignmentId);
+        detailedSubs.push({
+            submissionId: s.submissionId,
+            assignmentTitle: assignment?.title || "Không rõ",
+            score: s.score ?? "-",
+            status: s.status ?? "-",
+            createdAt: s.createdAt || s.submittedAt || "-"
+        });
+    }
+
+    renderSubmissions(detailedSubs);
+}
+
+// ======== NHẬN XÉT CHI TIẾT (TỰ LẤY RESULT) ========
+async function generateDetailFeedback(submissionId) {
+    try {
+        out(`🔍 Đang lấy result cho submission ${submissionId}...`);
+        const result = await fetchResultBySubmission(submissionId);
+        const submissions = await fetchSubmissionsByStudent(localStorage.getItem("studentId"));
+        const submission = submissions.find(s => s.submissionId == submissionId);
+
+        if (!result || result.length === 0)
+            return alert("❌ Không tìm thấy dữ liệu test case.");
+
+        const testResults = Array.isArray(result) ? result : result.testResults || [];
+
+        const normalizedResults = testResults.map(tr => ({
+            status: tr.status || tr.Status || "Unknown",
+            input: tr.input || tr.Input || "Không có input",
+            expectedOutput: tr.expectedOutput || tr.ExpectedOutput || "Không có output mong đợi",
+            actualOutput: tr.actualOutput || tr.ActualOutput || "Không có output thực tế",
+            executionTime: tr.executionTime || tr.ExecutionTime || 0
+        }));
+
+        const payload = {
+            submissionId,
+            assignmentTitle: submission?.assignmentTitle || "Không rõ",
+            sourceCode: submission?.code || "Không có source code",
+            testResults: normalizedResults
+        };
+
+        out("📤 Gửi sang FeedbackService để sinh nhận xét chi tiết...");
+        const res = await apiFetch(`/testcasesubmit`, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+
+        $("feedbackCard").style.display = "block";
+        $("summaryText").textContent = data.summary || "(Không có nhận xét)";
+        $("progressText").textContent = data.overallProgress || "(Không có)";
+        $("manualFeedback").value = data.summary || "";
+
+        const prog = $("progressText");
+        prog.className = "";
+        const p = (data.overallProgress || "").toLowerCase();
+        if (p.includes("tốt") || p.includes("good")) prog.classList.add("progress-good");
+        else if (p.includes("cải thiện") || p.includes("medium")) prog.classList.add("progress-medium");
+        else prog.classList.add("progress-bad");
+
+        out("✅ Nhận xét chi tiết:", data);
+
+    } catch (err) {
+        alert("❌ Lỗi khi sinh nhận xét chi tiết: " + err.message);
+        console.error(err);
+    }
+}
+// ======== NHẬN XÉT TỔNG QUÁT ========
+async function generateProgressFeedback(studentId) {
+    try {
         const submissions = await fetchSubmissionsByStudent(studentId);
         if (!Array.isArray(submissions) || submissions.length === 0)
-            return out("❌ Không có submission nào.");
+            return alert("❌ Không có submission nào.");
 
         const detailedSubs = [];
         for (const s of submissions) {
             const assignment = await fetchAssignmentById(s.assignmentId);
             const result = await fetchResultBySubmission(s.submissionId);
-
             detailedSubs.push({
                 submissionId: s.submissionId,
                 assignmentId: s.assignmentId,
                 assignmentTitle: assignment?.title || "Không rõ",
-                createdAt: s.createdAt || s.submittedAt || "-",
                 score: s.score ?? result?.score ?? 0,
                 status: s.status ?? result?.status ?? "Unknown",
-                sourceCode: s.sourceCode ?? "",
+                sourceCode: s.sourceCode ?? "N/A",
+                createdAt: s.createdAt || s.submittedAt || new Date().toISOString(),
                 testResults: result?.testResults ?? []
             });
         }
 
-        renderSubmissions(detailedSubs);
-
         const payload = { studentId, submissions: detailedSubs };
-
-        out("📤 Gửi dữ liệu sang FeedbackService để nhận xét tổng quát...");
-        const res = await fetch(`${GATEWAY}/feedback/generate/bulk`, {
+        const res = await apiFetch(`/feedback/generate/bulk`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
 
-        $("aiSummary").value = data.summary || "(Không có)";
-        $("aiScore").value = data.overallProgress || "";
-        out(JSON.stringify(data, null, 2));
+        $("feedbackCard").style.display = "block";
+        $("summaryText").textContent = data.summary || "(Không có nhận xét)";
+        $("progressText").textContent = data.overallProgress || "(Không có)";
         $("manualFeedback").value = data.summary || "";
-    } catch (err) {
-        console.error(err);
-        out("❌ " + err.message);
-    }
-}
 
-// ========== NHẬN XÉT CHI TIẾT ==========
-async function generateDetailFeedback(submissionId) {
-    try {
-        out("⏳ Đang lấy chi tiết submission " + submissionId + "...");
-
-        // 1️⃣ Gọi API lấy result
-        const result = await fetchResultBySubmission(submissionId);
-        if (!result) throw new Error("Không lấy được result");
-
-        // 2️⃣ Chuẩn hoá danh sách testResults (API có thể trả mảng hoặc object)
-        const testResultsRaw = Array.isArray(result) ? result : (result.testResults || []);
-
-        if (!testResultsRaw.length)
-            throw new Error("Submission này chưa có test case result nào.");
-
-        // 3️⃣ Map dữ liệu theo đúng schema backend cần (bổ sung Status nếu thiếu)
-        const testResults = testResultsRaw.map((r, i) => ({
-            Name: r.name || `Case ${i + 1}`,
-            Status: r.status || (r.passed ? "Passed" : "Failed"),  // ✅ fix lỗi thiếu Status
-            Input: r.input || "",
-            ExpectedOutput: r.expectedOutput || "",
-            Output: r.output || "",
-            ExecutionTime: r.executionTime || 0,
-            MemoryUsed: r.memoryUsed || 0,
-            ErrorMessage: r.errorMessage || "",
-            Weight: r.weight || 1.0
-        }));
-
-        // 4️⃣ Payload gửi sang FeedbackService
-        const payload = {
-            SubmissionId: submissionId,   // ✅ đúng chữ hoa
-            TestResults: testResults      // ✅ đúng chữ hoa
-        };
-
-        out("📤 Gửi sang FeedbackService (chi tiết từng testcase)...");
-
-        // 5️⃣ Gửi request đến Gateway
-        const res = await fetch(`${GATEWAY}/feedbacktestcase`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-
-        // 6️⃣ Hiển thị kết quả tổng quát
-        $("aiSummary").value = data.summary || "(Không có)";
-        $("aiScore").value = data.score ?? "";
-        out(JSON.stringify(data, null, 2));
-        $("manualFeedback").value = data.summary || ""; // them nhan xet vao o nhap tay
-        // 7️⃣ Hiển thị chi tiết từng test case
-        const tb = $("tblDetails").querySelector("tbody");
-        tb.innerHTML = "";
-        (data.testCaseFeedback || []).forEach((t, i) => {
-            tb.innerHTML += `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${t.status || (t.comment?.includes("Pass") ? "Passed" : "Failed")}</td>
-                <td>${t.input || "-"}</td>
-                <td>${t.expectedOutput || "-"}</td>
-                <td>${t.comment || "-"}</td>
-            </tr>`;
-        });
-
-        // ✅ Thông báo thành công
-        out("✅ Đã nhận xét chi tiết cho submission " + submissionId);
+        const prog = $("progressText");
+        prog.className = "";
+        const p = (data.overallProgress || "").toLowerCase();
+        if (p.includes("tốt") || p.includes("good")) prog.classList.add("progress-good");
+        else if (p.includes("cải thiện") || p.includes("medium")) prog.classList.add("progress-medium");
+        else prog.classList.add("progress-bad");
 
     } catch (err) {
-        out("❌ " + err.message);
+        alert("❌ Lỗi khi sinh nhận xét: " + err.message);
         console.error(err);
     }
 }
 
-// ========== EVENT BINDINGS ==========
-$("btnProgress").onclick = generateProgressFeedback;
-$("btnClear").onclick = () => location.reload();
-$("btnHealth").onclick = () => out("✅ Gateway hoạt động tốt tại " + GATEWAY);
-// ========== GỬI NHẬN XÉT SAU KHI GIẢNG VIÊN CHỈNH SỬA ==========
-document.getElementById("btnSendReviewed")?.addEventListener("click", async () => {
-    try {
-        const submissionId = parseInt(document.getElementById("qSubmissionId")?.value || 0);
-        const studentId = parseInt(document.getElementById("qStudentId")?.value || 0);
-        const feedbackText = document.getElementById("manualFeedback")?.value.trim();
+// ======== GỬI NHẬN XÉT GIẢNG VIÊN ========
+$("btnSendReviewed").addEventListener("click", async () => {
+    const studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
+    const feedbackText = $("manualFeedback").value.trim();
+    if (!feedbackText) return alert("⚠️ Nhập nội dung trước khi gửi!");
 
-        if (!feedbackText) {
-            alert("⚠️ Vui lòng nhập nội dung nhận xét trước khi gửi.");
-            return;
-        }
+    const payload = { studentId, feedbackText, comment: "Giảng viên đã gửi lại nhận xét." };
+    const res = await apiFetch(`/manual/sendreviewed`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
 
-        const payload = {
-            submissionId: submissionId,
-            studentId: studentId,
-            feedbackText: feedbackText,
-            comment: "Giảng viên đã chỉnh sửa và gửi lại nhận xét."
-        };
-
-        console.log("📤 Sending reviewed feedback:", payload);
-
-        const res = await fetch(`${GATEWAY}/manual/sendreviewed`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            alert("✅ Đã gửi nhận xét thành công!");
-            console.log("✅ Reviewed feedback sent successfully!");
-        } else {
-            const err = await res.text();
-            alert("❌ Gửi thất bại: " + err);
-            console.error("❌ Gửi thất bại:", err);
-        }
-    } catch (err) {
-        console.error(err);
-        alert("❌ Lỗi trong quá trình gửi nhận xét.");
-    }
+    if (res.ok) alert("✅ Đã gửi nhận xét thành công!");
+    else alert("❌ Gửi thất bại: " + (await res.text()));
 });
 
+// ======== NÚT ========
+$("btnClear").onclick = () => location.reload();
+$("btnClear2").onclick = () => $("manualFeedback").value = "";
+$("btnGenerate").onclick = () => {
+    const studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
+    if (!studentId) return alert("⚠️ Không có studentId!");
+    generateProgressFeedback(studentId);
+};

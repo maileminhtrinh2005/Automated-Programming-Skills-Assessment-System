@@ -5,11 +5,14 @@ using FeedbackService.Infrastructure;
 
 using FeedbackService.Infrastructure.Handlers;
 using FeedbackService.Infrastructure.Persistence;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client;
+using SharedLibrary.Jwt;
 using ShareLibrary;
 using ShareLibrary.Event;
+using System.Text;
 
 
 
@@ -32,6 +35,35 @@ builder.Services.AddHttpClient<ITestcaseFeedbackGenerator, GeminiTestcaseFeedbac
 
 builder.Services.AddScoped<IManualFeedbackService, ManualFeedbackService>();
 
+//
+
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection("JwtOptions"));
+
+// ??ng ký JwtService ?? Inject vào controller
+builder.Services.AddSingleton<IJwtService, JwtService>();
+
+// ? C?u hình Authentication dùng JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+        };
+    });
+
+// B?t Authorization middleware
+builder.Services.AddAuthorization();
+
+//
 
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
        new ConnectionFactory()
@@ -42,6 +74,10 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
            Password = "guest"      // 
        }
 );
+
+
+
+
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddScoped<GenerateFeedbackHandler>();
 builder.Services.AddHostedService<RabbitMqSubscriberService>();

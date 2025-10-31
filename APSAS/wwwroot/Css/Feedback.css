@@ -1,80 +1,39 @@
-﻿body {
-    font-family: system-ui, sans-serif;
-    background: #f8fafc;
-    color: #0f172a;
-    max-width: 650px;
-    margin: 40px auto;
-    text-align: center;
+﻿/* ===== THIẾT LẬP CƠ BẢN ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-h1 {
-    color: #2563eb;
+/* ===== THÂN TRANG - CHÌA KHÓA ĐỂ CĂN GIỮA ===== */
+body {
+    background: #f0f2f5; /* Một màu nền nhẹ nhàng hơn */
+    color: #333;
+    /* * Biến body thành flex container để dễ dàng căn chỉnh con của nó.
+     */
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    min-height: 100vh; /* Chiều cao tối thiểu bằng chiều cao màn hình */
+    padding: 20px; /* Thêm chút khoảng trống xung quanh */
 }
 
-button {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 16px;
-    transition: background 0.2s ease;
+/* ===== KHUNG CHÍNH (MAIN CONTENT) ===== */
+main {
+    width: 90%; /* Chiếm 90% chiều rộng của body */
+    max-width: 1200px; /* Nhưng không rộng quá 1200px trên màn hình lớn */
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.5s ease-out;
 }
 
-    button:hover {
-        background: #1d4ed8;
-    }
-
-#bell {
-    font-size: 42px;
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    margin: 16px;
-    user-select: none;
-}
-
-#badge {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    background: #ef4444;
-    color: white;
-    font-size: 13px;
-    border-radius: 50%;
-    padding: 3px 7px;
-}
-
-#notifications {
-    text-align: left;
-    background: white;
-    padding: 16px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    max-height: 360px;
-    overflow-y: auto;
-}
-
-.notification {
-    border-left: 4px solid #2563eb;
-    background: #f1f5f9;
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    animation: fadein 0.4s ease-in;
-}
-
-    .notification time {
-        color: #64748b;
-        font-size: 0.85em;
-    }
-
-/* Hiệu ứng xuất hiện */
-@keyframes fadein {
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(-8px);
+        transform: translateY(-10px);
     }
 
     to {
@@ -83,29 +42,124 @@ button {
     }
 }
 
-/* Chuông rung khi có noti */
-@keyframes shake {
-    0% {
-        transform: rotate(0);
-    }
-
-    25% {
-        transform: rotate(-20deg);
-    }
-
-    50% {
-        transform: rotate(20deg);
-    }
-
-    75% {
-        transform: rotate(-10deg);
-    }
-
-    100% {
-        transform: rotate(0);
-    }
+/* ===== CÁC THẺ SECTION ===== */
+.section-card {
+    margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
 }
 
-.shake {
-    animation: shake 0.6s ease;
+/* ===== TIÊU ĐỀ ===== */
+h1 {
+    text-align: center;
+    color: #0056b3;
+    margin-bottom: 25px;
+    font-size: 2.2rem;
+}
+
+h2 {
+    font-size: 1.3rem;
+    color: #343a40;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+}
+
+/* ===== BẢNG DỮ LIỆU ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* ===== BUTTON ===== */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+    button:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    /* Nút phụ (Clear) */
+    button#btnClear, button#btnClear2 {
+        background-color: #6c757d;
+    }
+
+        button#btnClear:hover, button#btnClear2:hover {
+            background-color: #5a6268;
+        }
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* ===== TEXTAREA & INPUT ===== */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+    textarea:focus {
+        outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+/* ===== THẺ FEEDBACK CỦA AI ===== */
+.summary-card {
+    background-color: #e7f5ff;
+    border-left: 5px solid #007bff;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+}
+
+    .summary-card p {
+        margin-bottom: 5px;
+    }
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 768px) {
+    main {
+        width: 95%;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
 }

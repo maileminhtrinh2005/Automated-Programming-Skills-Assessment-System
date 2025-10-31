@@ -52,7 +52,11 @@ namespace SubmissionService.Application.Service
 
         public async Task<ResultDTO?> RunCode(string sourceCode, int languageId, string stdin)
         {
+
             if (sourceCode== "" || languageId < 0) return null;
+
+            if (sourceCode=="" || languageId < 0) return null;
+
 
             var result = await _judge0.RunCode(sourceCode, languageId, stdin, _urlJugde0);
 

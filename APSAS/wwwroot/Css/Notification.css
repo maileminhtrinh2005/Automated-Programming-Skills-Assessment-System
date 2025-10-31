@@ -1,75 +1,36 @@
-﻿body {
-    font-family: system-ui, sans-serif;
-    background: #f8fafc;
-    color: #0f172a;
-    max-width: 600px;
-    margin: 40px auto;
-    text-align: center;
+﻿.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: space-between; /* Đẩy 2 nhóm ra 2 bên */
+    align-items: center;
+    padding: 10px 40px; /* Thêm khoảng trống 2 bên lề */
+    z-index: 1000;
+    box-sizing: border-box; /* Thêm dòng này để padding không làm vỡ layout */
 }
 
-h1 {
-    color: #2563eb;
+/* Định dạng cho nhóm các link */
+.nav-links {
+    display: flex;
+    gap: 20px; /* Khoảng cách giữa các link */
 }
 
-button {
-    background: #2563eb;
+.top-nav a {
     color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 12px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-#bell {
-    font-size: 40px;
+    .top-nav a:hover {
+        color: #ffcc00;
+    }
+
+/* Định dạng cho chuông (đã ổn) */
+#bellContainer {
     position: relative;
-    display: inline-block;
-    cursor: pointer;
-    margin: 20px;
-}
-
-#badge {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #ef4444;
-    color: white;
-    font-size: 12px;
-    border-radius: 50%;
-    padding: 4px 6px;
-}
-
-#notifications {
-    text-align: left;
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.notification {
-    border-left: 4px solid #2563eb;
-    padding-left: 8px;
-    margin-bottom: 10px;
-    animation: fadein 0.4s ease-in;
-}
-
-    .notification time {
-        color: #64748b;
-        font-size: 0.85em;
-    }
-
-@keyframes fadein {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    display: flex;
+    align-items: center;
 }

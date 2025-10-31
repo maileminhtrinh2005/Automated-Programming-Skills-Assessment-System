@@ -1,8 +1,9 @@
-﻿using System.Net.Http.Json;
-using FeedbackService.Application.Constants;
+﻿using FeedbackService.Application.Constants;
 using FeedbackService.Application.Dtos;
 using FeedbackService.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Json;
 
 namespace FeedbackService.Controllers;
 
@@ -19,7 +20,8 @@ public class FeedbackController : ControllerBase
         _manual = manual;
     }
 
-    // 🧠 [1] FEEDBACK TỔNG QUÁT — dùng Gemini sinh nhận xét học tập (không chấm điểm)
+
+    [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("feedbacksubmit")]
     public async Task<IActionResult> GenerateGeneral([FromBody] FeedbackRequestDto dto, CancellationToken ct)
     {
@@ -38,6 +40,7 @@ public class FeedbackController : ControllerBase
     }
 
     // ✍️ [2] FEEDBACK THỦ CÔNG — giảng viên nhập tay
+    [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("manual")]// luu db
     public async Task<IActionResult> Manual([FromBody] ManualFeedbackRequestDto dto, CancellationToken ct)
     {
@@ -51,6 +54,7 @@ public class FeedbackController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+    [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("manual/sendreviewed")]// gui feedback da duoc review
     public async Task<IActionResult> SendReviewedFeedback([FromBody] ManualFeedbackDto dto)
     {
@@ -65,7 +69,7 @@ public class FeedbackController : ControllerBase
         }
     }
 
-    // ⚙️ [3] FEEDBACK AUTO (bốc dữ liệu từ các service khác)
+    [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("generate")]
     public async Task<IActionResult> GenerateFull([FromBody] FeedbackAutoRequestDto req, CancellationToken ct)
     {

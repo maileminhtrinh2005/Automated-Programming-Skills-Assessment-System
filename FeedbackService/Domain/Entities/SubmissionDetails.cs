@@ -2,7 +2,7 @@
 
 public class SubmissionDetails
 {
-    public string StudentId { get; set; } = string.Empty;
+    public int StudentId { get; set; }
     public string AssignmentTitle { get; set; } = string.Empty;
     public string SourceCode { get; set; } = string.Empty;
     public int LanguageId { get; set; }

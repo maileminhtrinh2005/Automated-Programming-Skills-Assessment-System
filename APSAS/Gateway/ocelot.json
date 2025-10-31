@@ -225,7 +225,14 @@
       ]
     },
     {
+
       "DownstreamPathTemplate": "/api/Resource/delete-resource-by/{id}",
+
+      "UpstreamPathTemplate": "/feedbacksubmit",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -253,6 +260,39 @@
       ]
     },
     {
+
+      "UpstreamPathTemplate": "/feedback/generate/bulk",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/generate/bulk"
+    },
+    {
+      "UpstreamPathTemplate": "/testcasesubmit",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/TestcaseFeedback/testcasesubmit",
+      "HttpHandlerOptions": {
+        "Timeout": 180000
+      }
+    },
+    {
+
       "UpstreamPathTemplate": "/GetNotification",
       "UpstreamHttpMethod": [
         "POST"
@@ -267,26 +307,10 @@
       "DownstreamPathTemplate": "/api/Notification/GetNotification"
     },
     {
-      "UpstreamPathTemplate": "/Notification/api/notification",
-      "UpstreamHttpMethod": [
-        "GET"
-      ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5216
-        }
-      ],
-      "DownstreamPathTemplate": "/api/notification"
-    },
-    {
-      "UpstreamPathTemplate": "/Notification/{everything}",
+      "UpstreamPathTemplate": "/api/Notification/{everything}",
       "UpstreamHttpMethod": [
         "GET",
-        "POST",
-        "PUT",
-        "DELETE"
+        "POST"
       ],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

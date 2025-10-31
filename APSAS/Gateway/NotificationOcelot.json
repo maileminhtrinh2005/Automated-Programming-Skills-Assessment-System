@@ -1,3 +1,75 @@
+//{
+//  "Routes": [
+//    {
+//      "UpstreamPathTemplate": "/GetNotification",
+//      "UpstreamHttpMethod": [ "POST" ],
+//      "DownstreamScheme": "http",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "localhost",
+//          "Port": 5216
+//        }
+//      ],
+//      "DownstreamPathTemplate": "/api/Notification/GetNotification"
+//    },
+//    {
+//      "UpstreamPathTemplate": "/Notification/api/notification",
+//      "UpstreamHttpMethod": [ "GET" ],
+//      "DownstreamScheme": "http",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "localhost",
+//          "Port": 5216
+//        }
+//      ],
+//      "DownstreamPathTemplate": "/api/notification"
+//    },
+//    {
+//      "UpstreamPathTemplate": "/Notification/{everything}",
+//      "UpstreamHttpMethod": [ "GET", "POST" ],
+//      "DownstreamScheme": "http",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "localhost",
+//          "Port": 5216
+//        }
+//      ],
+//      "DownstreamPathTemplate": "/api/Notification/{everything}"
+//    },
+
+//    // 🟢 Route mới thêm cho SignalR NotificationHub:
+//    {
+//      // 1️⃣ Negotiation (SignalR cần POST /notificationhub/negotiate)
+//      "UpstreamPathTemplate": "/notificationhub/negotiate",
+//      "UpstreamHttpMethod": [ "POST", "OPTIONS" ],
+//      "DownstreamScheme": "http",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "localhost",
+//          "Port": 5216
+//        } // ⚙️ Cổng của NotificationService
+//      ],
+//      "DownstreamPathTemplate": "/notificationhub/negotiate"
+//    },
+//    {
+//      // 2️⃣ WebSocket (kênh chính)
+//      "UpstreamPathTemplate": "/notificationhub",
+//      "UpstreamHttpMethod": [ "GET" ],
+//      "DownstreamScheme": "ws",
+//      "DownstreamHostAndPorts": [
+//        {
+//          "Host": "localhost",
+//          "Port": 5216
+//        } // ⚙️ Cổng của NotificationService
+//      ],
+//      "DownstreamPathTemplate": "/notificationhub"
+//    }
+//  ],
+
+//  "GlobalConfiguration": {
+//    
+//  }
+//}
 {
   "Routes": [
     {
@@ -12,21 +84,11 @@
       ],
       "DownstreamPathTemplate": "/api/Notification/GetNotification"
     },
+
     {
-      "UpstreamPathTemplate": "/Notification/api/notification",
-      "UpstreamHttpMethod": [ "GET" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5216
-        }
-      ],
-      "DownstreamPathTemplate": "/api/notification"
-    },
-    {
-      "UpstreamPathTemplate": "/Notification/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      // 🟢 Route CHÍNH cho API REST của NotificationService
+      "UpstreamPathTemplate": "/api/Notification/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -37,9 +99,8 @@
       "DownstreamPathTemplate": "/api/Notification/{everything}"
     },
 
-    // 🟢 Route mới thêm cho SignalR NotificationHub:
+    // 🟢 Route cho SignalR NotificationHub
     {
-      // 1️⃣ Negotiation (SignalR cần POST /notificationhub/negotiate)
       "UpstreamPathTemplate": "/notificationhub/negotiate",
       "UpstreamHttpMethod": [ "POST", "OPTIONS" ],
       "DownstreamScheme": "http",
@@ -47,12 +108,11 @@
         {
           "Host": "localhost",
           "Port": 5216
-        } // ⚙️ Cổng của NotificationService
+        }
       ],
       "DownstreamPathTemplate": "/notificationhub/negotiate"
     },
     {
-      // 2️⃣ WebSocket (kênh chính)
       "UpstreamPathTemplate": "/notificationhub",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamScheme": "ws",
@@ -60,7 +120,7 @@
         {
           "Host": "localhost",
           "Port": 5216
-        } // ⚙️ Cổng của NotificationService
+        }
       ],
       "DownstreamPathTemplate": "/notificationhub"
     }

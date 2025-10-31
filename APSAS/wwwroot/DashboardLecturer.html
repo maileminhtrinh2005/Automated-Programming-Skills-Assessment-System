@@ -6,16 +6,83 @@
     <link rel="stylesheet" href="Css/DashboardLecturer.css">
     <link rel="stylesheet" href="Css/LecturerAssignment.css" />
     <link rel="stylesheet" href="Css/Dashboard.css"> <!-- nếu muốn dùng chung style nav -->
+
+    <link rel="stylesheet" href="Css/Notification.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+            .top-nav a {
+                color: white;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+                .top-nav a:hover {
+                    color: #ffcc00;
+                }
+
+        section, h2, table {
+            padding-top: 60px;
+        }
+        /* tránh navbar che nội dung */
+    </style>
+
 </head>
 <body>
 
     <!-- 🔹 Thanh điều hướng -->
     <nav class="top-nav">
+
         <a href="#assignments">Quản lý bài tập</a>
         <a href="#resources">Resource</a>
         <a href="#submissions">Bài làm của sinh viên</a>
         <a href="#students">Danh sách sinh viên</a>
         <a href="#settings">Cài đặt</a>
+
+        <div class="nav-links">
+            <a href="#assignments">📚 Quản lý bài tập</a>
+            <a href="#resources">🧠 Resource</a>
+            <a href="#submissions">🧩 Bài làm của sinh viên</a>
+            <a href="#students">👩‍🏫 Danh sách sinh viên</a>
+            <a href="#settings">⚙️ Cài đặt</a>
+        </div>
+
+        <!-- 🔔 Chuông thông báo -->
+        <div id="bellContainer">
+            <span id="bell">🔔</span>
+            <span id="badge" class="badge">0</span>
+
+            <!--<audio id="notifSound" src="sound/notification.mp3" preload="auto"></audio>-->
+
+            <div id="notificationsPopup" class="popup hidden">
+                <div class="popup-header">
+                    <h4>Thông báo</h4>
+                    <button id="markAllBtn">Đã xem tất cả</button>
+                </div>
+                <div id="notifications"></div>
+            </div>
+        </div>
+
     </nav>
 
     <!-- Section quản lý bài tập -->
@@ -256,5 +323,6 @@
 
     <script src="Js/LecturerAssignment.js"></script>
     <script src="Js/DashboardLecturer.js"></script>
+    <script src="Js/Notification.js"></script>
 </body>
 </html>
