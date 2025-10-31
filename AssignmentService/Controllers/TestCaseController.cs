@@ -47,5 +47,26 @@ namespace assignmentservice.controllers
             if (testcases == null) return BadRequest();
             return Ok(testcases);
         }
+
+        [Authorize(Roles ="Lecturer,Admin")]
+        [HttpDelete("delete-testcase-by/{id}")]
+        public async Task <IActionResult> DeleteTestcase(int id)
+        {
+            if(id<0) return BadRequest();
+            bool isSuccess = await _testcase.DeleteTestcase(id);
+            if(!isSuccess) return BadRequest();
+            return Ok();
+        }
+
+
+        [Authorize(Roles = "Lecturer,Admin")]
+        [HttpPut("update-testcase")]
+        public async Task<IActionResult> UpdateTestcase(TestCaseDTO tc)
+        {
+            bool isSuccess= await _testcase.UpdateTestcase(tc);
+            if(!isSuccess) return BadRequest();
+            return Ok();
+        }
+
     }
 }

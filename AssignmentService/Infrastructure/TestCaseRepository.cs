@@ -38,6 +38,15 @@ namespace AssignmentService.Infrastructure
             return true;
         }
 
+        public async Task<bool> DeleteTestCase(int id)
+        {
+            var testcase = await _context.testCases.FindAsync(id);
+            if (testcase == null) return false;
+            _context.testCases.Remove(testcase);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<TestCaseDTO>?> GetTestCases(int assignmentId)
         {
             var testcases = await _context.testCases.
@@ -53,5 +62,16 @@ namespace AssignmentService.Infrastructure
             return testcases;
         }
 
+        public async Task<bool> UpdateTestCase(int id,string input, string expectedOutput, double weight)
+        {
+            var testcase= await _context.testCases.FindAsync(id);
+            if(testcase == null) return false;
+            
+            if(input!=string.Empty) testcase.Input = input;
+            if(expectedOutput!=string.Empty) testcase.ExpectedOutput = expectedOutput;
+            if(weight>0) testcase.Weight = weight;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

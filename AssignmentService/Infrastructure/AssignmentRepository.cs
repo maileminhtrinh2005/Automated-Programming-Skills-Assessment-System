@@ -23,7 +23,7 @@ namespace AssignmentService.Infrastructure
                 Title= request.Title,
                 Description= request.Description,
                 SampleTestCases=request.SampleTestCase,
-                Deadline = request.Deadline,
+                Deadline = request.Deadline??DateTime.Now,
                 Difficulty = request.Difficulty,
                 CreatedBy = request.UserId,
                 CreatedAt = DateTime.Now,
@@ -42,7 +42,7 @@ namespace AssignmentService.Infrastructure
         {
             Console.WriteLine("checkkk");
             if (request == null) return false;
-            var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId==request.AssignmentId);
+            var assignment = await _context.assignments.FindAsync(request.AssignmentId);
             if (assignment == null) { return false; }
 
 
@@ -64,7 +64,8 @@ namespace AssignmentService.Infrastructure
                 Description= a.Description,
                 SampleTestCase= a.SampleTestCases,
                 Deadline= a.Deadline,
-                Difficulty= a.Difficulty
+                Difficulty= a.Difficulty,
+                IsHidden= a.IsHidden
             }).ToList();
             return assignmentDTOs;
         }
@@ -75,9 +76,10 @@ namespace AssignmentService.Infrastructure
             {
                 return null;
             }
-
+            Console.WriteLine($"{request.AssignmentId}");
             var assignment =  await _context.assignments.FirstOrDefaultAsync(a=> a.AssignmentId== request.AssignmentId);
             if (assignment == null) return null;
+            Console.WriteLine("dấdadasdasdasdasdas: " + assignment.IsHidden);
 
             AssignmentDTO assign = new AssignmentDTO
             {
@@ -86,7 +88,8 @@ namespace AssignmentService.Infrastructure
                 Description= assignment.Description,
                 SampleTestCase= assignment.SampleTestCases,
                 Deadline= assignment.Deadline,
-                Difficulty = assignment.Difficulty
+                Difficulty = assignment.Difficulty,
+                IsHidden=assignment.IsHidden
             };
             return assign;
         }
@@ -98,15 +101,42 @@ namespace AssignmentService.Infrastructure
 
             var assignment = await _context.assignments.FirstOrDefaultAsync(a=>a.AssignmentId== request.AssignmentId);
             if (assignment == null) return false;
-            assignment.Title = request.Title;
-            assignment.Description = request.Description;
-            assignment.SampleTestCases = request.SampleTestCase;
-            assignment.Deadline = request.Deadline;
-            assignment.Difficulty = request.Difficulty;
-            assignment.UpdatedAt= DateTime.Now;
-
+            if(request.Title!=string.Empty) assignment.Title = request.Title;
+            if (request.Description!=string.Empty)assignment.Description = request.Description;
+            if (request.SampleTestCase!=string.Empty) assignment.SampleTestCases=request.SampleTestCase;
+            if (request.Difficulty!=string.Empty) assignment.Difficulty = request.Difficulty;
+            if (request.Deadline != null) assignment.Deadline = request.Deadline??DateTime.Now;
+            if (request.UserId!=assignment.CreatedBy) assignment.CreatedBy=request.UserId;
+            assignment.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<AssignmentDTO>> GetAssignmentForStudent()
+        {
+            var assignment = await _context.assignments.
+                Where(a=>a.IsHidden==false && a.Deadline>DateTime.Now).
+                Select(a=>new AssignmentDTO
+                {
+                    AssignmentId = a.AssignmentId,
+                    Title = a.Title,
+                    Description = a.Description,
+                    SampleTestCase = a.SampleTestCases,
+                    Deadline = a.Deadline,
+                    Difficulty = a.Difficulty
+                }).ToListAsync();
+
+            return assignment;
+        }
+
+        public async Task<bool> UpdateIsHidden(int id,bool isHidden)
+        {
+            var assignment = await _context.assignments.FindAsync(id);
+            if (assignment== null) return false;    
+            assignment.IsHidden = isHidden;
+            await _context.SaveChangesAsync();
+            return true;
+
         }
     }
 }

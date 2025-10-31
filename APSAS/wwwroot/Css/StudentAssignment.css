@@ -215,3 +215,64 @@ pre {
         padding: 15px;
     }
 }
+/* ====== Thông tin bài tập ====== */
+.modal-info p {
+    background: #f8f9fa;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.modal-info strong {
+    color: #007bff;
+    display: inline-block;
+    width: 120px;
+}
+
+.sample-box {
+    background-color: #f4f6fa; /* 🌤 Nền sáng nhẹ */
+    color: #333; /* Màu chữ tối */
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+    .modal-buttons button {
+        flex: 1;
+        min-width: 150px;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .modal-buttons button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+.close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}

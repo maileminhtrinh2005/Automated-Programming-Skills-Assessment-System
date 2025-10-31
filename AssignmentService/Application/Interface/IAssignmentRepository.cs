@@ -11,5 +11,7 @@ namespace AssignmentService.Application.Interface
 
         public Task<List<AssignmentDTO>> GetAllAssigment();
 
+        public Task<List<AssignmentDTO>> GetAssignmentForStudent();
+        public Task<bool> UpdateIsHidden(int id,bool isHidden);
     }
 }

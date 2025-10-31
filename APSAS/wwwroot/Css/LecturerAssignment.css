@@ -159,26 +159,36 @@ button.close {
 }
 
 /* ========== MODAL THÊM BÀI TẬP ========== */
-#addAssignmentModal .modal-content {
+#updateTestcaseModal .modal-content,
+#addAssignmentModal .modal-content,
+#updateAssignmentModal .modal-content {
     border-left: 5px solid #28a745;
 }
 
-#addAssignmentModal form {
+#updateTestcaseModal form,
+#addAssignmentModal form,
+#updateAssignmentModal form {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
+
 #addAssignmentModal input,
 #addAssignmentModal textarea,
-#addAssignmentModal select {
+#addAssignmentModal select,
+#updateAssignmentModal input,
+#updateAssignmentModal textarea,
+#updateAssignmentModal select {
     padding: 8px;
     border-radius: 6px;
     border: 1px solid #ccc;
     font-size: 0.95rem;
 }
 
-#addAssignmentModal label {
+
+#addAssignmentModal label,
+#updateAssignmentModal label {
     font-weight: 500;
     color: #444;
 }
@@ -280,3 +290,211 @@ pre {
         padding: 7px 10px;
     }
 }
+/* ======= BỐ TRÍ LẠI CÁC NÚT TRONG MODAL ======= */
+#assignmentModal .modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between; /* hoặc center nếu muốn */
+    margin-top: 15px;
+}
+
+    #assignmentModal .modal-buttons button {
+        flex: 1 1 45%; /* Mỗi hàng 2 nút, tự co giãn */
+        min-width: 120px;
+        background-color: #007bff;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+        #assignmentModal .modal-buttons button:nth-child(odd) {
+            background-color: #28a745; /* Nút thêm resource/testcase */
+        }
+
+            #assignmentModal .modal-buttons button:nth-child(odd):hover {
+                background-color: #218838;
+            }
+
+        #assignmentModal .modal-buttons button#deleteAssignmentBtn {
+            background-color: #dc3545;
+        }
+
+            #assignmentModal .modal-buttons button#deleteAssignmentBtn:hover {
+                background-color: #b02a37;
+     
+                }
+
+/* ====== Thông tin bài tập ====== */
+.modal-info p {
+    background: #f8f9fa;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.modal-info strong {
+    color: #007bff;
+    display: inline-block;
+    width: 120px;
+}
+
+.sample-box {
+    background-color: #f4f6fa; /* 🌤 Nền sáng nhẹ */
+    color: #333; /* Màu chữ tối */
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+    .modal-buttons button {
+        flex: 1;
+        min-width: 150px;
+        padding: 8px 10px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .modal-buttons button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+.close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+/* ========== MODAL THÊM TESTCASE ========== */
+.modal--testcase .modal-content--form {
+    border-left: 5px solid #ffc107;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.section--testcase {
+    margin-top: 15px;
+}
+
+    .section--testcase h4 {
+        font-size: 1.1rem;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+
+/* Bảng testcase */
+.table--testcase {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fdfdfd;
+}
+
+    .table--testcase th {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .table--testcase td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        vertical-align: top;
+        text-align: center;
+    }
+
+    .table--testcase textarea {
+        width: 100%;
+        min-height: 70px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        resize: vertical;
+        padding: 6px;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+        .table--testcase textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+
+/* Input weight */
+.weight-value {
+    width: 80px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+    .weight-value:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 4px rgba(40,167,69,0.3);
+    }
+
+/* Nút xóa dòng */
+.removeRowBtn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .removeRowBtn:hover {
+        background-color: #b02a37;
+    }
+
+/* Nút thêm testcase */
+.btn--add {
+    background-color: #28a745;
+    border: none;
+    padding: 8px 14px;
+    margin-top: 12px;
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn--add:hover {
+        background-color: #218838;
+    }
+
+/* Nút lưu / hủy */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+

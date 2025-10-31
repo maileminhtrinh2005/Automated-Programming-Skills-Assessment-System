@@ -45,6 +45,10 @@ function openModal(assignment) {
     selectedAssignmentId = assignment.assignmentId;
     document.getElementById("modalTitle").innerText = assignment.title;
     document.getElementById("modalDescription").innerText = assignment.description || "Không có mô tả";
+    document.getElementById("modalSampleTestcase").innerText = assignment.sampleTestCase;
+    document.getElementById("modalDifficult").innerText = assignment.difficulty;
+    document.getElementById("modalDeadline").innerText = assignment.deadline;
+    document.getElementById("modalIsHidden").checked = Boolean( assignment.isHidden);
     document.getElementById("doAssignmentBtn").style.display = "inline-block";
     const modal = document.getElementById("assignmentModal");
 
@@ -61,6 +65,29 @@ function openModal(assignment) {
         }
     };
 }
+
+document.getElementById("modalIsHidden").addEventListener("change", async function () {
+    const assignmentId = selectedAssignmentId;
+    const isHidden = this.checked;
+    try {
+        const response = await fetchWithToken(`${baseUrl}/update-ishidden`, {
+            method: "PUT",
+            body: JSON.stringify({
+                AssignmentId:assignmentId,
+                IsHidden: isHidden
+            })
+        });
+
+        if (!response.ok) throw new Error("Cập nhật thất bại");
+        loadAssignments();
+        console.log("Cập nhật IsHidden thành công:", isHidden);
+    } catch (error) {
+        console.error(error);
+        // Nếu muốn, có thể revert checkbox khi lỗi:
+        this.checked = !isHidden;
+        alert("Cập nhật không thành công");
+    }
+});
 
 // add assigmnet//////////////////////////////////////////////////////////////////////////////////
 document.getElementById("addAssignmentBtn").onclick = () => {
@@ -92,35 +119,48 @@ document.getElementById("addAssignmentForm").onsubmit = async (e) => {
         alert("❌ Thêm thất bại!");
     }
 };
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////update assignment/////////////////////////////////////////////////////////////////////
 
-//////////view resource//////////////////////////////////////////////////////////////////////////////
-document.getElementById("viewResourceBtn").onclick = async () => {
-    if (!selectedAssignmentId) return;
+document.getElementById("updateAssignmentBtn").onclick = () => {
+    const form = document.getElementById("updateAssignmentForm");
 
-    try {
-        const res = await fetchWithToken(`${baseUrl}/GetResourceById/${selectedAssignmentId}`);
-        if (!res.ok) throw new Error("Không tìm thấy resource");
-        const data = await res.json();
+    form.reset();
+    document.getElementById("updateAssignmentModal").style.display = "flex";
 
-        document.getElementById("viewResourceTitle").innerText = data.title;
-        document.getElementById("viewResourceType").innerText = data.type;
-        const linkEl = document.getElementById("viewResourceLink");
-        linkEl.href = data.link;
-        linkEl.textContent = data.link;
+    document.getElementById("cancelUpdateBtn").onclick = () => {
+        document.getElementById("updateAssignmentModal").style.display = "none";
+    };
+};
+document.getElementById("updateAssignmentForm").onsubmit = async (e) => {
+    e.preventDefault();
 
-        document.getElementById("viewResourceModal").style.display = "flex";
-    } catch (err) {
-        console.warn(err);
-        alert("sẽ cập nhật trong thời gian tới!");
-    }
-
-    // Đóng popup Resource
-    document.getElementById("closeViewResourceBtn").onclick = () => {
-        document.getElementById("viewResourceModal").style.display = "none";
+    const dataUpdate = {
+        AssignmentId: selectedAssignmentId,
+        Title: document.getElementById("updateTitle").value,
+        Description: document.getElementById("updateDescription").value,
+        SampleTestCase: document.getElementById("updateSampleTestCase").value,
+        Deadline: document.getElementById("updateDeadline").value || null,
+        Difficulty: document.getElementById("updateDifficulty").value
     };
 
+    const res = await fetchWithToken(`${baseUrl}/UpdateAssignment`, {
+        method: "PUT",
+        body: JSON.stringify(dataUpdate),
+    });
+
+    if (res.ok) {
+        alert("✅ cập nhật thành công!");
+        document.getElementById("updateAssignmentModal").style.display = "none";
+        loadAssignments();
+    } else {
+        alert("❌cập nhật thất bại!");
+    }
 };
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////them testcase///////////////////////////////////////////////////////
@@ -143,6 +183,15 @@ document.getElementById("addTestcaseBtn").onclick = () => {
         <td><button class="removeRowBtn">❌</button></td>
     `;
     row.querySelector(".removeRowBtn").onclick = () => row.remove();
+    const weightInput = row.querySelector(".weight-value");
+    weightInput.addEventListener("input", () => {
+        const value = parseFloat(weightInput.value);
+        if (value < 0 || value > 1) {
+            alert("Giá trị weight phải nằm trong khoảng từ 0 đến 1!");
+            // Giới hạn lại giá trị
+            weightInput.value = Math.max(0, Math.min(1, value || 0));
+        }
+    });
     tbody.appendChild(row);
 };
 
@@ -172,6 +221,146 @@ document.getElementById("saveEditBtn").onclick = async () => {
         console.error(err);
     }
 };
+
+//////////////////////////view/delete/update testcase //////////////////////////////
+document.getElementById("viewTestcaseBtn").onclick = async () => {
+    if (!selectedAssignmentId) return;
+
+    try {
+        // 🔹 Gọi API lấy danh sách test case theo bài tập
+        const res = await fetchWithToken(`${baseUrl}/GetTestCaseById/${selectedAssignmentId}`);
+        if (!res.ok) throw new Error("Không thể lấy danh sách test case");
+
+        const data = await res.json();
+        const container = document.querySelector("#viewTestCaseModal .modal-content");
+
+        // 🔹 Xóa các nội dung cũ (nếu có)
+        const oldCases = container.querySelectorAll(".testcase-item");
+        oldCases.forEach(e => e.remove());
+
+        // 🔹 Nếu không có testcase nào
+        if (!data || data.length === 0) {
+            const p = document.createElement("p");
+            p.innerText = "Không có test case nào cho bài tập này.";
+            p.classList.add("testcase-item");
+            container.appendChild(p);
+        } else {
+            // 🔹 Duyệt qua từng test case
+            data.forEach(test => {
+                const div = document.createElement("div");
+                div.classList.add("testcase-item");
+                div.style.marginBottom = "10px";
+                div.innerHTML = `
+                    <p><strong>Input:</strong> <code>${test.input}</code></p>
+                    <p><strong>Expected Output:</strong> <code>${test.expectedOutput}</code></p>
+                    <p><strong>Weight:</strong> ${test.weight}</p>
+                    <div class="modal-buttons">
+                        <button type="button" class="updateTestCaseBtn" data-id="${test.testCaseId}">Chỉnh sửa</button>
+                        <button type="button" class="deleteTestCaseBtn" data-id="${test.testCaseId}">Xóa</button>
+                    </div>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 🔹 Hiển thị modal xem test case
+        document.getElementById("viewTestCaseModal").style.display = "flex";
+
+        // 🔹 Đóng modal
+        document.getElementById("closeViewTestCaseBtn").onclick = () => {
+            document.getElementById("viewTestCaseModal").style.display = "none";
+        };
+
+
+        document.querySelectorAll(".deleteTestCaseBtn").forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                if (!confirm("Bạn có chắc muốn xóa test case này không?")) return;
+
+                try {
+                    const delRes = await fetchWithToken(`${baseUrl}/delete-testcase-by/${id}`, {
+                        method: "DELETE"
+                    });
+                    if (!delRes.ok) throw new Error("Xóa thất bại");
+                    alert("✅ Đã xóa test case!");
+                    btn.closest(".testcase-item").remove();
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ Lỗi khi xóa test case!");
+                }
+            };
+        });
+
+        document.querySelectorAll(".updateTestCaseBtn").forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.dataset.id;
+                 const form = document.getElementById("updateTestcaseForm");
+                form.dataset.id = id;
+                form.reset();
+                document.getElementById("updateTestcaseModal").style.display = "flex";
+
+                document.getElementById("cancelUpdateTestcaseBtn").onclick = () => {
+                    document.getElementById("updateTestcaseModal").style.display = "none";
+                };
+            };
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("⚠️ Lỗi khi tải test case!");
+    }
+};
+
+document.getElementById("updateTestcaseForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const id = form.dataset.id;
+    const input = document.getElementById("updateInput").value.trim();
+    const expectedOutput = document.getElementById("updateExpectedOutput").value.trim();
+    const weight= document.querySelector("#updateTestcaseForm .weight-value").value
+
+    if (isNaN(weight) || weight < 0 || weight > 1) {
+        alert("⚠️ Weight phải nằm trong khoảng từ 0 đến 1!");
+        return;
+    }
+
+    const updatedTestcase = {
+        TestcaseId: id,
+        Input: input,
+        ExpectedOutput: expectedOutput,
+        Weight: weight
+    };
+
+    // Gửi API cập nhật
+    const res = await fetchWithToken(`${baseUrl}/update-testcase`, {
+        method: "PUT",
+        body: JSON.stringify(updatedTestcase)
+    });
+
+    if (res.ok) {
+        alert("✅ Cập nhật thành công!");
+        document.getElementById("updateTestcaseModal").style.display = "none";
+        document.getElementById("viewTestCaseModal").style.display = "none";
+    } else {
+        alert("❌ Cập nhật thất bại!");
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -207,6 +396,158 @@ document.getElementById("resourceForm").onsubmit = async (e) => {
         alert("❌ Lỗi khi thêm Resource!");
     }
 };
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////view resource//////////////////////////////////////////////////////////////////////////////
+document.getElementById("viewResourceBtn").onclick = async () => {
+    if (!selectedAssignmentId) return;
+
+    try {
+        const res = await fetchWithToken(`${baseUrl}/GetResourceById/${selectedAssignmentId}`);
+        if (!res.ok) throw new Error("Không tìm thấy resource");
+        const data = await res.json();
+
+        const container = document.querySelector("#viewResourceModal .modal-content");
+
+        const oldResources = container.querySelectorAll(".resource-item");
+        oldResources.forEach(e => e.remove());
+
+        if (!data || data.length === 0) {
+            const p = document.createElement("p");
+            p.innerText = "Không có tài nguyên nào cho bài tập này.";
+            p.classList.add("resource-item");
+            container.appendChild(p);
+        } else {
+            // Tạo danh sách tài nguyên
+            data.forEach(resource => {
+                const div = document.createElement("div");
+                div.classList.add("resource-item");
+                div.style.marginBottom = "10px";
+                div.innerHTML = `
+                <div class="modal-content">
+                    <p><strong>Tiêu đề:</strong> ${resource.title}</p>
+                    <p><strong>Loại:</strong> ${resource.type}</p>
+                    <p><strong>Link:</strong> <a href="${resource.link}" target="_blank">${resource.link}</a></p>
+                    <div class="modal-buttons">
+                        <button type="button" class="updateResourceBtn" data-id="${resource.resourceId}">Chỉnh sửa</button>
+                        <button type="button" class="deleteResourceBtn" data-id="${resource.resourceId}">Xóa</button>
+                    </div>
+                 </div>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById("viewResourceModal").style.display = "flex";
+
+        // Gắn sự kiện cho nút xóa và chỉnh sửa
+        document.querySelectorAll(".deleteResourceBtn").forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                if (!confirm("Bạn có chắc muốn xóa tài nguyên này không?")) return;
+                try {
+                    const delRes = await fetchWithToken(`${baseUrl}/delete-resource-by/${id}`,
+                        { method: "DELETE" });
+                    if (!delRes.ok) throw new Error("Xóa thất bại");
+                    alert("Đã xóa tài nguyên!");
+                    btn.closest(".resource-item").remove();
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi khi xóa tài nguyên!");
+                }
+            };
+        });
+        document.querySelectorAll(".updateResourceBtn").forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.dataset.id;
+                const form = document.getElementById("updateResourceForm");
+                form.dataset.id = id;
+                form.reset();
+                document.getElementById("updateResourceModal").style.display = "flex";
+
+                document.getElementById("cancelUpdateResourceBtn").onclick = () => {
+                    document.getElementById("updateResourceModal").style.display = "none";
+                };
+            };
+        });
+
+    } catch (err) {
+        console.warn(err);
+        alert("Sẽ cập nhật trong thời gian tới!");
+    }
+
+    // Đóng popup Resource
+    document.getElementById("closeViewResourceBtn").onclick = () => {
+        document.getElementById("viewResourceModal").style.display = "none";
+    };
+
+};
+document.getElementById("updateResourceForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const id = form.dataset.id;
+
+    const updatedData = {
+        ResourceId: id,
+        ResourceTitle: document.getElementById("updateResourceTitle").value,
+        ResourceLink: document.getElementById("updateResourceLink").value,
+        ResourceType: document.getElementById("updateResourceType").value
+    };
+
+    try {
+        const res = await fetchWithToken(`${baseUrl}/update-resource`, {
+            method: "PUT",
+            body: JSON.stringify(updatedData)
+        });
+
+        if (!res.ok) throw new Error("Cập nhật thất bại!");
+        alert("Cập nhật thành công!");
+        document.getElementById("updateResourceModal").style.display = "none";
+        document.getElementById("viewResourceBtn").click(); // reload danh sách
+    } catch (err) {
+        console.error(err);
+        alert("Có lỗi xảy ra khi cập nhật!");
+    }
+
+};
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+document.getElementById("deleteAssignmentBtn").onclick = async () => {
+    if (!selectedAssignmentId) {
+        alert("Vui lòng chọn bài tập cần xóa!");
+        return;
+    }
+
+    // Hiển thị popup xác nhận
+    const confirmed = confirm("Bạn có chắc chắn muốn xóa bài tập này không? Hành động này không thể hoàn tác.");
+
+    if (confirmed) {
+        try {
+            const response = await fetchWithToken(`${baseUrl}/Delete/${selectedAssignmentId}`, {
+                method: "DELETE"
+            });
+
+            if (response.ok) {
+                alert("Xóa thành công!");
+                document.getElementById("assignmentModal").style.display = "none";
+                loadAssignments();
+            } else {
+                alert("Không thể xóa bài tập. Vui lòng thử lại.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi khi kết nối tới server.");
+        }
+    }
+};
+
+
 
 
 loadAssignments();

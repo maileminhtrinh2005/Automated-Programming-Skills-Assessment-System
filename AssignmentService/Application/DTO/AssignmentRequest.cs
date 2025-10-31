@@ -11,8 +11,9 @@
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; }=string.Empty;
         public string SampleTestCase { get; set; } = string.Empty;
-        public DateTime Deadline { get; set; } = DateTime.Now;
+        public DateTime? Deadline { get; set; } = null;
         public string Difficulty { get; set; } = string.Empty;
+        public bool IsHidden { get; set; } = true;
 
     }
 }

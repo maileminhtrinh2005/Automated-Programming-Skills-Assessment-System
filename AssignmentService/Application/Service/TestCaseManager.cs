@@ -29,5 +29,21 @@ namespace AssignmentService.Application.Service
             if (testcases == null ) return null;    
             return testcases;
         }
+
+        public async Task<bool> DeleteTestcase (int id)
+        {
+            if(id<0) return false;
+            bool isSuccess = await _testcaseRepo.DeleteTestCase(id);
+            if(!isSuccess) return false;
+            return true;
+        }
+
+        public async Task<bool> UpdateTestcase(TestCaseDTO tc)
+        {
+            if (tc==null) return false;
+            bool isSuccess = await _testcaseRepo.UpdateTestCase(tc.TestCaseId,tc.Input??string.Empty,tc.ExpectedOutput??string.Empty,tc.Weight);
+            if (!isSuccess) return false;
+            return true;
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace AssignmentService.Infrastructure
             {
                 return false;
             }
-            var resource = await _context.resources.FirstOrDefaultAsync(r=> r.AssignmentId == id);
+            var resource = await _context.resources.FindAsync(id);
             if (resource == null) { return false; }
 
             _context.resources.Remove(resource);
@@ -47,28 +47,31 @@ namespace AssignmentService.Infrastructure
             return true;
         }
 
-        public async Task<ResourceDTO?> GetResoureById(int assignmentId)
+        public async Task<List<ResourceDTO>?> GetResoureById(int assignmentId)
         {
             if(assignmentId <= 0)
             {
                 return null;
             }
-            var resource = await _context.resources.FirstOrDefaultAsync(r => r.AssignmentId == assignmentId);
-            if (resource == null) { return null; }
+            var resources = await _context.resources.
+                Where(r => r.AssignmentId == assignmentId).
+                Select(r=>new ResourceDTO
+                {
+                    ResourceId=r.ResourceId,
+                    Link = r.Link,
+                    Title = r.Title,
+                    Type = r.Type
 
-            var resourcedto = new ResourceDTO
-            {
-                Title = resource.Title,
-                Link = resource.Link,
-                Type = resource.Type,
-            };
-            return resourcedto;
+                }).ToListAsync();
+            if (resources == null) { return null; }
+
+            return resources;
         }
 
         public async Task<bool> UpdateResource(ResourceDTO r)
         {
             if (r == null) return false;
-            var resource= await _context.resources.FirstOrDefaultAsync(rs=>rs.AssignmentId == r.AssignmentId);
+            var resource= await _context.resources.FindAsync(r.ResourceId);
             if (resource == null) { return false; }
             if (r.Title !=string.Empty) resource.Title = r.Title;
             if (r.Type !=string.Empty) resource.Type = r.Type;
