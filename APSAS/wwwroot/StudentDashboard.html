@@ -5,6 +5,7 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="Css/StudentAssignment.css">
     <link rel="stylesheet" href="Css/Dashboard.css" />
+    <link rel="stylesheet" href="Css/Notification.css" />
 </head>
 <body>
 
@@ -16,6 +17,30 @@
         <a href="#resources">🧠 Resource</a>
         <a href="#settings">⚙️ Cài đặt</a>
     </nav>
+
+    <div id="bellContainer">
+        <span id="bell">🔔</span>
+        <span id="badge" class="badge">0</span>
+
+        <div id="notificationsPopup" class="popup">
+            <div class="popup-header">
+                <h4>Thông báo</h4>
+            </div>
+
+            <div id="notifications" class="popup-body">
+                <p id="noNotificationMsg">Không có thông báo nào.</p>
+            </div>
+
+            <div class="popup-footer">
+                <button id="markAllBtn">🟩 Đã xem tất cả</button>
+            </div>
+
+            <audio id="notifSound"
+                   src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+                   preload="auto"></audio>
+        </div>
+    </div>
+
 
 
     <!--enter voo trong nay để thêm-->
@@ -95,7 +120,9 @@
     </div>
 
 
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script src="Js/StudentAssignment.js"></script>
+    <script src="Js/Notification.js"></script>
+  
 </body>
 </html>

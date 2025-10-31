@@ -13,19 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssignmentService", "Assign
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShareLibrary", "ShareLibrary\ShareLibrary.csproj", "{975CACB6-FA32-424E-8073-BA0EC722AF19}"
 EndProject
-<<<<<<< HEAD
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeedbackService", "FeedbackService\FeedbackService.csproj", "{9E450816-43DE-4879-A094-BCFBCCBBFA30}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotificationService", "NotificationService\NotificationService.csproj", "{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}"
-=======
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "AdminService\AdminService.csproj", "{64278242-82AF-4DE5-A7B7-676EAD467341}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeedbackService", "FeedbackService\FeedbackService.csproj", "{9E450816-43DE-4879-A094-BCFBCCBBFA30}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{F8B77F26-CCDB-450E-8364-1BC3CA53CFEF}"
->>>>>>> trinh
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -10,6 +10,7 @@ using NotificationService.Infrastructure.Persistence;
 using RabbitMQ.Client;
 using SharedLibrary.Jwt;
 using ShareLibrary;
+using ShareLibrary.Event;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
+builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
 
 
 builder.Services.Configure<JwtOptions>(

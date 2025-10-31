@@ -1,22 +1,22 @@
-﻿.top-nav {
+﻿/*.top-nav {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     background-color: #333;
     display: flex;
-    justify-content: space-between; /* Đẩy 2 nhóm ra 2 bên */
-    align-items: center;
-    padding: 10px 40px; /* Thêm khoảng trống 2 bên lề */
-    z-index: 1000;
-    box-sizing: border-box; /* Thêm dòng này để padding không làm vỡ layout */
-}
+    justify-content: space-between;*/ /* Đẩy 2 nhóm ra 2 bên */
+    /*align-items: center;
+    padding: 10px 40px;*/ /* Thêm khoảng trống 2 bên lề */
+    /*z-index: 1000;
+    box-sizing: border-box;*/ /* Thêm dòng này để padding không làm vỡ layout */
+/*}*/
 
 /* Định dạng cho nhóm các link */
-.nav-links {
+/*.nav-links {
     display: flex;
-    gap: 20px; /* Khoảng cách giữa các link */
-}
+    gap: 20px;*/ /* Khoảng cách giữa các link */
+/*}
 
 .top-nav a {
     color: white;
@@ -26,11 +26,170 @@
 
     .top-nav a:hover {
         color: #ffcc00;
-    }
+    }*/
 
 /* Định dạng cho chuông (đã ổn) */
-#bellContainer {
+/*#bellContainer {
     position: relative;
     display: flex;
     align-items: center;
+}*/
+/* Container & Bell */
+/* =============================== */
+/* 🔔 VỊ TRÍ & BIỂU TƯỢNG CHUÔNG */
+/* =============================== */
+/* =============================== */
+/* 🔹 THANH ĐIỀU HƯỚNG */
+/* =============================== */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    display: flex;
+    justify-content: flex-start; /* Căn chỉnh các link về bên trái */
+    align-items: center;
+    padding: 10px 40px;
+    z-index: 1000;
+    box-sizing: border-box;
+    gap: 20px; /* Khoảng cách giữa các link */
+}
+
+    .top-nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+        .top-nav a:hover {
+            background-color: #555;
+            color: #ffcc00;
+        }
+
+
+/* =============================== */
+/* 🔔 VỊ TRÍ & BIỂU TƯỢNG CHUÔNG */
+/* =============================== */
+#bellContainer {
+    position: fixed;
+    top: 15px;
+    right: 25px;
+    cursor: pointer;
+    z-index: 3000;
+}
+
+#bell {
+    font-size: 26px;
+    color: #00d0ff;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #ff4444;
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+/* ✅ Popup hiển thị toàn màn hình */
+.popup {
+    position: fixed; /* 🔥 Sửa absolute thành fixed */
+    top: 60px;
+    right: 25px;
+    width: 360px;
+    background: #111827;
+    color: #f9fafb;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: top right;
+    z-index: 9998;
+    animation: slideDown 0.3s ease;
+}
+
+    /* Khi bật class visible */
+    .popup.visible {
+        display: flex !important;
+        z-index: 9999 !important;
+        animation: slideDown 0.25s ease;
+    }
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popup-header {
+    background: #1f2937;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #374151;
+}
+
+.popup-body {
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.notification {
+    background: #1f2937;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #2d3748;
+    transition: background 0.2s;
+}
+
+    .notification:hover {
+        background: #2563eb;
+    }
+
+    .notification p {
+        margin: 5px 0;
+        color: #e5e7eb;
+    }
+
+    .notification time {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+
+.mark-btn {
+    background: #10b981;
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+    .mark-btn:hover {
+        background: #059669;
+    }
+
+.popup-footer {
+    border-top: 1px solid #374151;
+    padding: 8px;
+    text-align: center;
+    background: #1f2937;
 }

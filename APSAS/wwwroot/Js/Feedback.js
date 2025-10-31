@@ -40,7 +40,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 // ======== FETCH DATA ========
 async function fetchSubmissionsByStudent(studentId) {
-    const res = await apiFetch(`/GetYourSubmission/${studentId}`);
+    // 🔧 Đổi từ /GetYourSubmission → /GetSubmissions
+    const res = await apiFetch(`/GetSubmissions/${studentId}`);
     if (!res.ok) throw new Error("Không lấy được submissions");
     return res.json();
 }
@@ -167,6 +168,7 @@ async function generateDetailFeedback(submissionId) {
         console.error(err);
     }
 }
+
 // ======== NHẬN XÉT TỔNG QUÁT ========
 async function generateProgressFeedback(studentId) {
     try {

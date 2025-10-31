@@ -1,6 +1,8 @@
 ﻿// =============================
 // 🔔 BIẾN TOÀN CỤC
 // =============================
+const bellContainer = document.getElementById("bellContainer");
+const notificationsPopup = document.getElementById("notificationsPopup");
 const notificationsDiv = document.getElementById("notifications");
 const badge = document.getElementById("badge");
 const bell = document.getElementById("bell");
@@ -23,6 +25,12 @@ function checkAccess() {
 // 📩 HIỂN THỊ THÔNG BÁO
 // =============================
 function addNotification(id, title, message, time) {
+    // Xóa thông báo "Không có" nếu nó đang tồn tại
+    const noNotificationMsg = document.getElementById("noNotificationMsg");
+    if (noNotificationMsg) {
+        noNotificationMsg.remove();
+    }
+
     const div = document.createElement("div");
     div.className = "notification";
     div.setAttribute("data-id", id);
@@ -37,6 +45,7 @@ function addNotification(id, title, message, time) {
 
     count++;
     badge.textContent = count;
+    badge.style.display = 'block'; // Hiện badge
 
     bell.classList.add("shake");
     sound.play().catch(() => { });
@@ -83,17 +92,21 @@ async function loadUnreadNotifications() {
         if (!res.ok) throw new Error(`Server error ${res.status}`);
 
         const data = await res.json();
-        notificationsDiv.innerHTML = "";
+        notificationsDiv.innerHTML = ""; // Xóa nội dung cũ
+        count = 0; // Reset bộ đếm
+
         if (!data.length) {
-            notificationsDiv.innerHTML = "<p>Không có thông báo chưa đọc.</p>";
+            notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
             badge.textContent = 0;
+            badge.style.display = 'none'; // Ẩn badge nếu không có thông báo
             return;
         }
-        count = 0;
+
         data.forEach(n => addNotification(n.id, n.title, n.message, n.createdAtUtc));
         console.log(`📬 Loaded ${data.length} unread notifications`);
     } catch (err) {
         console.error("❌ Lỗi load unread:", err);
+        notificationsDiv.innerHTML = '<p id="noNotificationMsg">Lỗi khi tải thông báo.</p>';
     }
 }
 
@@ -111,6 +124,10 @@ async function markAsRead(id, btn) {
             btn.parentElement.remove();
             count--;
             badge.textContent = Math.max(count, 0);
+            if (count === 0) {
+                badge.style.display = 'none';
+                notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
+            }
         }
     } catch (err) {
         console.error("❌ Lỗi khi markAsRead:", err);
@@ -123,17 +140,43 @@ document.getElementById("markAllBtn").addEventListener("click", async () => {
     const all = document.querySelectorAll(".notification");
     if (!all.length) return alert("✅ Không còn thông báo chưa đọc.");
 
-    for (const n of all) {
-        const id = n.dataset.id;
-        await fetch(`${API_BASE}/markasread?id=${id}`, {
-            method: "POST",
-            headers: token ? { "Authorization": `Bearer ${token}` } : {}
-        });
-        n.remove();
+    const ids = Array.from(all).map(n => n.dataset.id);
+
+    try {
+        for (const id of ids) {
+            await fetch(`${API_BASE}/markasread?id=${id}`, {
+                method: "POST",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+        }
+        notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
+        count = 0;
+        badge.textContent = 0;
+        badge.style.display = 'none';
+    } catch (err) {
+        console.error("❌ Lỗi khi đánh dấu đã đọc tất cả:", err);
     }
-    count = 0;
-    badge.textContent = 0;
 });
+
+
+// =============================
+// 🧭 SỬA LỖI: LOGIC MỞ/ĐÓNG POPUP
+// =============================
+bell.addEventListener("click", (event) => {
+    // Ngăn sự kiện click bị lan ra ngoài (tới document)
+    event.stopPropagation();
+    // Bật/tắt class 'visible' để hiện/ẩn popup
+    notificationsPopup.classList.toggle("visible");
+});
+
+// Đóng popup khi người dùng click vào bất cứ đâu bên ngoài
+document.addEventListener("click", (event) => {
+    // Chỉ đóng nếu popup đang mở VÀ nơi click không nằm trong bellContainer
+    if (notificationsPopup.classList.contains("visible") && !bellContainer.contains(event.target)) {
+        notificationsPopup.classList.remove("visible");
+    }
+});
+
 
 // =============================
 // 🔌 AUTO KẾT NỐI KHI LOAD
@@ -156,9 +199,3 @@ window.addEventListener("DOMContentLoaded", async () => {
         console.error("❌ Không kết nối được SignalR:", err);
     }
 });
-
-// =============================
-// 🧭 MỞ POPUP KHI BẤM CHUÔNG
-// =============================
-const popup = document.getElementById("notificationsPopup");
-bell.addEventListener("click", () => popup.classList.toggle("visible"));

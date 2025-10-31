@@ -225,14 +225,7 @@
       ]
     },
     {
-
       "DownstreamPathTemplate": "/api/Resource/delete-resource-by/{id}",
-
-      "UpstreamPathTemplate": "/feedbacksubmit",
-      "UpstreamHttpMethod": [
-        "POST"
-      ],
-
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -260,7 +253,72 @@
       ]
     },
     {
-
+      "UpstreamPathTemplate": "/feedbacksubmit",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/feedbacksubmit",
+      "HttpHandlerOptions": {
+        "AllowAutoRedirect": false,
+        "UseCookieContainer": false,
+        "UseTracing": false,
+        "MaxConnectionsPerServer": 100,
+        "Timeout": 180000
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/Feedback/manual",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/manual"
+    },
+    {
+      "UpstreamPathTemplate": "/Feedback/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/{everything}"
+    },
+    {
+      "UpstreamPathTemplate": "/manual/sendreviewed",
+      "UpstreamHttpMethod": [
+        "POST"
+      ],
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5064
+        }
+      ],
+      "DownstreamPathTemplate": "/api/Feedback/manual/sendreviewed"
+    },
+    {
       "UpstreamPathTemplate": "/feedback/generate/bulk",
       "UpstreamHttpMethod": [
         "POST"
@@ -292,7 +350,6 @@
       }
     },
     {
-
       "UpstreamPathTemplate": "/GetNotification",
       "UpstreamHttpMethod": [
         "POST"
