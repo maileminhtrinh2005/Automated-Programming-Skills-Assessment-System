@@ -36,7 +36,19 @@
         }
       ],
       "UpstreamPathTemplate": "/UpdateAssignment",
-      "UpstreamHttpMethod": [ "POST" ]
+      "UpstreamHttpMethod": [ "PUT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Assignment/update-ishidden",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/update-ishidden",
+      "UpstreamHttpMethod": [ "PUT" ]
     },
     //
     {
@@ -65,7 +77,18 @@
       "UpstreamHttpMethod": [ "GET" ]
     },
 
-
+    {
+      "DownstreamPathTemplate": "/api/Assignment/GetAllAssignmentForStudent",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/GetAllAssignmentForStudent",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
 
 
 
@@ -98,6 +121,32 @@
       "UpstreamPathTemplate": "/GetTestCaseById/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
+    {
+      "DownstreamPathTemplate": "/api/TestCase/delete-testcase-by/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/delete-testcase-by/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/TestCase/update-testcase",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/update-testcase",
+      "UpstreamHttpMethod": [ "PUT" ]
+    },
+
+
 
 
     //resource
@@ -124,7 +173,34 @@
       ],
       "UpstreamPathTemplate": "/GetResourceById/{id}",
       "UpstreamHttpMethod": [ "GET" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/Resource/delete-resource-by/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/delete-resource-by/{id}",
+      "UpstreamHttpMethod": [ "DELETE" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/Resource/update-resource",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5267
+        }
+      ],
+      "UpstreamPathTemplate": "/update-resource",
+      "UpstreamHttpMethod": [ "PUT" ]
     }
+
 
   ],
 

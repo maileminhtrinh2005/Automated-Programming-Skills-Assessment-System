@@ -10,7 +10,7 @@ namespace AssignmentService.Application.Interface
 
         public Task<bool> DeleteResource(int assignmentId);
 
-        public Task<ResourceDTO?> GetResoureById(int assignmentId);
+        public Task<List<ResourceDTO>?> GetResoureById(int assignmentId);
 
     }
 }

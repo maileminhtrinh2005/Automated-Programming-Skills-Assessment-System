@@ -18,13 +18,8 @@
     </nav>
 
 
-     <!--enter voo trong nay để thêm-->
-
-
+    <!--enter voo trong nay để thêm-->
     <!------------------đó thêm trong đoạn này----------------------------------------->
-
-
-
     <!--phan nay là cho bài tập ae né ra, có thêm gì thì thêm ở trên : hải-->
     <section id="assignments">
         <h2>Bài tập</h2>
@@ -35,11 +30,22 @@
     <div id="assignmentModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle"></h3>
-            <p id="modalDescription"></p>
+
+            <div class="modal-info">
+                <p><strong>Mô tả:</strong> <span id="modalDescription"></span></p>
+
+                <p><strong>Testcase mẫu:</strong></p>
+                <pre id="modalSampleTestcase" class="sample-box"></pre>
+
+                <p><strong>Độ khó:</strong> <span id="modalDifficult"></span></p>
+                <p><strong>Hạn nộp:</strong> <span id="modalDeadline"></span></p>
+            </div>
+
             <div class="modal-buttons">
-                <button id="viewResourceBtn">Hướng dẫn</button>
+                <button id="viewResourceBtn">Xem hướng dẫn</button>
                 <button id="doAssignmentBtn">Làm bài</button>
             </div>
+
             <button id="closeModalBtn" class="close">X</button>
         </div>
     </div>
@@ -47,11 +53,8 @@
     <!-- Popup xem Resource của học sinh -->
     <div id="studentResourceModal" class="modal">
         <div class="modal-content">
-            <button id="closeStudentResourceBtn"  class="close">X</button>
-            <h3>Hướng dẫn bài tập</h3>
-            <p><strong>Tiêu đề:</strong> <span id="studentResourceTitle"></span></p>
-            <p><strong>Loại:</strong> <span id="studentResourceType"></span></p>
-            <p><strong>Link:</strong> <a id="studentResourceLink" href="#" target="_blank">Xem tài liệu</a></p>
+            <button id="closeStudentResourceBtn" class="close">X</button>
+            <h3>Hướng dẫn làm bài: </h3>
         </div>
     </div>
 
@@ -69,12 +72,14 @@
     <div id="submissionModal" class="modal">
         <div class="modal-content">
             <button id="closeSubmissionModalBtn" class="close">X</button>
-            <h3>Thông tin bài nộp</h3>
-            <p><strong>Ngôn ngữ:</strong> <span id="modalLanguage"></span></p>
-            <p><strong>Code</strong> <span id="modalCode"></span></p>
-            <p><strong>Điểm:</strong> <span id="modalScore"></span></p>
-            <p><strong>Trạng thái:</strong> <span id="modalStatus"></span></p>
-            <p><strong>Ngày nộp:</strong> <span id="modalSubmittedAt"></span></p>
+            <div class="modal-content">
+                <h3>Thông tin bài nộp</h3>
+                <p><strong>Ngôn ngữ:</strong> <span id="modalLanguage"></span></p>
+                <p><strong>Code</strong> <span id="modalCode"></span></p>
+                <p><strong>Điểm:</strong> <span id="modalScore"></span></p>
+                <p><strong>Trạng thái:</strong> <span id="modalStatus"></span></p>
+                <p><strong>Ngày nộp:</strong> <span id="modalSubmittedAt"></span></p>
+            </div>
             <button id="viewResultBtn">Xem kết quả chi tiết</button>
         </div>
     </div>

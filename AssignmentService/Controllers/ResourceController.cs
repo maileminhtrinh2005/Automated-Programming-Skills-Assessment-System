@@ -36,5 +36,28 @@ namespace AssignmentService.Controllers
             Console.WriteLine("checkkkk");
             return Ok(resource);
         }
+
+
+        [Authorize(Roles ="Lecturer,Admin")]
+        [HttpDelete("delete-resource-by/{id}")]
+        public async Task<IActionResult> DeleteResource(int id)
+        {
+            if (id < 0) { return BadRequest(); }
+            bool isSucces = await _resourceManager.DeleteResource(id);
+            if (!isSucces) { return BadRequest(); }
+            return Ok();
+        }
+
+        [Authorize(Roles = "Lecturer,Admin")]
+        [HttpPut("update-resource")]
+        public async Task<IActionResult> UpdateResource([FromBody] ResourceRequest request)
+        {
+            if (request==null) { return BadRequest(); }
+            bool isSuccess= await _resourceManager.UpdateResource(request);
+            if (!isSuccess) { return BadRequest(); }
+
+            return Ok();
+        }
+
     }
 }

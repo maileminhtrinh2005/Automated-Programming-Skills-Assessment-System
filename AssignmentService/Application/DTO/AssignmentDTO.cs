@@ -8,6 +8,7 @@
         public string SampleTestCase { get; set; } = string.Empty;
         public DateTime Deadline { get; set; }
         public string Difficulty { get; set; } = string.Empty;
+        public bool IsHidden { get; set; }
 
     }
 }

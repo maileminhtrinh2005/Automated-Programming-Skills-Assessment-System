@@ -24,9 +24,9 @@ async function fetchWithToken(url, options = {}) {
     return res;
 }
 // -------------------- LOAD DANH SÁCH BÀI TẬP --------------------
-async function loadAssignments() {
+async function loadAssignment() {
     try {
-        const res = await fetchWithToken(`${baseUrl}/GetAllAssignment`);
+        const res = await fetchWithToken(`${baseUrl}/GetAllAssignmentForStudent`);
         const data = await res.json();
 
         const container = document.getElementById("assignmentContainer");
@@ -50,6 +50,9 @@ function openModal(assignment) {
     selectedAssignmentId = assignment.assignmentId;
     document.getElementById("modalTitle").innerText = assignment.title;
     document.getElementById("modalDescription").innerText = assignment.description || "Không có mô tả";
+    document.getElementById("modalSampleTestcase").innerText = assignment.sampleTestCase;
+    document.getElementById("modalDifficult").innerText = assignment.difficulty;
+    document.getElementById("modalDeadline").innerText = assignment.deadline;
     document.getElementById("doAssignmentBtn").style.display = "inline-block";
     const modal = document.getElementById("assignmentModal");
     modal.style.display = "block";
@@ -70,19 +73,41 @@ function openModal(assignment) {
 // -------------------- XEM RESOURCE --------------------
 document.getElementById("viewResourceBtn").onclick = async () => {
     if (!selectedAssignmentId) return;
-
+    document.getElementById("assignmentModal").style.display = "none";
     try {
-        const res = await fetch(`${baseUrl}/GetResourceById/${selectedAssignmentId}`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
+        const res = await fetchWithToken(`${baseUrl}/GetResourceById/${selectedAssignmentId}`);
         if (!res.ok) throw new Error("Không tìm thấy resource");
         const data = await res.json();
 
-        document.getElementById("studentResourceTitle").innerText = data.title;
-        document.getElementById("studentResourceType").innerText = data.type;
-        const linkEl = document.getElementById("studentResourceLink");
-        linkEl.href = data.link;
-        linkEl.textContent = data.link;
+        const container = document.querySelector("#studentResourceModal .modal-content");
+
+        const oldResources = container.querySelectorAll(".resource-item");
+        oldResources.forEach(e => e.remove());
+
+        if (!data || data.length === 0) {
+            const p = document.createElement("p");
+            p.innerText = "Không có tài nguyên nào cho bài tập này.";
+            p.classList.add("resource-item");
+            container.appendChild(p);
+        } else {
+            // Tạo danh sách tài nguyên
+            data.forEach(resource => {
+                const div = document.createElement("div");
+                div.classList.add("resource-item");
+                div.style.marginBottom = "10px";
+                div.innerHTML = `
+                <div class="modal-content">
+                    <p><strong>Tiêu đề:</strong> ${resource.title}</p>
+                    <p><strong>Loại:</strong> ${resource.type}</p>
+                    <p><strong>Link:</strong> <a href="${resource.link}" target="_blank">${resource.link}</a></p>
+                 </div>
+                    <hr>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+
 
         document.getElementById("studentResourceModal").style.display = "flex";
     } catch (err) {
@@ -188,14 +213,13 @@ async function loadSubmissionResult(submissionId) {
         console.error(err);
     }
 
-    document.getElementById("closeResultModalBtn").onclick = () => {
-        document.getElementById("submissionResultModal").style.display = "none";
-    };
 }
 
-
+document.getElementById("closeResultModalBtn").onclick = () => {
+    document.getElementById("submissionResultModal").style.display = "none";
+};
 // -------------------- INIT --------------------
-loadAssignments();
+loadAssignment();
 loadSubmissions();
 
 

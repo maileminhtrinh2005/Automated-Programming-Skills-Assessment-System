@@ -44,6 +44,7 @@ namespace AssignmentService.Controllers
 
             var request = new AssignmentRequest { AssignmentId = id };
             var assignment = await _assignment.GetAssignmentById(request);
+            //Console.WriteLine(assignment.IsHidden);
 
             if (assignment == null) return NotFound();
 
@@ -51,11 +52,20 @@ namespace AssignmentService.Controllers
         }
 
         [Authorize(Roles = "Lecturer")]
-        [HttpPost("UpdateAssignment")]
+        [HttpPut("UpdateAssignment")]
         public async Task<IActionResult> UpdateAssignment([FromBody]AssignmentRequest request)
         {
-            if (request == null) return BadRequest();
-            if (! await _assignment.UpdateAssignment(request)) return BadRequest();
+            Console.WriteLine("cjealkdjkasldjass");
+            if (request == null) return BadRequest("loixixixixixx");
+            var teacherIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(teacherIdStr, out var teacherId))
+            {
+                return BadRequest("Invalid user id in token.");
+            }
+            request.UserId = teacherId;
+
+            Console.WriteLine("askjhdhajkhjdkasd");
+            if (! await _assignment.UpdateAssignment(request)) return BadRequest("adasdasdasdasd");
 
             return Ok();
         }
@@ -91,5 +101,26 @@ namespace AssignmentService.Controllers
             if (assignmentList == null) return NotFound();
             return Ok(assignmentList);
         }
+
+        [Authorize]
+        [HttpGet("GetAllAssignmentForStudent")]
+        public async Task<IActionResult> GetAllAssignmentForStudent()
+        {
+            Console.WriteLine("cjeaslkdjasd");
+            var assignmentList = await _assignment.GetAssignmentForStudent();
+            if (assignmentList == null) return NotFound();
+            Console.WriteLine('chekkkkkkk');
+            return Ok(assignmentList);
+        }
+
+        [Authorize(Roles ="Lecturer")]
+        [HttpPut("update-ishidden")]
+        public async Task<IActionResult> UpdateIsHidden([FromBody] AssignmentRequest a)
+        {
+            var isSuccess = await _assignment.UpdateIsHidden(a);
+            if (isSuccess == false) return BadRequest();
+            return Ok();
+        }
+
     }
 }

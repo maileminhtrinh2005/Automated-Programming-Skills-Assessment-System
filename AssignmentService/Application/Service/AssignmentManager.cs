@@ -1,11 +1,14 @@
 ﻿using AssignmentService.Application.DTO;
 using AssignmentService.Application.Interface;
+using ShareLibrary;
+using ShareLibrary.Event;
 
 namespace AssignmentService.Application.Service
 {
     public class AssignmentManager
     {
         private readonly IAssignmentRepository _assignmentRepo;
+        private readonly IEventBus _eventBus;
         public AssignmentManager(IAssignmentRepository control)
         {
             _assignmentRepo = control;
@@ -16,7 +19,12 @@ namespace AssignmentService.Application.Service
             if (request == null) { return false; }
             var check = await _assignmentRepo.AddAssignment(request);
             if (check == null) return false;
-
+            var publishMessToNoti = new DeadlineNotification
+            {
+                Message = "Bạn có bài tập mới",
+                Deadline = check.Deadline,
+            };
+            _eventBus.Publish(publishMessToNoti);
             return true;
         }
 
@@ -45,6 +53,16 @@ namespace AssignmentService.Application.Service
         public async Task<List<AssignmentDTO>> GetAllAssignment()
         {
             return await _assignmentRepo.GetAllAssigment();
+        }
+        public async Task<List<AssignmentDTO>> GetAssignmentForStudent()
+        {
+            return await _assignmentRepo.GetAssignmentForStudent();
+        }
+
+        public async Task<bool> UpdateIsHidden(AssignmentRequest a)
+        {
+            bool isSuccess = await _assignmentRepo.UpdateIsHidden(a.AssignmentId,a.IsHidden);
+            return isSuccess;
         }
     }
 }
