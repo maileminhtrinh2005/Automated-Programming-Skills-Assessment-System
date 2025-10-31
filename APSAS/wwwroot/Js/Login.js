@@ -42,7 +42,7 @@ $("loginBtn").addEventListener("click", async (e) => {
             switch (data.roleName) {
                 case "Admin": window.location.href = "Adminpage.html"; break;
                 case "Lecturer": window.location.href = "DashboardLecturer.html"; break;
-                case "Student": window.location.href = "Dashboard.html"; break;
+                case "Student": window.location.href = "StudentDashboard.html"; break;
                 default:
                     localStorage.clear();
                     showMessage(msg, "❌ Tài khoản không được phép truy cập.");

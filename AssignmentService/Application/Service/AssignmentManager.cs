@@ -9,9 +9,10 @@ namespace AssignmentService.Application.Service
     {
         private readonly IAssignmentRepository _assignmentRepo;
         private readonly IEventBus _eventBus;
-        public AssignmentManager(IAssignmentRepository control)
+        public AssignmentManager(IAssignmentRepository control,IEventBus eventBus)
         {
             _assignmentRepo = control;
+            _eventBus = eventBus;
         }
 
         public async Task<bool> AddAssignment(AssignmentRequest request)

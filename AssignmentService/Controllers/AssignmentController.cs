@@ -109,7 +109,6 @@ namespace AssignmentService.Controllers
             Console.WriteLine("cjeaslkdjasd");
             var assignmentList = await _assignment.GetAssignmentForStudent();
             if (assignmentList == null) return NotFound();
-            Console.WriteLine('chekkkkkkk');
             return Ok(assignmentList);
         }
 

@@ -4,6 +4,26 @@ let testcaseExample = " ";
 const token = localStorage.getItem("token");
 const assignmentId = localStorage.getItem("currentAssignmentId");
 
+
+async function fetchWithToken(url, options = {}) {
+    const token = localStorage.getItem("token");
+    const headers = {
+        "Content-Type": "application/json",
+        ...options.headers,
+        "Authorization": `Bearer ${token}`
+    };
+    const res = await fetch(url, { ...options, headers });
+
+    // ✅ Nếu token hết hạn hoặc không hợp lệ
+    if (res.status === 401) {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.clear(); // xoá token + info user
+        window.location.href = "/Login.html"; // redirect về login
+        return; // dừng tiếp
+    }
+    return res;
+}
+
 // 🟢 Load assignment
 async function loadAssignment() {
     if (!assignmentId) {
@@ -11,14 +31,12 @@ async function loadAssignment() {
         return;
     }
     try {
-        const res = await fetch(`${gatewayUrl}/GetAssignmentById/${assignmentId}`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
+        const res = await fetchWithToken(`${gatewayUrl}/GetAssignmentById/${assignmentId}`);
         if (!res.ok) throw new Error("Không tải được bài tập");
         const data = await res.json();
 
         document.getElementById("assignmentId").value = data.assignmentId;
-        document.getElementById("assignmentTitle").innerText = `🧪 ${data.title}`;
+        document.getElementById("assignmentTitle").innerText = ` ${data.title}`;
         document.getElementById("assignmentDescription").innerText = data.description || "Không có mô tả.";
         document.getElementById("assignmentSampleTestCase").innerText = data.sampleTestCase || "khoong co testcase";
         testcaseExample = data.sampleTestCase;
@@ -50,12 +68,8 @@ async function submitCode() {
     };
 
     try {
-        const res = await fetch(`${gatewayUrl}/Submit`, {
+        const res = await fetchWithToken(`${gatewayUrl}/Submit`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
             body: JSON.stringify(body)
         });
         if (res.ok) {
@@ -83,12 +97,8 @@ async function runCode() {
     };
 
     try {
-        const res = await fetch(`${gatewayUrl}/RunCode`, {
+        const res = await fetchWithToken(`${gatewayUrl}/RunCode`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
             body: JSON.stringify(body)
         });
 
@@ -124,12 +134,8 @@ async function runWithTestcase() {
     };
 
     try {
-        const res = await fetch(`${gatewayUrl}/RunCode`, {
+        const res = await fetchWithToken(`${gatewayUrl}/RunCode`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
             body: JSON.stringify(body)
         });
 

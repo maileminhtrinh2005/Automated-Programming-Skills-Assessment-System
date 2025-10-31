@@ -20,14 +20,15 @@ namespace AssignmentService.Infrastructure
             }
             Assignment assignment = new Assignment
             {
-                Title= request.Title,
-                Description= request.Description,
-                SampleTestCases=request.SampleTestCase,
-                Deadline = request.Deadline??DateTime.Now,
+                Title = request.Title,
+                Description = request.Description,
+                SampleTestCases = request.SampleTestCase,
+                Deadline = request.Deadline ?? DateTime.Now,
                 Difficulty = request.Difficulty,
                 CreatedBy = request.UserId,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
+                IsHidden = true
             };
             _context.assignments.Add(assignment);
             await _context.SaveChangesAsync();

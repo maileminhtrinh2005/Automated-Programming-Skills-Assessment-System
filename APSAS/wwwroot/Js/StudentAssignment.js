@@ -18,7 +18,7 @@ async function fetchWithToken(url, options = {}) {
     if (res.status === 401) {
         alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         localStorage.clear(); // xoá token + info user
-        window.location.href = "/DN.html"; // redirect về login
+        window.location.href = "/Login.html"; // redirect về login
         return; // dừng tiếp
     }
     return res;
