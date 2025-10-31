@@ -11,6 +11,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", p =>
+    p.WithOrigins("http://localhost:5261")
+     .AllowAnyHeader()
+     .AllowAnyMethod()
+     .AllowCredentials());
+
+});
 
 
 
@@ -84,6 +93,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 //app.UseHttpsRedirection();
+app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();

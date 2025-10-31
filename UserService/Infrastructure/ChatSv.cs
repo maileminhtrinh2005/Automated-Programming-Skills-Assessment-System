@@ -25,9 +25,4 @@ public class ChatSv : IChat
         Console.WriteLine($"📤 [User → Admin]: {message}");
     }
 
-    public IEnumerable<string> ReceiveMessages()
-    {
-        // ví dụ: dữ liệu test
-        return new List<string> { "💬 Tin nhắn từ admin (mock data)" };
-    }
 }
