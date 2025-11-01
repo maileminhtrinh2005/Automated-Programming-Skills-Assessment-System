@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
+using NotificationService.Background;
 using NotificationService.Hubs;
 using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Handlers;
@@ -12,6 +13,7 @@ using SharedLibrary.Jwt;
 using ShareLibrary;
 using ShareLibrary.Event;
 using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,11 +23,13 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddScoped<INotificationAppService, NotificationAppService>();
 builder.Services.AddScoped<INotificationGenerator, NotificationGenerator>();
 builder.Services.AddScoped<NotificationCreatedHandler>();
-builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
+builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
 builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
+builder.Services.AddHostedService<NotificationBackgroundWorker>();
+
 
 
 builder.Services.Configure<JwtOptions>(
