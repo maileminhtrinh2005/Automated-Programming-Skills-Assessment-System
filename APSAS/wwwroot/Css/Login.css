@@ -8,6 +8,7 @@
     margin: 0;
 }
 
+/* Card đăng nhập */
 .card {
     background: #ffffff;
     padding: 40px 35px;
@@ -57,16 +58,6 @@ button {
         background: #0056b3;
     }
 
-    button.secondary {
-        background: #f1f1f1;
-        color: #333;
-        border: 1px solid #ccc;
-    }
-
-        button.secondary:hover {
-            background: #e0e0e0;
-        }
-
 .msg {
     text-align: center;
     font-size: 14px;
@@ -75,15 +66,11 @@ button {
     min-height: 18px;
 }
 
-.hidden {
-    display: none;
-}
-
-/* Hiệu ứng mượt khi đổi form */
 .fade {
     animation: fadeIn 0.3s ease;
 }
 
+/* Hiệu ứng xuất hiện */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -95,3 +82,36 @@ button {
         transform: translateY(0);
     }
 }
+
+.support-btn {
+    position: fixed;
+    top: 20px;
+    right: 25px;
+    /* ----- THÊM 2 DÒNG NÀY ----- */
+    /* Buộc nó hiển thị như một khối nội tuyến */
+    display: inline-block;
+    /* Buộc độ rộng phải tự động co theo chữ bên trong */
+    width: auto;
+    /* -------------------------- */
+
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 10px; /* vừa khít với chữ */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    white-space: nowrap; /* tránh xuống dòng */
+}
+
+    /* Hiệu ứng hover */
+    .support-btn:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+

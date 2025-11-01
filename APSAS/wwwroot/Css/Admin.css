@@ -256,3 +256,36 @@ tr:nth-child(even) {
             background-color: #004a99;
         }
 
+
+
+
+
+
+
+
+
+
+
+
+/* ========== NÚT ĐIỀU HƯỚNG TOP-RIGHT ========== */
+.top-right-nav {
+    position: fixed; /* Giữ cố định khi cuộn trang */
+    top: 20px;
+    right: 20px;
+    display: flex; /* Xếp các nút nằm ngang */
+    gap: 10px; /* Khoảng cách giữa các nút */
+    z-index: 1001; /* Đảm bảo nó nổi trên modal */
+}
+
+    /* Ghi đè các style 'button' chung */
+    .top-right-nav button {
+        width: auto;
+        margin-top: 0;
+        padding: 8px 12px;
+        font-size: 14px;
+        background-color: #3498db; /* Màu xanh dương */
+    }
+
+        .top-right-nav button:hover {
+            background-color: #2980b9;
+        }

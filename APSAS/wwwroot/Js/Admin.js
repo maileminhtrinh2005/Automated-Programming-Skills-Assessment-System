@@ -7,7 +7,7 @@ window._usersMap = {};
 if (!token || role !== "Admin") {
     alert("🚫 Bạn không có quyền truy cập!");
     localStorage.clear();
-    window.location.href = "DN.html";
+    window.location.href = "Login.html";
 }
 
 async function secureFetch(url, options = {}) {

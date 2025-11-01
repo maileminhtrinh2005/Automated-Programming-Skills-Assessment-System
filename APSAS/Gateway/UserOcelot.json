@@ -137,6 +137,20 @@
       "UpstreamHttpMethod": [ "POST" ],
       "RouteIsCaseSensitive": false,
       "LoadBalancerOptions": { "Type": "RoundRobin" }
+    },
+    {
+      "DownstreamPathTemplate": "/api/User/GetUserByUsername",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5239
+        }
+      ],
+      "UpstreamPathTemplate": "/GetUserByUsername",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RouteIsCaseSensitive": false,
+      "LoadBalancerOptions": { "Type": "RoundRobin" }
     }
 
 

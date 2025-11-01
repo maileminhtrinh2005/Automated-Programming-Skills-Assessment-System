@@ -8,6 +8,17 @@
 </head>
 <body>
 
+    <!-- 🔹 Góc phải: Nút ba chấm dropdown -->
+    <div class="user-menu">
+        <button class="user-btn" id="userBtn">⋮</button>
+        <div class="dropdown" id="userDropdown">
+            <a href="#" id="viewProfile">Hồ sơ</a>
+            <a href="#" id="changePassword">Đổi mật khẩu</a>
+            <a href="#" id="logoutBtn">Đăng xuất</a>
+        </div>
+    </div>
+
+
 
     <!-- 🔹 Thanh điều hướng -->
     <nav class="top-nav">
@@ -18,13 +29,8 @@
     </nav>
 
 
-     <!--enter voo trong nay để thêm-->
-
-
+    <!--enter voo trong nay để thêm-->
     <!------------------đó thêm trong đoạn này----------------------------------------->
-
-
-
     <!--phan nay là cho bài tập ae né ra, có thêm gì thì thêm ở trên : hải-->
     <section id="assignments">
         <h2>Bài tập</h2>
@@ -47,7 +53,7 @@
     <!-- Popup xem Resource của học sinh -->
     <div id="studentResourceModal" class="modal">
         <div class="modal-content">
-            <button id="closeStudentResourceBtn"  class="close">X</button>
+            <button id="closeStudentResourceBtn" class="close">X</button>
             <h3>Hướng dẫn bài tập</h3>
             <p><strong>Tiêu đề:</strong> <span id="studentResourceTitle"></span></p>
             <p><strong>Loại:</strong> <span id="studentResourceType"></span></p>

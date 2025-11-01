@@ -18,7 +18,7 @@ async function fetchWithToken(url, options = {}) {
     if (res.status === 401) {
         alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         localStorage.clear(); // xoá token + info user
-        window.location.href = "/DN.html"; // redirect về login
+        window.location.href = "/Login.html"; // redirect về login
         return; // dừng tiếp
     }
     return res;
@@ -193,6 +193,40 @@ async function loadSubmissionResult(submissionId) {
     };
 }
 
+// --- Xử lý dropdown người dùng ---
+const userBtn = document.getElementById("userBtn");
+const userDropdown = document.getElementById("userDropdown");
+
+// Toggle hiển thị menu
+userBtn.addEventListener("click", () => {
+    userDropdown.style.display =
+        userDropdown.style.display === "block" ? "none" : "block";
+});
+
+// Ẩn menu khi click ra ngoài
+window.addEventListener("click", (e) => {
+    if (!userBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+        userDropdown.style.display = "none";
+    }
+});
+
+// Nút đăng xuất
+document.getElementById("logoutBtn").onclick = () => {
+    if (confirm("Bạn có chắc muốn đăng xuất không?")) {
+        localStorage.clear();
+        window.location.href = "/Login.html";
+    }
+};
+
+// Nút xem hồ sơ
+document.getElementById("viewProfile").onclick = () => {
+    window.location.href = "/Profile.html";
+};
+
+// Nút đổi mật khẩu
+document.getElementById("changePassword").onclick = () => {
+    window.location.href = "/ChangePassword.html";
+};
 
 // -------------------- INIT --------------------
 loadAssignments();
