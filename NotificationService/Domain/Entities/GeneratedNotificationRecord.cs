@@ -11,4 +11,5 @@ public class GeneratedNotificationRecord
     public string? RawJson { get; set; }           // ✅ Cho phép null
     public DateTime CreatedAtUtc { get; set; }
     public bool IsRead { get; set; } = false;
+    public bool IsBroadcasted { get; set; } = false;
 }

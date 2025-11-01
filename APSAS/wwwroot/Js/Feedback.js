@@ -19,7 +19,7 @@ async function apiFetch(path, options = {}) {
     if (res.status === 401) {
         alert("⏰ Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
         localStorage.clear();
-        window.location.href = "DN.html";
+        window.location.href = "Login.html";
     }
     return res;
 }

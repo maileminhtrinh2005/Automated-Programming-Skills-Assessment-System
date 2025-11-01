@@ -31,7 +31,8 @@ namespace NotificationService.Infrastructure.Handlers
                 Title = "Bài tập mới",
                 Message = $"{e.Message}\n⏰ Deadline: {e.Deadline:dd/MM/yyyy HH:mm}",
                 CreatedAtUtc = DateTime.UtcNow,
-                IsRead = false
+                IsRead = false,
+                 IsBroadcasted = false
             };
 
             _db.GeneratedNotifications.Add(noti);
