@@ -39,3 +39,51 @@ section {
 
 
 
+/* ===== Nút ba chấm góc phải ===== */
+.user-menu {
+    position: fixed;
+    top: -5px;
+    right: 20px;
+    z-index: 1100;
+}
+
+.user-btn {
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+    .user-btn:hover {
+        color: #ffcc00;
+    }
+
+/* Dropdown menu */
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 35px;
+    right: 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    min-width: 160px;
+}
+
+    .dropdown a {
+        display: block;
+        padding: 10px 14px;
+        color: #333;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .dropdown a:hover {
+            background-color: #f2f2f2;
+            color: #007bff;
+        }

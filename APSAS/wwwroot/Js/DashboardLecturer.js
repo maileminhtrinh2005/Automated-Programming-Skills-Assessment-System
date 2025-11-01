@@ -15,7 +15,7 @@ window.onload = () => {
         if (inactivityTime >= maxInactivity) {
             alert("⏰ Hết phiên làm việc do không hoạt động!");
             localStorage.removeItem("token");
-            window.location.href = "DN.html";
+            window.location.href = "Login.html";
         }
     }, 1000);
 
@@ -28,9 +28,9 @@ function checkAccess() {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
-    if (!token || role !== "Lecturer") {
+    if (!token || (role !== "Lecturer" && role !== "Admin")) {
         alert("Bạn không có quyền truy cập!");
-        window.location.href = "login.html";
+        window.location.href = "Login.html";
     }
 }
 
@@ -100,3 +100,37 @@ function openFeedback(studentId) {
     window.location.href = "Feedback.html";
 }
 
+// --- Xử lý dropdown người dùng ---
+const userBtn = document.getElementById("userBtn");
+const userDropdown = document.getElementById("userDropdown");
+
+// Toggle hiển thị menu
+userBtn.addEventListener("click", () => {
+    userDropdown.style.display =
+        userDropdown.style.display === "block" ? "none" : "block";
+});
+
+// Ẩn menu khi click ra ngoài
+window.addEventListener("click", (e) => {
+    if (!userBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+        userDropdown.style.display = "none";
+    }
+});
+
+// Nút đăng xuất
+document.getElementById("logoutBtn").onclick = () => {
+    if (confirm("Bạn có chắc muốn đăng xuất không?")) {
+        localStorage.clear();
+        window.location.href = "/Login.html";
+    }
+};
+
+// Nút xem hồ sơ
+document.getElementById("viewProfile").onclick = () => {
+    window.location.href = "/Profile.html";
+};
+
+// Nút đổi mật khẩu
+document.getElementById("changePassword").onclick = () => {
+    window.location.href = "/ChangePassword.html";
+};

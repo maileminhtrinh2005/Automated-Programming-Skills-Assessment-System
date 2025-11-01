@@ -141,6 +141,25 @@ namespace UserService.Controllers
             return Ok(new { message = "✅ Tin nhắn đã được gửi đến admin!" });
         }
 
+        [Authorize]
+        [HttpGet("GetUserByUsername")]
+        public async Task<IActionResult> GetUserByUsername(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+                return BadRequest(new { message = "Thiếu tên người dùng." });
+
+            var user = await _crud.GetUserByUsername(username);
+            if (user == null)
+                return NotFound(new { message = "Không tìm thấy người dùng." });
+
+            return Ok(new
+            {
+                username = user.Username,
+                fullName = user.FullName,
+                email = user.Email,
+                roleName = user.Role?.RoleName
+            });
+        }
 
 
     }

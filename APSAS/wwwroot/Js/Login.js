@@ -1,13 +1,8 @@
 ﻿const gatewayUrl = "http://localhost:5261";
 const loginEndpoint = "/Login";
-const changePwdEndpoint = "/ChangePassword";
 
 const $ = id => document.getElementById(id);
 const showMessage = (el, text) => el.textContent = text;
-const switchView = view => {
-    $("loginCard").classList.toggle("hidden", view !== "login");
-    $("changeCard").classList.toggle("hidden", view !== "change");
-};
 
 // ==== LOGIN ====
 $("loginBtn").addEventListener("click", async (e) => {
@@ -56,43 +51,7 @@ $("loginBtn").addEventListener("click", async (e) => {
     }
 });
 
-// ==== ĐỔI MẬT KHẨU ====
-$("toChangePwdBtn").addEventListener("click", () => {
-    $("cpUsername").value = $("username").value.trim();
-    switchView("change");
-});
-
-$("backToLoginBtn").addEventListener("click", () => switchView("login"));
-
-$("changeBtn").addEventListener("click", async (e) => {
-    e.preventDefault();
-    const username = $("cpUsername").value.trim();
-    const oldPassword = $("oldPassword").value;
-    const newPassword = $("newPassword").value;
-    const msg = $("changeMsg");
-
-    if (!username || !oldPassword || !newPassword)
-        return showMessage(msg, "⚠️ Vui lòng nhập đầy đủ thông tin.");
-
-    $("changeBtn").disabled = true;
-    $("changeBtn").textContent = "Đang xử lý...";
-
-    try {
-        const res = await fetch(gatewayUrl + changePwdEndpoint, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ Username: username, OldPassword: oldPassword, NewPassword: newPassword })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Đổi mật khẩu thất bại.");
-
-        showMessage(msg, "✅ Đã cập nhật mật khẩu mới!");
-        setTimeout(() => switchView("login"), 1200);
-    } catch (err) {
-        showMessage(msg, err.message);
-    } finally {
-        $("changeBtn").disabled = false;
-        $("changeBtn").textContent = "Cập nhật mật khẩu";
-    }
+// ==== Nút hỗ trợ ====
+$("supportBtn").addEventListener("click", () => {
+    window.location.href = "Supportpage.html"; // chuyển sang trang hỗ trợ
 });
