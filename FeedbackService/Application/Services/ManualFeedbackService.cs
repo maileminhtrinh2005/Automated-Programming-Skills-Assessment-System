@@ -4,7 +4,6 @@ using FeedbackService.Domain.Entities;
 using FeedbackService.Infrastructure.Persistence;
 using ShareLibrary;
 using ShareLibrary.Event;
-using System;
 
 namespace FeedbackService.Application.Services
 {
@@ -19,12 +18,12 @@ namespace FeedbackService.Application.Services
             _eventBus = eventBus;
         }
 
-        // 🧾 Lưu feedback nhập tay vào DB
+        // 🧾 [1] Lưu feedback nhập tay vào DB
         public async Task<ManualFeedbackResponseDto> CreateAsync(ManualFeedbackRequestDto dto, CancellationToken ct = default)
         {
             var entity = new ManualFeedback
             {
-                AssignmentTitle = dto.AssignmentTitle,
+                AssignmentTitle = dto.AssignmentTitle ?? "(Không rõ bài tập)",
                 InstructorId = dto.InstructorId,
                 Score = dto.Score,
                 Content = dto.Content,
@@ -33,6 +32,8 @@ namespace FeedbackService.Application.Services
 
             _db.ManualFeedbacks.Add(entity);
             await _db.SaveChangesAsync(ct);
+
+            Console.WriteLine($"💾 [FeedbackService] Saved ManualFeedback Id={entity.Id}");
 
             return new ManualFeedbackResponseDto
             {
@@ -46,17 +47,31 @@ namespace FeedbackService.Application.Services
             };
         }
 
-        // 📤 Gửi feedback nhập tay sang NotificationService qua RabbitMQ
+        // 📤 [2] Gửi feedback thủ công sang NotificationService qua RabbitMQ (và lưu DB)
         public async Task SendReviewedFeedbackAsync(ManualFeedbackDto dto)
         {
-            Console.WriteLine("=== [FeedbackService] Preparing FeedbackGeneratedEvent (Manual) ===");
+            Console.WriteLine("=== [FeedbackService] Preparing Manual Feedback ===");
             Console.WriteLine($"SubmissionId: {dto.SubmissionId}");
             Console.WriteLine($"StudentId: {dto.StudentId}");
             Console.WriteLine($"FeedbackText: {dto.FeedbackText}");
             Console.WriteLine($"Comment: {dto.Comment}");
-            Console.WriteLine("=========================================================");
+            Console.WriteLine("===================================================");
 
-            // 🔹 Dùng FeedbackGeneratedEvent thay vì FeedbackReviewedEvent
+            // 🔹 Lưu vào DB
+            var manualEntity = new ManualFeedback
+            {
+                AssignmentTitle = dto.AssignmentTitle ?? "(Không rõ bài tập)",
+                Score =  0,
+                Content = $"{dto.FeedbackText}\nGhi chú: {dto.Comment}",
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            _db.ManualFeedbacks.Add(manualEntity);
+            await _db.SaveChangesAsync();
+
+            Console.WriteLine($"💾 [FeedbackService] Manual feedback saved (Id={manualEntity.Id})");
+
+            // 🔹 Sau đó publish sự kiện qua RabbitMQ
             var ev = new FeedbackGeneratedEvent
             {
                 StudentId = dto.StudentId,
@@ -67,10 +82,9 @@ namespace FeedbackService.Application.Services
                 CreatedAtUtc = DateTime.UtcNow
             };
 
-            Console.WriteLine("=== [FeedbackService] Publishing FeedbackGeneratedEvent ===");
             _eventBus.Publish(ev);
-            Console.WriteLine($"[FeedbackService] ✅ Published FeedbackGeneratedEvent for student {dto.StudentId}");
 
+            Console.WriteLine($"📢 [FeedbackService] ✅ Published FeedbackGeneratedEvent for student {dto.StudentId}");
             await Task.CompletedTask;
         }
     }
