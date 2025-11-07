@@ -478,6 +478,62 @@
       ]
     },
     {
+      "DownstreamPathTemplate": "/api/language/get-languages",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/get-languages",
+      "UpstreamHttpMethod": [
+        "GET"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/language/add-language",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/add-language",
+      "UpstreamHttpMethod": [
+        "POST"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/language/delete-language/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/delete-language/{id}",
+      "UpstreamHttpMethod": [
+        "DELETE"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/language/update-language",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5090
+        }
+      ],
+      "UpstreamPathTemplate": "/update-language",
+      "UpstreamHttpMethod": [
+        "PUT"
+      ]
+    },
+    {
       "DownstreamPathTemplate": "/api/User/GetAllStudents",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

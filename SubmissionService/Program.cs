@@ -33,6 +33,8 @@ builder.Services.AddScoped<ICompareTestCase, CompareTestCase>();
 builder.Services.AddScoped<ISendToJudge0, SendToJudge0>();
 builder.Services.AddScoped<IResultRepository, ResultRepository>();
 builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+builder.Services.AddScoped<ILanguageRepository, LanguageRepository>();
+builder.Services.AddScoped<LanguageManager>();
 builder.Services.AddScoped<SubmissionManager>();
 builder.Services.AddScoped<RunCodeHandle>();
 
@@ -79,6 +81,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -95,5 +99,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); // tự động tạo DB và apply migration khi app chạy
+}
+
 
 app.Run();

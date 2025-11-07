@@ -50,13 +50,44 @@ async function loadAssignment() {
 
 
 // 🟢 select language
-document.querySelectorAll(".lang-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".lang-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedLanguageId = parseInt(btn.getAttribute("data-id"));
-    });
-});// done
+// 🟢 Load languages từ API
+async function loadLanguages() {
+    try {
+        const res = await fetchWithToken(`${gatewayUrl}/get-languages`);
+        if (!res.ok) throw new Error("Không tải được danh sách ngôn ngữ.");
+        const data = await res.json();
+
+        const container = document.getElementById("languageContainer");
+        container.innerHTML = ""; // Xoá hết nút cũ
+
+        data.forEach((lang, index) => {
+            const btn = document.createElement("button");
+            btn.className = "lang-btn";
+            btn.setAttribute("data-id", lang.languageId);
+            btn.textContent = lang.languageName;
+
+            // Ngôn ngữ đầu tiên mặc định là active
+            if (index === 0) {
+                btn.classList.add("active");
+                selectedLanguageId = lang.languageId;
+            }
+
+            // Khi click -> đổi trạng thái active + cập nhật ID
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                selectedLanguageId = lang.languageId;
+            });
+
+            container.appendChild(btn);
+        });
+    } catch (err) {
+        console.error("Lỗi load languages:", err);
+        const container = document.getElementById("languageContainer");
+        container.innerHTML = "<p>Không tải được ngôn ngữ.</p>";
+    }
+}
+
 
 // 🟢 Submit code
 async function submitCode() {
@@ -161,3 +192,4 @@ ${result.errorMessage}
 
 
 loadAssignment();
+loadLanguages();
