@@ -9,8 +9,8 @@ namespace SubmissionService.Infrastructure
     public class CompareTestCase : ICompareTestCase
     {
 
-        private const string _urlJudge0 = "http://192.168.117.133:2358";
-
+        //private const string _urlJudge0 = "http://192.168.117.133:2358";
+        private  const string _urlJudge0 = "http://26.215.255.178:2358/";// local judge0
         private readonly IEventBus _eventBus;
         private readonly ISendToJudge0 _judge0;
 

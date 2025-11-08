@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NotificationService.Hubs;
 using NotificationService.Infrastructure.Persistence;
@@ -11,12 +12,13 @@ namespace NotificationService.Background
     /// </summary>
     public class NotificationBackgroundWorker : BackgroundService
     {
-        private readonly AppDbContext _db;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IHubContext<NotificationHub, INotificationClient> _hub;
 
-        public NotificationBackgroundWorker(AppDbContext db, IHubContext<NotificationHub, INotificationClient> hub)
+        public NotificationBackgroundWorker(IServiceScopeFactory scopeFactory,
+                                            IHubContext<NotificationHub, INotificationClient> hub)
         {
-            _db = db;
+            _scopeFactory = scopeFactory;
             _hub = hub;
         }
 
@@ -28,30 +30,36 @@ namespace NotificationService.Background
             {
                 try
                 {
-                    // 🔎 Lấy các thông báo mới thêm gần đây mà chưa broadcast
-                    var pending = await _db.GeneratedNotifications
-                        .Where(n => !n.IsBroadcasted)
-                        .OrderBy(n => n.CreatedAtUtc)
-                        .ToListAsync(stoppingToken);
-
-                    foreach (var noti in pending)
+                    // ✅ Tạo scope mới để dùng AppDbContext (vì DbContext là scoped)
+                    using (var scope = _scopeFactory.CreateScope())
                     {
-                        // 📡 Gửi realtime đến tất cả sinh viên
-                        await _hub.Clients.All.NotifyNew(new NotificationDto(
-                            noti.Id,
-                            noti.Title,
-                            noti.Message,
-                            noti.CreatedAtUtc
-                        ));
+                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                        Console.WriteLine($"✅ [NotificationWorker] Broadcast: {noti.Title}");
+                        // 🔎 Lấy các thông báo mới thêm gần đây mà chưa broadcast
+                        var pending = await db.GeneratedNotifications
+                            .Where(n => !n.IsBroadcasted)
+                            .OrderBy(n => n.CreatedAtUtc)
+                            .ToListAsync(stoppingToken);
 
-                        // Đánh dấu đã gửi để không gửi lại
-                        noti.IsBroadcasted = true;
+                        foreach (var noti in pending)
+                        {
+                            // 📡 Gửi realtime đến tất cả sinh viên
+                            await _hub.Clients.All.NotifyNew(new NotificationDto(
+                                noti.Id,
+                                noti.Title ?? "(Không có tiêu đề)",
+                                noti.Message ?? "(Không có nội dung)",
+                                noti.CreatedAtUtc
+                            ));
+
+                            Console.WriteLine($"✅ [NotificationWorker] Broadcast: {noti.Title}");
+
+                            // Đánh dấu đã gửi để không gửi lại
+                            noti.IsBroadcasted = true;
+                        }
+
+                        if (pending.Any())
+                            await db.SaveChangesAsync(stoppingToken);
                     }
-
-                    if (pending.Any())
-                        await _db.SaveChangesAsync(stoppingToken);
 
                     // ⏳ Chờ 3 giây rồi kiểm tra lại
                     await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);

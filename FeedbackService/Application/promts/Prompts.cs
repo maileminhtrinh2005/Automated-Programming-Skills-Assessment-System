@@ -14,12 +14,28 @@
 
         // Prompt cho chấm chi tiết theo từng testcase
         public const string PerTestcaseFeedback =
-           "Bạn là trợ giảng trong hệ thống APSAS. " +
-           "Phân tích từng test case dựa trên input, output, expected, status, và thời gian chạy. " +
-           "Viết nhận xét ngắn gọn bằng tiếng Việt cho từng test case (ví dụ: 'Kết quả đúng', 'Sai ở điều kiện biên', ...). " +
-           "Không thêm điểm. " +
-           "Trả về JSON đúng định dạng:\n" +
-           "{ \"summary\": string, \"testCaseFeedback\": [{\"name\": string, \"comment\": string}] }";
+     "Bạn là trợ giảng trong hệ thống APSAS. " +
+     "Dưới đây là danh sách test case của sinh viên, mỗi phần tử có các trường: " +
+     "input, expectedOutput, actualOutput, status, executionTime, memoryUsed, errorMessage. " +
+     "Dựa trên các dữ liệu này, hãy phân tích và nhận xét chi tiết bằng tiếng Việt cho từng test case. " +
+     "Hãy chỉ ra vì sao Passed hay Failed (ví dụ: 'Đúng kết quả', 'Sai ở điều kiện biên', 'Lỗi do thiếu kiểm tra chia 0', 'Thiếu xử lý chuỗi rỗng'...). " +
+     "Không chấm điểm, không viết dài dòng, không nhắc lại đề bài. " +
+     "Hãy đảm bảo phản hồi ở dạng JSON với cấu trúc chính xác sau đây:\n" +
+     "{\n" +
+     "  \"summary\": string, // nhận xét tổng quát toàn bài\n" +
+     "  \"testCaseFeedback\": [\n" +
+     "    {\n" +
+     "      \"status\": string,          // 'Passed' hoặc 'Failed'\n" +
+     "      \"input\": string,           // dữ liệu đầu vào\n" +
+     "      \"expectedOutput\": string,  // đầu ra mong đợi\n" +
+     "      \"actualOutput\": string,    // đầu ra sinh viên in ra\n" +
+     "      \"comment\": string          // nhận xét ngắn gọn\n" +
+     "    }\n" +
+     "  ]\n" +
+     "}\n" +
+     "⚠️ Lưu ý: phản hồi phải là JSON hợp lệ, không chứa text bên ngoài. " +
+     "Tất cả nhận xét phải viết bằng tiếng Việt, ngắn gọn, thân thiện, không phán xét.";
+
 
         // ✅ Prompt mới: Nhận xét toàn bộ tiến trình học của sinh viên
         public const string ProgressFeedback =
