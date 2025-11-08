@@ -5,10 +5,6 @@ using ShareLibrary.Event;
 
 namespace FeedbackService.Application.Services
 {
-    /// <summary>
-    /// Service chịu trách nhiệm push dữ liệu feedback ra RabbitMQ
-    /// để NotificationService nhận và hiển thị qua SignalR.
-    /// </summary>
     public class FeedbackPushService
     {
         private readonly IEventBus _eventBus;
@@ -17,10 +13,6 @@ namespace FeedbackService.Application.Services
         {
             _eventBus = eventBus;
         }
-
-        /// <summary>
-        /// Gửi event feedback ra RabbitMQ (title + summary message).
-        /// </summary>
         public async Task PushFeedbackAsync(
             int studentId,
             int submissionId,

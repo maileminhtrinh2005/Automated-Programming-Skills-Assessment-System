@@ -7,10 +7,6 @@ using ShareLibrary.Event;
 
 namespace NotificationService.Infrastructure.Handlers
 {
-    /// <summary>
-    /// Lắng nghe NotificationCreatedEvent và FeedbackGeneratedEvent từ RabbitMQ.
-    /// Khi nhận, lưu vào DB và đẩy thông báo qua SignalR.
-    /// </summary>
     public class NotificationCreatedHandler :
         IEventHandler<NotificationCreatedEvent>,
         IEventHandler<FeedbackGeneratedEvent> // ✅ Dùng chung cho cả auto/manual feedback

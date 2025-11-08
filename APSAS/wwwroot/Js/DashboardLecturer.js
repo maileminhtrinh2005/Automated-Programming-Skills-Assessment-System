@@ -52,12 +52,15 @@ async function loadStudents() {
         studentsData = data;
 
         const tbody = document.querySelector("#studentTable tbody");
+        // 👉 Chỉ hiển thị nút "Xem bài tập", không có "Xem ID" và không dùng bảng ID
         tbody.innerHTML = data.map(s =>
             `<tr id="row-${s.userID}">
                 <td>${s.username}</td>
                 <td>${s.fullName}</td>
                 <td>
-                    <button onclick="showID(${s.userID}, '${s.username}')">Xem ID</button>
+                    <button class="btn-view-task" onclick="openFeedback(${s.userID})">
+                        Xem bài tập
+                    </button>
                 </td>
             </tr>`
         ).join("");
@@ -68,25 +71,25 @@ async function loadStudents() {
 }
 
 // ======== HIỂN THỊ ID + NÚT XEM BÀI TẬP ========
-function showID(userID, username) {
-    const idTable = document.getElementById("idTable");
-    const tbody = idTable.querySelector("tbody");
+//function showID(userID, username) {
+//    const idTable = document.getElementById("idTable");
+//    const tbody = idTable.querySelector("tbody");
 
-    // Hiển thị bảng có thêm nút "Xem bài tập"
-    tbody.innerHTML = `
-        <tr>
-            <td>${userID}</td>
-            <td>${username}</td>
-            <td>
-                <button onclick="openFeedback(${userID})" class="btn-view-task">
-                    Xem bài tập
-                </button>
-            </td>
-        </tr>
-    `;
+//    // Hiển thị bảng có thêm nút "Xem bài tập"
+//    tbody.innerHTML = `
+//        <tr>
+//            <td>${userID}</td>
+//            <td>${username}</td>
+//            <td>
+//                <button onclick="openFeedback(${userID})" class="btn-view-task">
+//                    Xem bài tập
+//                </button>
+//            </td>
+//        </tr>
+//    `;
 
-    idTable.style.display = "table"; // Hiện bảng ID
-}
+//    idTable.style.display = "table"; // Hiện bảng ID
+//}
 
 // ======== MỞ TRANG FEEDBACK ========
 function openFeedback(studentId) {
