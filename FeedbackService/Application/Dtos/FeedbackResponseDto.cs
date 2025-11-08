@@ -5,9 +5,10 @@ public class FeedbackResponseDto
     public string? Summary { get; set; } = string.Empty;
     public int Score { get; set; }
     public List<RubricItemDto>? RubricBreakdown { get; set; }
-    public List<TestCaseNoteDto>? TestCaseFeedback { get; set; }
+    public List<TestCaseFeedbackDto>? TestCaseFeedback { get; set; }
     public List<string>? Suggestions { get; set; }
     public List<string>? NextSteps { get; set; }
+    
 }
 
 public class RubricItemDto

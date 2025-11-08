@@ -40,6 +40,7 @@ public class TestcaseFeedbackRequestDto
     public int StudentId { get; set; }
     public int AssignmentId { get; set; }
     public int SubmissionId { get; set; }
+    public string? AssignmentTitle { get; set; }
 
     // tối thiểu cần danh sách kết quả từng case
     public List<TestcaseItem> TestResults { get; set; } = new();

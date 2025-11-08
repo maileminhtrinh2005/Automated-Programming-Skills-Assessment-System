@@ -40,7 +40,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 // ======== FETCH DATA ========
 async function fetchSubmissionsByStudent(studentId) {
-    // 🔧 Đổi từ /GetYourSubmission → /GetSubmissions
     const res = await apiFetch(`/GetSubmissions/${studentId}`);
     if (!res.ok) throw new Error("Không lấy được submissions");
     return res.json();
@@ -112,31 +111,62 @@ async function loadSubmissionsOnly(studentId) {
     renderSubmissions(detailedSubs);
 }
 
-// ======== NHẬN XÉT CHI TIẾT (TỰ LẤY RESULT) ========
+// ======== NHẬN XÉT CHI TIẾT (CHẤM THEO TESTCASE) ========
 async function generateDetailFeedback(submissionId) {
     try {
         out(`🔍 Đang lấy result cho submission ${submissionId}...`);
+
+        // Lấy result của submission
         const result = await fetchResultBySubmission(submissionId);
+        console.log("📡 Kết quả từ API GetYourResult:", result);
+
         const submissions = await fetchSubmissionsByStudent(localStorage.getItem("studentId"));
         const submission = submissions.find(s => s.submissionId == submissionId);
 
-        if (!result || result.length === 0)
-            return alert("❌ Không tìm thấy dữ liệu test case.");
+        if (!submission) return alert("❌ Không tìm thấy submission.");
 
-        const testResults = Array.isArray(result) ? result : result.testResults || [];
+        console.log("📄 submission data:", submission);
+        console.log("📄 assignmentId:", submission.assignmentId);
 
-        const normalizedResults = testResults.map(tr => ({
-            status: tr.status || tr.Status || "Unknown",
-            input: tr.input || tr.Input || "Không có input",
-            expectedOutput: tr.expectedOutput || tr.ExpectedOutput || "Không có output mong đợi",
-            actualOutput: tr.actualOutput || tr.ActualOutput || "Không có output thực tế",
-            executionTime: tr.executionTime || tr.ExecutionTime || 0
+        // ===== Gọi test case từ AssignmentService =====
+        const testcasesRes = await apiFetch(`/GetTestCaseById/${submission.assignmentId}`);
+        console.log("📡 Gọi API test case:", testcasesRes.status, testcasesRes.url);
+
+        if (!testcasesRes.ok) throw new Error(await testcasesRes.text());
+        const testcasesRaw = await testcasesRes.json();
+        console.log("📦 TestcasesRaw:", testcasesRaw);
+
+        // 🔄 Chuẩn hóa dữ liệu testcase & result
+        const testcases = testcasesRaw.map(tc => ({
+            input: tc.input ?? tc.Input ?? "",
+            expectedOutput: tc.expectedOutput ?? tc.ExpectedOutput ?? ""
         }));
 
+        const results = Array.isArray(result)
+            ? result
+            : result?.testResults ?? [];
+
+        // ✅ CHỈNH LẠI CHUẨN HÓA CHO ĐÚNG DỮ LIỆU SubmissionService
+        const normalizedResults = testcases.map((tc, i) => {
+            const match = results[i];
+            return {
+                input: tc.input ?? "",
+                expectedOutput: tc.expectedOutput ?? "",
+                actualOutput: match ? (match.output ?? "Không có") : "Không có",
+                status: match ? (match.passed ? "Passed" : "Failed") : "Chưa chạy",
+                executionTime: match ? (match.executionTime ?? 0) : 0,
+                memoryUsed: match ? (match.memoryUsed ?? 0) : 0,
+                errorMessage: match?.errorMessage ?? ""
+            };
+        });
+
+        console.log("✅ normalizedResults gửi sang FeedbackService:", normalizedResults);
+
+        // ===== Gửi sang FeedbackService =====
         const payload = {
             submissionId,
             assignmentTitle: submission?.assignmentTitle || "Không rõ",
-            sourceCode: submission?.code || "Không có source code",
+            sourceCode: submission?.code || submission?.sourceCode || "Không có source code",
             testResults: normalizedResults
         };
 
@@ -148,7 +178,9 @@ async function generateDetailFeedback(submissionId) {
 
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
+        out("✅ Nhận xét chi tiết:", data);
 
+        // ======== HIỂN THỊ NHẬN XÉT ========
         $("feedbackCard").style.display = "block";
         $("summaryText").textContent = data.summary || "(Không có nhận xét)";
         $("progressText").textContent = data.overallProgress || "(Không có)";
@@ -161,7 +193,51 @@ async function generateDetailFeedback(submissionId) {
         else if (p.includes("cải thiện") || p.includes("medium")) prog.classList.add("progress-medium");
         else prog.classList.add("progress-bad");
 
-        out("✅ Nhận xét chi tiết:", data);
+        // ======== HIỂN THỊ CHI TIẾT TESTCASE ========
+        const detailSection = $("detailSection");
+        const detailBody = $("tblDetails").querySelector("tbody");
+        detailBody.innerHTML = "";
+
+        if (Array.isArray(data.testCaseFeedback) && data.testCaseFeedback.length > 0) {
+            detailSection.style.display = "block";
+
+            let passCount = 0, failCount = 0;
+            data.testCaseFeedback.forEach(tc => {
+                const status = (tc.status || "").toLowerCase();
+                if (status.includes("pass") || status.includes("đúng")) passCount++;
+                else if (status.includes("fail") || status.includes("sai")) failCount++;
+            });
+
+            const summaryRow = document.createElement("tr");
+            summaryRow.innerHTML = `
+                <td colspan="5" style="text-align:center; background:#f7f7f7; font-weight:bold;">
+                    Tổng kết: ${passCount}/${data.testCaseFeedback.length} test pass (${Math.round(passCount / data.testCaseFeedback.length * 100)}%)
+                </td>`;
+            detailBody.appendChild(summaryRow);
+
+            data.testCaseFeedback.forEach((tc, i) => {
+                const row = document.createElement("tr");
+                const status = (tc.status || "").toLowerCase();
+                let emoji = "⚠️";
+                if (status.includes("pass") || status.includes("đúng")) emoji = "✅";
+                else if (status.includes("fail") || status.includes("sai")) emoji = "❌";
+
+                row.innerHTML = `
+                  <td>${i + 1}</td>
+                  <td>${emoji} ${tc.status ?? "Chưa chạy"}</td>
+                  <td>${tc.input ?? tc.name ?? "Không có"}</td>
+                  <td>${tc.expectedOutput ?? "—"}</td>
+                  <td>${tc.comment ?? "(Không có nhận xét)"}</td>
+                `;
+                detailBody.appendChild(row);
+            });
+        } else {
+            detailSection.style.display = "block";
+            detailBody.innerHTML = `
+                <tr><td colspan="5" style="text-align:center;color:gray;">
+                    ⚠️ Không có nhận xét chi tiết cho từng test case.
+                </td></tr>`;
+        }
 
     } catch (err) {
         alert("❌ Lỗi khi sinh nhận xét chi tiết: " + err.message);
@@ -169,7 +245,7 @@ async function generateDetailFeedback(submissionId) {
     }
 }
 
-// ======== NHẬN XÉT TỔNG QUÁT ========
+// ======== NHẬN XÉT TỔNG QUÁT (KHÔNG ĐỔI) ========
 async function generateProgressFeedback(studentId) {
     try {
         const submissions = await fetchSubmissionsByStudent(studentId);
@@ -219,7 +295,7 @@ async function generateProgressFeedback(studentId) {
     }
 }
 
-// ======== GỬI NHẬN XÉT GIẢNG VIÊN ========
+// ======== NÚT ========
 $("btnSendReviewed").addEventListener("click", async () => {
     const studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
     const feedbackText = $("manualFeedback").value.trim();
@@ -235,7 +311,6 @@ $("btnSendReviewed").addEventListener("click", async () => {
     else alert("❌ Gửi thất bại: " + (await res.text()));
 });
 
-// ======== NÚT ========
 $("btnClear").onclick = () => location.reload();
 $("btnClear2").onclick = () => $("manualFeedback").value = "";
 $("btnGenerate").onclick = () => {
