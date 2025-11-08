@@ -100,11 +100,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate(); // tự động tạo DB và apply migration khi app chạy
-}
+//using (var scope = app.Services.CreateScope())
+//{
+    //var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    //db.Database.Migrate(); // tự động tạo DB và apply migration khi app chạy
+//}
 
 
 app.Run();

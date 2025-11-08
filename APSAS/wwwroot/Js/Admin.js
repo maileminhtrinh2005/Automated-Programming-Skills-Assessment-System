@@ -238,6 +238,127 @@ function confirmDeleteFromModal() {
     closeEditModal();
 }
 
+
+// ========== LANGUAGE MANAGEMENT ==========
+
+// Load danh sách ngôn ngữ
+let langListLoaded = false;
+
+document.getElementById("toggleLangBtn").addEventListener("click", async () => {
+    const container = document.getElementById("langListContainer");
+    const btn = document.getElementById("toggleLangBtn");
+
+    if (container.style.display === "none") {
+        container.style.display = "block";
+        btn.textContent = "Ẩn danh sách";
+        if (!langListLoaded) {
+            await loadLanguages();
+            langListLoaded = true;
+        }
+    } else {
+        container.style.display = "none";
+        btn.textContent = "Xem danh sách";
+    }
+});
+
+// Load danh sách ngôn ngữ
+async function loadLanguages() {
+    const container = document.getElementById("langListContent");
+    container.innerHTML = "<p>⏳ Đang tải danh sách ngôn ngữ...</p>";
+
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/get-languages`);
+        if (!res.ok) throw new Error("Không thể tải danh sách ngôn ngữ");
+        const langs = await res.json();
+
+        if (!langs.length) {
+            container.innerHTML = "<p>Chưa có ngôn ngữ nào.</p>";
+            return;
+        }
+
+        let html = "<table><tr><th>ID</th><th>Tên</th><th>Hành động</th></tr>";
+        langs.forEach(l => {
+            html += `<tr>
+                        <td>${l.languageId}</td>
+                        <td>${l.languageName}</td>
+                        <td>
+                            <button class='btn-edit' onclick='editLanguage(${l.languageId}, "${l.languageName}")'>Sửa</button>
+                            <button class='btn-delete' onclick='deleteLanguage(${l.languageId})'>Xóa</button>
+                        </td>
+                    </tr>`;
+        });
+        html += "</table>";
+        container.innerHTML = html;
+    } catch (err) {
+        container.innerHTML = `<p style='color:red;'>🚫 ${err.message}</p>`;
+    }
+}
+
+// Thêm Language
+async function addLanguage() {
+    const id = parseInt(document.getElementById("langId").value);
+    const name = document.getElementById("langName").value.trim();
+    const msg = document.getElementById("langMessage");
+
+    if (!id || !name) {
+        msg.textContent = "⚠️ Vui lòng nhập ID và tên ngôn ngữ";
+        msg.className = "message error";
+        return;
+    }
+
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/add-language`, {
+            method: "POST",
+            body: JSON.stringify({ LanguageId: id, LanguageName: name })
+        });
+        if (!res.ok) throw new Error("Thêm ngôn ngữ thất bại");
+        msg.textContent = "✅ Thêm ngôn ngữ thành công!";
+        msg.className = "message success";
+        document.getElementById("langId").value = "";
+        document.getElementById("langName").value = "";
+        if (langListLoaded) loadLanguages();
+    } catch (err) {
+        msg.textContent = "🚫 " + err.message;
+        msg.className = "message error";
+    }
+}
+
+// Sửa Language
+function editLanguage(id, name) {
+    const newName = prompt("Tên mới:", name);
+    if (!newName) return;
+    updateLanguage(id, newName);
+}
+
+async function updateLanguage(id, name) {
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/update-language`, {
+            method: "PUT",
+            body: JSON.stringify({ LanguageId: id, LanguageName: name })
+        });
+        if (!res.ok) throw new Error("Cập nhật thất bại");
+        if (langListLoaded) loadLanguages();
+    } catch (err) {
+        alert("🚫 " + err.message);
+    }
+}
+
+// Xóa Language
+async function deleteLanguage(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa ngôn ngữ này?")) return;
+    try {
+        const res = await secureFetch(`${GATEWAY_URL}/delete-language/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Xóa thất bại");
+        if (langListLoaded) loadLanguages();
+    } catch (err) {
+        alert("🚫 " + err.message);
+    }
+}
+
+
+
+
+
 window.onload = () => {
     toggleApiForm('add');
     loadUsers();
