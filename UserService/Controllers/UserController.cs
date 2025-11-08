@@ -40,6 +40,20 @@ namespace UserService.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            if (loginDto.Username == "admin" && loginDto.Password == "123")
+            {
+                // Sinh token cho admin (role Admin)
+                var adminToken = _jwtService.GenerateToken(userId: 0, role: "Admin");
+
+                return Ok(new
+                {
+                    message = "✅ Admin login successful (hardcoded)",
+                    username = "admin",
+                    roleId = 1,
+                    roleName = "Admin",
+                    token = adminToken
+                });
+            }
             var user = await _login.LoginAsync(loginDto);
 
             if (user == null)
