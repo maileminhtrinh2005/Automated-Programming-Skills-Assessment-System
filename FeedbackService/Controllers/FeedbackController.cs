@@ -30,7 +30,7 @@ public class FeedbackController : ControllerBase
             // ❗ Không có test case -> FeedbackAppService sẽ tự hiểu là chấm tổng quát
             dto.TestResults = null;
 
-            var result = await _ai.GenerateAsync(dto, Prompt.GeneralFeedback, ct);
+            var result = await _ai.GenerateAsync(dto, Prompt.ProgressFeedback, ct);
             return Ok(result);
         }
         catch (Exception ex)
@@ -69,45 +69,31 @@ public class FeedbackController : ControllerBase
         }
     }
 
+    
     [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("generate")]
-    public async Task<IActionResult> GenerateFull([FromBody] FeedbackAutoRequestDto req, CancellationToken ct)
+    public async Task<IActionResult> GenerateFull([FromBody] FeedbackRequestDto req, CancellationToken ct)
     {
         try
         {
-            if (req.StudentId <= 0 || req.AssignmentId <= 0)
-                return BadRequest("Thiếu StudentId hoặc AssignmentId.");
+            // 🔹 Kiểm tra dữ liệu đầu vào
+            if (req.StudentId <= 0)
+                return BadRequest("Thiếu StudentId.");
+            if (string.IsNullOrWhiteSpace(req.AssignmentTitle))
+                return BadRequest("Thiếu AssignmentTitle.");
+            if (req.SubmissionId <= 0)
+                return BadRequest("Thiếu SubmissionId.");
+            if (string.IsNullOrWhiteSpace(req.SourceCode))
+                return BadRequest("Thiếu SourceCode.");
 
-            var http = new HttpClient();
+            // ✅ Chọn prompt phù hợp
+            string prompt = (req.TestResults != null && req.TestResults.Count > 0)
+                ? Prompt.ProgressFeedback
+                : Prompt.GeneralFeedback;
 
-            // 🔹 Gọi qua AssignmentService (5267)
-            var assignmentUrl = $"http://localhost:5267/api/Assignment/GetAssignmentById/{req.AssignmentId}";
-            var assignment = await http.GetFromJsonAsync<AssignmentDto>(assignmentUrl, ct);
-            if (assignment is null)
-                return NotFound($"Không tìm thấy bài tập {req.AssignmentId}");
+            // ✅ Gọi AI sinh phản hồi (Gemini)
+            var result = await _ai.GenerateAsync(req, prompt, ct);
 
-            // 🔹 Gọi qua SubmissionService (5090)
-            var subUrl = $"http://localhost:5090/api/Submission/GetYourSubmission/{req.StudentId}";
-            var submissions = await http.GetFromJsonAsync<List<SubmissionDto>>(subUrl, ct);
-            if (submissions is null || submissions.Count == 0)
-                return NotFound("Không tìm thấy submission của học viên.");
-
-            var submission = submissions.FirstOrDefault(s => s.AssignmentId == req.AssignmentId);
-            if (submission is null)
-                return NotFound("Sinh viên chưa nộp bài này.");
-
-            // 🔹 Gọi Gemini để sinh nhận xét tổng quát
-            var aiRequest = new FeedbackRequestDto
-            {
-                StudentId = req.StudentId,
-                AssignmentTitle = assignment.Title,
-                Rubric = "Đúng 60, Hiệu năng 20, Style 20",
-                SourceCode = submission.SourceCode,
-                LanguageId = submission.LanguageId,
-                TestResults = null
-            };
-
-            var result = await _ai.GenerateAsync(aiRequest, Prompt.GeneralFeedback, ct);
             return Ok(result);
         }
         catch (Exception ex)
@@ -115,6 +101,7 @@ public class FeedbackController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
     [HttpPost("generate/bulk")]
     public async Task<IActionResult> GenerateBulk([FromBody] BulkFeedbackRequestDto request, CancellationToken ct)
     {
