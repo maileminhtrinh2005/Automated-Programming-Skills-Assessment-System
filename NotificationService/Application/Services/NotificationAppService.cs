@@ -58,9 +58,9 @@ public class NotificationAppService : INotificationAppService
                       .Select(n => new NotificationResponseDto
                       {
                           Id = n.Id.ToString("N"),
-                          Title = n.Title,
-                          Message = n.Message,
-                          Level = n.Level,
+                          Title = n.Title ?? "(Không có tiêu đề)",
+                          Message = n.Message ?? "(Không có nội dung)",
+                          Level = n.Level ?? "info",
                           CreatedAt = n.CreatedAtUtc
                       }).ToList();
 

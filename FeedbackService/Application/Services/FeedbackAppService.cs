@@ -37,6 +37,9 @@ namespace FeedbackService.Application.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
+        // =====================================
+        // 🧠 Sinh nhận xét (AI) + Lưu DB chi tiết
+        // =====================================
         public async Task<FeedbackResponseDto> GenerateAsync(
             FeedbackRequestDto req,
             string systemPrompt,
@@ -44,6 +47,7 @@ namespace FeedbackService.Application.Services
         {
             FeedbackResponseDto result;
 
+            // Trường hợp không có test case → nhận xét tổng quát
             if (req.TestResults is null || req.TestResults.Count == 0)
             {
                 var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
@@ -98,8 +102,11 @@ namespace FeedbackService.Application.Services
                 result.RubricBreakdown = new List<RubricItemDto>();
                 result.TestCaseFeedback = null;
 
+                // 🔹 Lưu cả GeneratedFeedback và DetailedFeedback
                 await SaveFeedbackAsync(req, result, ct);
+                await SaveDetailedFeedbackAsync(req, result, ct);
 
+                // 🔹 Gửi thông báo realtime
                 await _pushService.PushFeedbackAsync(
                     req.StudentId,
                     req.SubmissionId,
@@ -111,9 +118,12 @@ namespace FeedbackService.Application.Services
                 return result;
             }
 
+            // Có test case → dùng generator riêng
             result = await _generator.GenerateAsync(req, ct);
 
+            // 🔹 Lưu cả hai bảng
             await SaveFeedbackAsync(req, result, ct);
+            await SaveDetailedFeedbackAsync(req, result, ct);
 
             await _pushService.PushFeedbackAsync(
                 req.StudentId,
@@ -126,6 +136,9 @@ namespace FeedbackService.Application.Services
             return result;
         }
 
+        // =====================================
+        // 💾 Lưu feedback tổng quát (GeneratedFeedbacks)
+        // =====================================
         private async Task SaveFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
         {
             var record = new GeneratedFeedbackRecord
@@ -141,15 +154,32 @@ namespace FeedbackService.Application.Services
             _db.GeneratedFeedbacks.Add(record);
             await _db.SaveChangesAsync(ct);
 
-            Console.WriteLine($"[FeedbackAppService] 💾 Feedback đã được lưu vào DB cho Assignment '{req.AssignmentTitle}'.");
+            Console.WriteLine($"💾 [FeedbackAppService] Saved general feedback for '{req.AssignmentTitle}'.");
         }
 
+ // chi tiet
+        private async Task SaveDetailedFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
+        {
+            var detail = new DetailedFeedback
+            {
+                StudentId = req.StudentId,
+                SubmissionId = req.SubmissionId,
+                AssignmentTitle = req.AssignmentTitle ?? "(Không rõ bài tập)",
+                Summary = result.Summary,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            _db.DetailedFeedbacks.Add(detail);
+            await _db.SaveChangesAsync(ct);
+
+            Console.WriteLine($"💾 [FeedbackAppService] Saved detailed feedback Id={detail.Id} for student {req.StudentId}.");
+        }
+
+// tong quat
         public async Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
         {
             if (dto == null || dto.Submissions == null || dto.Submissions.Count == 0)
-            {
                 return new { summary = "Không có submission nào để nhận xét.", overallProgress = "Không xác định" };
-            }
 
             var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? _cfg["Gemini:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -201,7 +231,6 @@ namespace FeedbackService.Application.Services
 
             var result = JsonSerializer.Deserialize<object>(text!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            // ✅ Thêm phần lưu GeneratedDB
             string summary = "(Không có tóm tắt)";
             try
             {
@@ -213,7 +242,7 @@ namespace FeedbackService.Application.Services
             var record = new GeneratedFeedbackRecord
             {
                 StudentId = dto.StudentId,
-                AssignmentTitle = $"[Bulk] Tổng quát tiến trình học tập",
+                AssignmentTitle = "[Bulk] Tổng quát tiến trình học tập",
                 Summary = summary,
                 Score = 0,
                 RawJson = text!,

@@ -149,10 +149,11 @@ async function generateDetailFeedback(submissionId) {
     try {
         out(`🔍 Đang lấy result cho submission ${submissionId}...`);
 
+        const studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
         const result = await fetchResultBySubmission(submissionId);
         console.log("📡 Kết quả từ API GetYourResult:", result);
 
-        const submissions = await fetchSubmissionsByStudent(localStorage.getItem("studentId"));
+        const submissions = await fetchSubmissionsByStudent(studentId);
         const submission = submissions.find(s => s.submissionId == submissionId);
 
         if (!submission) return alert("❌ Không tìm thấy submission.");
@@ -183,7 +184,9 @@ async function generateDetailFeedback(submissionId) {
             };
         });
 
+        // ✅ Thêm StudentId vào payload
         const payload = {
+            studentId: Number(studentId),
             submissionId,
             assignmentTitle: submission?.assignmentTitle || "Không rõ",
             sourceCode: submission?.code || submission?.sourceCode || "Không có source code",
@@ -261,6 +264,7 @@ async function generateDetailFeedback(submissionId) {
         console.error(err);
     }
 }
+
 
 // ======== NHẬN XÉT TỔNG QUÁT ========
 async function generateProgressFeedback(studentId) {

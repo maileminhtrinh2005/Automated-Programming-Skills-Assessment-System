@@ -111,4 +111,28 @@ public class FeedbackController : ControllerBase
         var result = await _ai.GenerateBulkFeedbackAsync(request, ct); //
         return Ok(result);
     }
+    // feedback chi tiết 
+    [Authorize(Roles = "Lecturer, Admin")]
+    [HttpPost("testcasesubmit")]
+    public async Task<IActionResult> GenerateDetailed([FromBody] FeedbackRequestDto req, CancellationToken ct)
+    {
+        try
+        {
+            if (req.StudentId <= 0 || req.SubmissionId <= 0)
+                return BadRequest("Thiếu StudentId hoặc SubmissionId.");
+
+            if (req.TestResults == null || req.TestResults.Count == 0)
+                return BadRequest("Thiếu dữ liệu test case.");
+
+            // Gọi AI sinh feedback chi tiết và lưu vào DB
+            var result = await _ai.GenerateAsync(req, Prompt.PerTestcaseFeedback, ct);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
 }

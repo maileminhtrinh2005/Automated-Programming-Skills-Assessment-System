@@ -18,10 +18,6 @@ public class RubricItemDto
     public int Max { get; set; }
 }
 
-public class TestCaseNoteDto
-{
-    public string Name { get; set; } = string.Empty;
-    public string Comment { get; set; } = string.Empty;
-}
+
 
 

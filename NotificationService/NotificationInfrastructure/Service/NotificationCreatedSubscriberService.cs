@@ -19,11 +19,6 @@ namespace NotificationService.Infrastructure
         {
            
             _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
-            // sub deadline 
-            _eventBus.Subscribe<DeadlineNotification, DeadlineNotificationHandler>();
-
-
-
             Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackGeneratedEvent & FeedbackReviewedEvent");
             return Task.CompletedTask;
         }

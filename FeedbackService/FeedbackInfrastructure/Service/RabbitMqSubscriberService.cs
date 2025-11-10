@@ -12,9 +12,6 @@ namespace FeedbackService.Infrastructure
         {
             _eventBus = eventBus;
         }
-
-
-       
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _eventBus.Subscribe<TestCaseFetchEvent, GenerateFeedbackHandler>();

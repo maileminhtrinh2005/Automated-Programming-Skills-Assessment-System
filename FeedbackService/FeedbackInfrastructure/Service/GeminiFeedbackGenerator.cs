@@ -1,223 +1,185 @@
-
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Headers;
-
 using System.Text;
 using System.Text.Json;
 using FeedbackService.Application.Dtos;
 using FeedbackService.Application.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace FeedbackService.Infrastructure;
-
-public class GeminiOptions
+namespace FeedbackService.Infrastructure
 {
-    public string Model { get; set; } = "models/gemini-2.0-flash";
-    public string? ApiKey { get; set; }
-}
-
-public class GeminiFeedbackGenerator : IFeedbackGenerator
-{
-    private readonly HttpClient _http;
-    private readonly GeminiOptions _opts;
-    private readonly IConfiguration _cfg;
-    private readonly IWebHostEnvironment _env;
-
-    public GeminiFeedbackGenerator(
-        HttpClient http,
-        IOptions<GeminiOptions> opts,
-        IConfiguration cfg,
-        IWebHostEnvironment env
-    )
+    public class GeminiOptions
     {
-        _http = http;
-        _opts = opts.Value;
-        _cfg = cfg;
-        _env = env;
-
-
-
-        _http.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
-        _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        public string Model { get; set; } = "models/gemini-2.0-flash";
+        public string? ApiKey { get; set; }
     }
-
-    public async Task<FeedbackResponseDto> GenerateAsync(FeedbackRequestDto req, CancellationToken ct = default)
+    public class GeminiFeedbackGenerator : IFeedbackGenerator
     {
-        // 1) Lấy API key
-        var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
-                   ?? _cfg["Gemini:ApiKey"] ?? _opts.ApiKey;
+        private readonly HttpClient _http;
+        private readonly GeminiOptions _opts;
+        private readonly IConfiguration _cfg;
+        private readonly IWebHostEnvironment _env;
 
-        if (string.IsNullOrWhiteSpace(apiKey))
-            throw new InvalidOperationException("Missing GEMINI_API_KEY (chưa set API key cho Gemini).");
-
-        // 2) Yêu cầu tối thiểu: phải có testResults để test riêng feedback (không gọi judge0)
-        if (req.TestResults is null || req.TestResults.Count == 0)
-            throw new ArgumentException("Vui lòng cung cấp testResults để sinh feedback bằng AI.");
-
-        // 3) Dựng prompt
-        var testResultsText = JsonSerializer.Serialize(req.TestResults, new JsonSerializerOptions { WriteIndented = true });
-
-
-        // ✅ v1beta: dùng systemInstruction thay vì role=system trong contents
-
-        var systemInstruction = new
+        public GeminiFeedbackGenerator(
+            HttpClient http,
+            IOptions<GeminiOptions> opts,
+            IConfiguration cfg,
+            IWebHostEnvironment env)
         {
-            parts = new[] {
-                new { text =
-                    "You are an APSAS grading assistant. " +
-            "Analyze ONLY the provided input data (source code, test results, and rubric). " +
-            "Your task is to give structured feedback and evaluation strictly based on that data — do NOT invent or assume anything not present. " +
-            "Focus on accuracy, clarity, and constructiveness in your comments. " +
-            "Respond in JSON format ONLY, matching this schema:\n" +
-            "{ \"summary\": string, \"score\": number, " +
-            "\"rubricBreakdown\": [ {\"criterion\": string, \"score\": number, \"max\": number} ], " +
-            "\"testCaseFeedback\": [ {\"name\": string, \"comment\": string} ], " +
-            "\"suggestions\": [string], \"nextSteps\": [string] } " +
-            "All comments and explanations must be in Vietnamese, concise, and derived from the provided test results or rubric. " +
-            "If data is missing or unclear, indicate that politely (e.g. 'Không có đủ dữ liệu để đánh giá phần này.')."
-                }
-            }
-        };
+            _http = http;
+            _opts = opts.Value;
+            _cfg = cfg;
+            _env = env;
 
-        var userParts = new object[]
-        {
-            new { text = $"Student: {req.StudentId}\nAssignment: {req.AssignmentTitle}\nLanguageId: {req.LanguageId}\nRubric: {req.Rubric ?? "(none)"}" },
-            new { text = "SOURCE CODE:\n```" + (req.SourceCode ?? "") + "```" },
-            new { text = "TEST RESULTS (JSON):\n" + testResultsText },
-            new { text = "Nhiệm vụ: Hãy đóng vai giảng viên, đưa ra phần 'Nhận xét tất cả bài này' tổng quan về chất lượng bài làm, các điểm mạnh/yếu, và điểm số tổng kết." },
-            new { text = "Hãy trả về JSON đúng schema:\n{ \"summary\": string, \"score\": number, \"rubricBreakdown\":[{\"criterion\": string, \"score\": number, \"max\": number}], \"testCaseFeedback\":[{\"name\": string, \"comment\": string}], \"suggestions\": [string], \"nextSteps\": [string] }" }
-        };
-
-        var bodyObj = new
-        {
-
-            systemInstruction,
-
-            contents = new object[]
-            {
-                new { role = "user", parts = userParts }
-            },
-            generationConfig = new
-            {
-
-                response_mime_type = "application/json"
-            }
-        };
-
-        var model = string.IsNullOrWhiteSpace(_opts.Model) ? "models/gemini-2.0-flash" : _opts.Model;
-
-        // [CHANGED] Không để API key trong query string nữa
-        var url = $"v1beta/{model}:generateContent";
-
-
-        if (_env.IsDevelopment())
-        {
-            Console.WriteLine("=== Gemini request body ===");
-            Console.WriteLine(JsonSerializer.Serialize(bodyObj, new JsonSerializerOptions { WriteIndented = true }));
+            _http.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+            _http.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-
-        // [ADDED] — gắn API key bằng header để tránh lộ key trong log/URL
-
-        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, url)
+        public async Task<FeedbackResponseDto> GenerateAsync(FeedbackRequestDto req, CancellationToken ct = default)
         {
-            Content = new StringContent(JsonSerializer.Serialize(bodyObj), Encoding.UTF8, "application/json")
-        };
+            // 🔹 Lấy API key
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
+                      ?? _cfg["Gemini:ApiKey"]
+                      ?? _opts.ApiKey;
 
-        reqMsg.Headers.Add("x-goog-api-key", apiKey); // [ADDED]
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new InvalidOperationException("Thiếu GEMINI_API_KEY (chưa set API key cho Gemini).");
 
-        // [ADDED] — retry 3 lần khi 503/429 với backoff 0.5s/1s/2s + fallback
-        HttpResponseMessage res;
-        var delays = new[] { 500, 1000, 2000 };
-        int attempt = 0;
+            // 🔹 Kiểm tra dữ liệu bắt buộc
+            if (req.TestResults == null || req.TestResults.Count == 0)
+                throw new ArgumentException("Thiếu testResults để sinh feedback bằng AI.");
 
-        while (true)
-        {
-            attempt++;
-            try
+            // 🔹 Chuẩn bị nội dung gửi đi
+            var testResultsJson = JsonSerializer.Serialize(req.TestResults, new JsonSerializerOptions { WriteIndented = true });
+            var model = string.IsNullOrWhiteSpace(_opts.Model) ? "models/gemini-2.0-flash" : _opts.Model;
+            var url = $"v1beta/{model}:generateContent";
+
+            var systemInstruction = new
             {
-                var sent = await _http.SendAsync(reqMsg, ct);
-                res = sent;
-            }
-            catch (HttpRequestException ex)
-            {
-                if (attempt <= delays.Length)
+                parts = new[]
                 {
-                    if (_env.IsDevelopment()) Console.WriteLine($"[Gemini] network error, retry {attempt}: {ex.Message}");
-                    await Task.Delay(delays[attempt - 1], ct);
-                    continue;
+                    new { text =
+                        "You are an APSAS grading assistant. Analyze ONLY the provided input data (source code, test results, and rubric). " +
+                        "Give structured, factual feedback in Vietnamese and return ONLY JSON:\n" +
+                        "{ \"summary\": string, \"score\": number, " +
+                        "\"rubricBreakdown\": [ {\"criterion\": string, \"score\": number, \"max\": number} ], " +
+                        "\"testCaseFeedback\": [ {\"name\": string, \"comment\": string} ], " +
+                        "\"suggestions\": [string], \"nextSteps\": [string] }" }
                 }
-                // Fallback cuối cùng
-                return FallbackDto("(Lỗi mạng tới AI — dùng phản hồi tối thiểu)");
-            }
+            };
 
-            if (res.StatusCode == HttpStatusCode.ServiceUnavailable || (int)res.StatusCode == 429)
+            var userContent = new
             {
-                if (attempt <= delays.Length)
+                role = "user",
+                parts = new object[]
                 {
-                    if (_env.IsDevelopment()) Console.WriteLine($"[Gemini] {res.StatusCode}, retry {attempt}");
-                    await Task.Delay(delays[attempt - 1], ct);
-                    continue;
+                    new { text = $"Student: {req.StudentId}\nAssignment: {req.AssignmentTitle}\nLanguageId: {req.LanguageId}\nRubric: {req.Rubric ?? "(none)"}" },
+                    new { text = "SOURCE CODE:\n```" + (req.SourceCode ?? "") + "```" },
+                    new { text = "TEST RESULTS:\n" + testResultsJson },
+                    new { text = "Hãy đưa ra nhận xét tổng quan, điểm số và gợi ý cải thiện (JSON format như schema trên)." }
                 }
-                // Fallback khi quá tải kéo dài
-                var raw = await res.Content.ReadAsStringAsync(ct);
-                if (_env.IsDevelopment()) Console.WriteLine("=== Gemini raw response (fallback) ===\n" + raw);
-                return FallbackDto("(AI đang quá tải — dùng phản hồi tối thiểu)");
+            };
+
+            var body = new
+            {
+                systemInstruction,
+                contents = new[] { userContent },
+                generationConfig = new { response_mime_type = "application/json" }
+            };
+
+            if (_env.IsDevelopment())
+            {
+                Console.WriteLine("=== Gemini Request Body ===");
+                Console.WriteLine(JsonSerializer.Serialize(body, new JsonSerializerOptions { WriteIndented = true }));
             }
 
-            // thành công hoặc lỗi khác
-            break;
+            // 🔹 Gửi request với cơ chế retry
+            var delays = new[] { 500, 1000, 2000 };
+            HttpResponseMessage? response = null;
+
+            for (int attempt = 0; attempt <= delays.Length; attempt++)
+            {
+                try
+                {
+                    using var msg = new HttpRequestMessage(HttpMethod.Post, url)
+                    {
+                        Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
+                    };
+                    msg.Headers.Add("x-goog-api-key", apiKey);
+
+                    response = await _http.SendAsync(msg, ct);
+                    if (response.IsSuccessStatusCode) break;
+
+                    // Retry nếu bị quá tải
+                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable || (int)response.StatusCode == 429)
+                    {
+                        if (attempt < delays.Length)
+                        {
+                            if (_env.IsDevelopment())
+                                Console.WriteLine($"[Gemini] Retry {attempt + 1} due to {response.StatusCode}");
+                            await Task.Delay(delays[attempt], ct);
+                            continue;
+                        }
+                        return FallbackDto("(AI đang quá tải — dùng phản hồi tối thiểu)");
+                    }
+
+                    // Lỗi khác không retry
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    if (attempt < delays.Length)
+                    {
+                        if (_env.IsDevelopment())
+                            Console.WriteLine($"[Gemini] Network error, retry {attempt + 1}: {ex.Message}");
+                        await Task.Delay(delays[attempt], ct);
+                        continue;
+                    }
+                    return FallbackDto("(Lỗi mạng tới AI — dùng phản hồi tối thiểu)");
+                }
+            }
+
+            if (response == null)
+                return FallbackDto("(Không nhận được phản hồi từ Gemini).");
+
+            var payload = await response.Content.ReadAsStringAsync(ct);
+
+            if (_env.IsDevelopment())
+            {
+                Console.WriteLine("=== Gemini Raw Response ===");
+                Console.WriteLine(payload);
+            }
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Gemini error {response.StatusCode}: {payload}");
+
+            // 🔹 Phân tích JSON
+            using var doc = JsonDocument.Parse(payload);
+            var candidates = doc.RootElement.GetProperty("candidates");
+            if (candidates.GetArrayLength() == 0)
+                throw new InvalidOperationException("Gemini không trả candidate nào.");
+
+            var text = candidates[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            if (string.IsNullOrWhiteSpace(text))
+                throw new InvalidOperationException("Gemini không trả text trong response.");
+
+            var feedback = JsonSerializer.Deserialize<FeedbackResponseDto>(text!, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return feedback ?? FallbackDto("(Không parse được phản hồi từ Gemini.)");
         }
 
-        var payload = await res.Content.ReadAsStringAsync(ct);
-
-        if (_env.IsDevelopment())
+        private static FeedbackResponseDto FallbackDto(string message) => new()
         {
-            Console.WriteLine("=== Gemini raw response ===");
-            Console.WriteLine(payload);
-        }
-
-        if (!res.IsSuccessStatusCode)
-            throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
-
-
-
-        using var doc = JsonDocument.Parse(payload);
-        var candidates = doc.RootElement.GetProperty("candidates");
-        if (candidates.GetArrayLength() == 0)
-            throw new InvalidOperationException("Gemini không trả candidate nào.");
-
-        var text = candidates[0]
-            .GetProperty("content")
-            .GetProperty("parts")[0]
-            .GetProperty("text")
-            .GetString();
-
-        if (string.IsNullOrWhiteSpace(text))
-            throw new InvalidOperationException("Gemini không trả text trong phần response.");
-
-
-        var feedback = JsonSerializer.Deserialize<FeedbackResponseDto>(text!, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        if (feedback is null)
-            throw new InvalidOperationException("Không parse được JSON feedback từ Gemini.");
-
-        return feedback;
+            Summary = message,
+            Score = 0,
+            RubricBreakdown = new(),
+            TestCaseFeedback = new(),
+            Suggestions = new() { "Thử gửi lại sau ít phút", "Kiểm tra kết nối mạng hoặc limit API" },
+            NextSteps = new() { "Hệ thống sẽ thử lại khi AI ổn định" }
+        };
     }
-
-
-    // [ADDED] — DTO fallback khi AI unavailable để không ném exception
-    private static FeedbackResponseDto FallbackDto(string message) => new()
-    {
-        Summary = message,
-        Score = 0,
-        RubricBreakdown = new(),
-        TestCaseFeedback = new(),
-        Suggestions = new() { "Thử gửi lại sau ít phút", "Kiểm tra kết nối mạng/limit API" },
-        NextSteps = new() { "Hệ thống sẽ thử lại khi AI ổn định" }
-    };
-
 }
