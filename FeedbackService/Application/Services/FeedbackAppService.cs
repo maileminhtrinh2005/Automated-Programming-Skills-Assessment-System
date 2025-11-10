@@ -155,7 +155,7 @@ namespace FeedbackService.Application.Services
             int studentId, int assignmentId, CancellationToken ct)
             => throw new NotImplementedException();
 
-        public Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
+        public async Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
         {
             if (dto == null || dto.Submissions == null || dto.Submissions.Count == 0)
             {
@@ -165,60 +165,76 @@ namespace FeedbackService.Application.Services
                     overallProgress = "Không xác định",
                     perSubmissionFeedback = new object[0]
                 };
-                return Task.FromResult<object>(empty);
+                return empty;
             }
 
-            // 🔹 Tính điểm trung bình
-            double avgScore = dto.Submissions
-                .Where(s => s.Score.HasValue)
-                .Select(s => s.Score.Value)
-                .DefaultIfEmpty(0)
-                .Average();
+            // 🔹 Lấy API Key Gemini
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
+                       ?? _cfg["Gemini:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new InvalidOperationException("Thiếu GEMINI_API_KEY.");
 
-            // 🔹 Sinh nhận xét tổng quát
-            string summary;
-            if (avgScore >= 4)
-                summary = "Sinh viên có sự tiến bộ rõ rệt, các bài sau đạt điểm cao và ổn định hơn.";
-            else if (avgScore >= 3)
-                summary = "Sinh viên đang cải thiện, cần chú ý hơn về tối ưu thuật toán và cách trình bày mã.";
-            else if (avgScore >= 2)
-                summary = "Kết quả chưa ổn định, cần xem lại logic và luyện thêm bài tập cơ bản.";
-            else
-                summary = "Cần cố gắng hơn trong việc hoàn thiện bài và cải thiện chất lượng code.";
-
-            // 🔹 Nhận xét tiến bộ tổng quát
-            string overallProgress = avgScore switch
+            // 🔹 Chuẩn bị dữ liệu cho AI
+            var studentSummaries = dto.Submissions.Select(s => new
             {
-                >= 4 => "Xuất sắc",
-                >= 3 => "Khá tốt",
-                >= 2 => "Đang tiến bộ",
-                _ => "Cần cải thiện"
-            };
-
-            // 🔹 Nhận xét từng submission
-            var perSubmissionFeedback = dto.Submissions.Select(s => new
-            {
-                s.SubmissionId,
                 s.AssignmentTitle,
                 s.Score,
                 s.Status,
-                comment = s.Score switch
-                {
-                    >= 4 => "Hoàn thành rất tốt, logic đúng và rõ ràng.",
-                    >= 3 => "Đạt yêu cầu, nhưng có thể tối ưu hơn.",
-                    >= 2 => "Bài còn một số lỗi nhỏ hoặc chưa xử lý hết các case.",
-                    _ => "Bài làm chưa đạt yêu cầu, cần luyện thêm."
-                }
+                s.SubmissionId
             }).ToList();
 
-            var result = new
+            var prompt = Prompt.ProgressFeedback;
+
+            // 🔹 Tạo nội dung gửi Gemini
+            var body = new
             {
-                summary,
-                overallProgress,
-                perSubmissionFeedback
+                system_instruction = new
+                {
+                    parts = new[] { new { text = prompt } }
+                },
+                contents = new[]
+                {
+    new
+    {
+        role = "user",
+        parts = new[]
+        {
+            new { text = "Dưới đây là danh sách bài nộp của sinh viên, mỗi bài có tiêu đề và điểm số:" },
+            new { text = JsonSerializer.Serialize(studentSummaries) },
+            new { text = "Hãy nhận xét tổng quát tiến trình học tập của sinh viên dựa trên các bài này theo định dạng JSON của prompt." }
+        }
+    }
+},
+                generationConfig = new { response_mime_type = "application/json" }
             };
 
-            return Task.FromResult<object>(result);
+            // 🔹 Gửi yêu cầu đến Gemini
+            using var msg = new HttpRequestMessage(HttpMethod.Post, $"v1beta/{MODEL}:generateContent")
+            {
+                Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
+            };
+            msg.Headers.Add("x-goog-api-key", apiKey);
+
+            var res = await _http.SendAsync(msg, ct);
+            var payload = await res.Content.ReadAsStringAsync(ct);
+
+            if (!res.IsSuccessStatusCode)
+                throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
+
+            // 🔹 Giải mã phản hồi JSON của Gemini
+            using var doc = JsonDocument.Parse(payload);
+            var text = doc.RootElement
+                .GetProperty("candidates")[0]
+                .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            // 🔹 Trả về phản hồi AI
+            var result = JsonSerializer.Deserialize<object>(text!,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return result!;
         }
     }
 }
