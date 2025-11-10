@@ -1,4 +1,4 @@
-﻿using FeedbackService.Application.Constants;
+﻿﻿using FeedbackService.Application.Constants;
 using FeedbackService.Application.Dtos;
 using FeedbackService.Application.Interfaces;
 using FeedbackService.Domain.Entities;
@@ -194,17 +194,17 @@ namespace FeedbackService.Application.Services
                 },
                 contents = new[]
                 {
-            new
-            {
-                role = "user",
-                parts = new[]
-                {
-                    new { text = "Dưới đây là danh sách bài nộp của sinh viên, mỗi bài có tiêu đề và điểm số:" },
-                    new { text = JsonSerializer.Serialize(studentSummaries) },
-                    new { text = "Hãy nhận xét tổng quát tiến trình học tập của sinh viên dựa trên các bài này theo định dạng JSON của prompt." }
-                }
-            }
-        },
+    new
+    {
+        role = "user",
+        parts = new[]
+        {
+            new { text = "Dưới đây là danh sách bài nộp của sinh viên, mỗi bài có tiêu đề và điểm số:" },
+            new { text = JsonSerializer.Serialize(studentSummaries) },
+            new { text = "Hãy nhận xét tổng quát tiến trình học tập của sinh viên dựa trên các bài này theo định dạng JSON của prompt." }
+        }
+    }
+},
                 generationConfig = new { response_mime_type = "application/json" }
             };
 
@@ -236,6 +236,5 @@ namespace FeedbackService.Application.Services
 
             return result!;
         }
-
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService.Application.Interfaces;
 using NotificationService.Application.Services;
-using NotificationService.Background;
+//using NotificationService.Background;
 using NotificationService.Hubs;
 using NotificationService.Infrastructure;
 using NotificationService.Infrastructure.Handlers;
@@ -28,7 +28,7 @@ builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
 builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
-builder.Services.AddHostedService<NotificationBackgroundWorker>();
+//builder.Services.AddHostedService<NotificationBackgroundWorker>();
 
 
 

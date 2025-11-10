@@ -7,8 +7,8 @@ namespace SubmissionService.Application.Service
 {
     public class SubmissionManager
     {
-        //private string _urlJugde0 = "http://192.168.117.133:2358";// Ubuntu Vmware + judge0 
-        private string _urlJugde0 = "http://26.215.255.178:2358/";// local judge0
+        private string _urlJugde0 = "http://192.168.117.133:2358";// Ubuntu Vmware + judge0 
+        //private string _urlJugde0 = "http://26.215.255.178:2358/";// local judge0
 
         private readonly ICompareTestCase _compare;
         private readonly IResultRepository _getResult;
