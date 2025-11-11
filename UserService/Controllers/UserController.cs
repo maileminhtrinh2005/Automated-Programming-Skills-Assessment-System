@@ -12,11 +12,11 @@ namespace UserService.Controllers
     [Route("api/[Controller]")]
     public class UserController : Controller
     {
-        private readonly ICRUD _crud;
+        private readonly IUserRepository _crud;
         private readonly ILogin _login;
         private readonly IChat _chat;
         private readonly IJwtService _jwtService;
-        public UserController(ICRUD crud, ILogin login, IChat chat, IJwtService jwtService)
+        public UserController(IUserRepository crud, ILogin login, IChat chat, IJwtService jwtService)
         {
             _jwtService = jwtService;
             _chat = chat;

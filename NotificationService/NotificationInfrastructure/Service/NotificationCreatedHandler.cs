@@ -9,7 +9,7 @@ namespace NotificationService.Infrastructure.Handlers
 {
     public class NotificationCreatedHandler :
         IEventHandler<NotificationCreatedEvent>,
-        IEventHandler<FeedbackGeneratedEvent> // ✅ Dùng chung cho cả auto/manual feedback
+        IEventHandler<FeedbackGeneratedEvent> 
     {
         private readonly AppDbContext _db;
         private readonly IHubContext<NotificationHub, INotificationClient> _hub;
@@ -19,8 +19,6 @@ namespace NotificationService.Infrastructure.Handlers
             _db = db;
             _hub = hub;
         }
-
-        // 📩 Khi NotificationService tự nhận event tạo thông báo
         public Task Handle(NotificationCreatedEvent e)
         {
             Console.WriteLine("==========================================");
@@ -33,7 +31,6 @@ namespace NotificationService.Infrastructure.Handlers
             return Task.CompletedTask;
         }
 
-        // 🟢 Khi FeedbackService gửi FeedbackGeneratedEvent (AI hoặc nhập tay)
         public async Task Handle(FeedbackGeneratedEvent e)
         {
             Console.WriteLine("==========================================");
@@ -43,7 +40,6 @@ namespace NotificationService.Infrastructure.Handlers
             Console.WriteLine($"Message   : {e.Message}");
             Console.WriteLine("==========================================");
 
-            // 1️⃣ Lưu DB
             var rec = new GeneratedNotificationRecord
             {
                 StudentId = e.StudentId,
@@ -60,7 +56,6 @@ namespace NotificationService.Infrastructure.Handlers
 
             Console.WriteLine($"✅ [NotificationService] Saved feedback notification Id={rec.Id}");
 
-            // 2️⃣ Gửi SignalR — nếu có StudentId thì gửi nhóm, ngược lại gửi All
             if (e.StudentId > 0)
             {
                 await _hub.Clients.Group(e.StudentId.ToString())

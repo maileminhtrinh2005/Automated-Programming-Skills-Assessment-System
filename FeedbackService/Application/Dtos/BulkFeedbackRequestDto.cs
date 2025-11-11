@@ -5,6 +5,7 @@ namespace FeedbackService.Application.Dtos
     public class BulkFeedbackRequestDto
     {
         public List<SubmissionForFeedbackDto> Submissions { get; set; } = new();
+        public int StudentId { get; set; }
     }
 
     public class SubmissionForFeedbackDto

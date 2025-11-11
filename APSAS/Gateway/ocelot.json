@@ -344,7 +344,7 @@
           "Port": 5064
         }
       ],
-      "DownstreamPathTemplate": "/api/TestcaseFeedback/testcasesubmit",
+      "DownstreamPathTemplate": "/api/Feedback/testcasesubmit",
       "HttpHandlerOptions": {
         "Timeout": 180000
       }

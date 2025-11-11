@@ -44,7 +44,7 @@ namespace FeedbackService.Infrastructure.Handlers
             }
             Console.WriteLine("==========================================");
 
-            // 🔹 Tạo text feedback tóm tắt test case
+            //  Tạo text feedback tóm tắt test case
             var feedbackText =
                 $"Assignment: {e.AssignmentId}\n" +
                 $"Submission: {e.SubmissionId}\n" +
@@ -53,11 +53,11 @@ namespace FeedbackService.Infrastructure.Handlers
                 string.Join("\n", (e.TestCaseList ?? []).Select((tc, i) =>
                     $"- #{i + 1}: Id={tc.TestCaseId}, Weight={tc.Weight}, Expected={tc.ExpectedOutput}"));
 
-            // 🔹 Tạo event để gửi qua RabbitMQ (chuyển sang dùng Title + Message)
+            // 🔹 Tạo event để gửi qua RabbitMQ 
             var feedbackEvent = new FeedbackGeneratedEvent
             {
                 SubmissionId = e.SubmissionId,
-                StudentId = 0, // chưa có thông tin
+                StudentId = 0,
                 Score = 0,
                 Title = $"Tự động sinh feedback cho Assignment #{e.AssignmentId}",
                 Message = feedbackText,

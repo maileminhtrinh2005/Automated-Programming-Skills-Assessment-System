@@ -6,23 +6,21 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ===== THÂN TRANG - CHÌA KHÓA ĐỂ CĂN GIỮA ===== */
+/* ===== THÂN TRANG - CĂN GIỮA TOÀN TRANG ===== */
 body {
-    background: #f0f2f5; /* Một màu nền nhẹ nhàng hơn */
+    background: #f0f2f5;
     color: #333;
-    /* * Biến body thành flex container để dễ dàng căn chỉnh con của nó.
-     */
     display: flex;
-    justify-content: center; /* Căn giữa theo chiều ngang */
-    align-items: center; /* Căn giữa theo chiều dọc */
-    min-height: 100vh; /* Chiều cao tối thiểu bằng chiều cao màn hình */
-    padding: 20px; /* Thêm chút khoảng trống xung quanh */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
 }
 
-/* ===== KHUNG CHÍNH (MAIN CONTENT) ===== */
+/* ===== KHUNG CHÍNH ===== */
 main {
-    width: 90%; /* Chiếm 90% chiều rộng của body */
-    max-width: 1200px; /* Nhưng không rộng quá 1200px trên màn hình lớn */
+    width: 90%;
+    max-width: 1200px;
     background: #ffffff;
     padding: 30px 40px;
     border-radius: 12px;
@@ -48,6 +46,7 @@ main {
     border: 1px solid #e9ecef;
     padding: 20px;
     border-radius: 8px;
+    background: #fff;
 }
 
 /* ===== TIÊU ĐỀ ===== */
@@ -123,7 +122,7 @@ button {
     margin-top: 15px;
 }
 
-/* ===== TEXTAREA & INPUT ===== */
+/* ===== TEXTAREA ===== */
 textarea {
     width: 100%;
     padding: 10px;
@@ -139,7 +138,7 @@ textarea {
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
 
-/* ===== THẺ FEEDBACK CỦA AI ===== */
+/* ===== FEEDBACK TỔNG QUÁT ===== */
 .summary-card {
     background-color: #e7f5ff;
     border-left: 5px solid #007bff;
@@ -152,10 +151,98 @@ textarea {
         margin-bottom: 5px;
     }
 
-/* Responsive cho màn hình nhỏ */
+/* ===== MODAL HIỂN THỊ CHI TIẾT ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    margin: 4% auto;
+    padding: 25px 35px;
+    width: 65%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.close {
+    float: right;
+    font-size: 26px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+    .close:hover {
+        color: #e74c3c;
+    }
+
+/* ===== CODE BLOCK HIỂN THỊ SOURCE CODE ===== */
+.code-block {
+    background: #1e1e1e;
+    color: #dcdcdc;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin-top: 8px;
+    margin-bottom: 10px;
+}
+
+.modal-content h3 {
+    margin-top: 10px;
+    color: #2c3e50;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 4px;
+}
+
+.modal-content p {
+    margin: 6px 0;
+    color: #333;
+    line-height: 1.4;
+}
+
+/* ===== MÀU CHO TIẾN TRÌNH FEEDBACK ===== */
+.progress-good {
+    color: green;
+    font-weight: bold;
+}
+
+.progress-medium {
+    color: orange;
+    font-weight: bold;
+}
+
+.progress-bad {
+    color: red;
+    font-weight: bold;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     main {
         width: 95%;
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 90%;
         padding: 20px;
     }
 

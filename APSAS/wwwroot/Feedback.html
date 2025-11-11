@@ -78,6 +78,25 @@
         </section>
     </main>
 
+    <!-- 🔹 POPUP CHI TIẾT BÀI NỘP -->
+    <div id="submissionModal" class="modal">
+        <div class="modal-content">
+            <button id="closeSubmissionModalBtn" class="close">X</button>
+
+            <h3>Thông tin bài nộp</h3>
+           
+            <p><strong>Code:</strong></p>
+            <pre id="modalCode" class="code-block"></pre>
+            <p><strong>Điểm:</strong> <span id="modalScore">-</span></p>
+            <p><strong>Trạng thái:</strong> <span id="modalStatus">-</span></p>
+            <p><strong>Ngày nộp:</strong> <span id="modalSubmittedAt">-</span></p>
+
+            <div class="btn-group" style="margin-top:15px;">
+                <button id="btnFeedbackDetail">🧠 Nhận xét chi tiết</button>
+            </div>
+        </div>
+    </div>
+
     <script src="Js/Feedback.js"></script>
 </body>
 </html>

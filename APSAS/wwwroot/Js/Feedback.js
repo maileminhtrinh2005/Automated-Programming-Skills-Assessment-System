@@ -87,7 +87,7 @@ function renderSubmissions(subs) {
     document.querySelectorAll(".btnDetail").forEach(btn => {
         btn.onclick = async () => {
             const submissionId = btn.dataset.id;
-            await generateDetailFeedback(submissionId);
+            await openSubmissionModal(submissionId);
         };
     });
 }
@@ -104,39 +104,64 @@ async function loadSubmissionsOnly(studentId) {
             assignmentTitle: assignment?.title || "Không rõ",
             score: s.score ?? "-",
             status: s.status ?? "-",
-            createdAt: s.createdAt || s.submittedAt || "-"
+            createdAt: s.createdAt || s.submittedAt || "-",
+            assignmentId: s.assignmentId,
+            sourceCode: s.sourceCode || s.code || "(Không có code)"
         });
     }
 
     renderSubmissions(detailedSubs);
 }
 
-// ======== NHẬN XÉT CHI TIẾT (CHẤM THEO TESTCASE) ========
+// ======== POPUP CHI TIẾT BÀI NỘP ========
+async function openSubmissionModal(submissionId) {
+    try {
+        const studentId = localStorage.getItem("studentId");
+        const submissions = await fetchSubmissionsByStudent(studentId);
+        const submission = submissions.find(s => s.submissionId == submissionId);
+        if (!submission) return alert("Không tìm thấy submission!");
+
+        const result = await fetchResultBySubmission(submissionId);
+
+        $("modalCode").innerText = submission.sourceCode || submission.code || "Không có code";
+        $("modalScore").innerText = submission.score ?? "-";
+        $("modalStatus").innerText = submission.status ?? "-";
+        $("modalSubmittedAt").innerText = submission.createdAt || submission.submittedAt || "-";
+
+        $("submissionModal").style.display = "block";
+
+        $("closeSubmissionModalBtn").onclick = () => {
+            $("submissionModal").style.display = "none";
+        };
+
+        $("btnFeedbackDetail").onclick = async () => {
+            $("submissionModal").style.display = "none";
+            await generateDetailFeedback(submissionId);
+        };
+    } catch (err) {
+        console.error("❌ Lỗi khi mở modal:", err);
+        alert("Không thể hiển thị thông tin bài nộp!");
+    }
+}
+
+// ======== NHẬN XÉT CHI TIẾT ========
 async function generateDetailFeedback(submissionId) {
     try {
         out(`🔍 Đang lấy result cho submission ${submissionId}...`);
 
-        // Lấy result của submission
+        const studentId = localStorage.getItem("selectedStudentId") || localStorage.getItem("studentId");
         const result = await fetchResultBySubmission(submissionId);
         console.log("📡 Kết quả từ API GetYourResult:", result);
 
-        const submissions = await fetchSubmissionsByStudent(localStorage.getItem("studentId"));
+        const submissions = await fetchSubmissionsByStudent(studentId);
         const submission = submissions.find(s => s.submissionId == submissionId);
 
         if (!submission) return alert("❌ Không tìm thấy submission.");
 
-        console.log("📄 submission data:", submission);
-        console.log("📄 assignmentId:", submission.assignmentId);
-
-        // ===== Gọi test case từ AssignmentService =====
         const testcasesRes = await apiFetch(`/GetTestCaseById/${submission.assignmentId}`);
-        console.log("📡 Gọi API test case:", testcasesRes.status, testcasesRes.url);
-
         if (!testcasesRes.ok) throw new Error(await testcasesRes.text());
         const testcasesRaw = await testcasesRes.json();
-        console.log("📦 TestcasesRaw:", testcasesRaw);
 
-        // 🔄 Chuẩn hóa dữ liệu testcase & result
         const testcases = testcasesRaw.map(tc => ({
             input: tc.input ?? tc.Input ?? "",
             expectedOutput: tc.expectedOutput ?? tc.ExpectedOutput ?? ""
@@ -146,7 +171,6 @@ async function generateDetailFeedback(submissionId) {
             ? result
             : result?.testResults ?? [];
 
-        // ✅ CHỈNH LẠI CHUẨN HÓA CHO ĐÚNG DỮ LIỆU SubmissionService
         const normalizedResults = testcases.map((tc, i) => {
             const match = results[i];
             return {
@@ -160,10 +184,9 @@ async function generateDetailFeedback(submissionId) {
             };
         });
 
-        console.log("✅ normalizedResults gửi sang FeedbackService:", normalizedResults);
-
-        // ===== Gửi sang FeedbackService =====
+        // ✅ Thêm StudentId vào payload
         const payload = {
+            studentId: Number(studentId),
             submissionId,
             assignmentTitle: submission?.assignmentTitle || "Không rõ",
             sourceCode: submission?.code || submission?.sourceCode || "Không có source code",
@@ -178,9 +201,7 @@ async function generateDetailFeedback(submissionId) {
 
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
-        out("✅ Nhận xét chi tiết:", data);
 
-        // ======== HIỂN THỊ NHẬN XÉT ========
         $("feedbackCard").style.display = "block";
         $("summaryText").textContent = data.summary || "(Không có nhận xét)";
         $("progressText").textContent = data.overallProgress || "(Không có)";
@@ -193,7 +214,6 @@ async function generateDetailFeedback(submissionId) {
         else if (p.includes("cải thiện") || p.includes("medium")) prog.classList.add("progress-medium");
         else prog.classList.add("progress-bad");
 
-        // ======== HIỂN THỊ CHI TIẾT TESTCASE ========
         const detailSection = $("detailSection");
         const detailBody = $("tblDetails").querySelector("tbody");
         detailBody.innerHTML = "";
@@ -245,7 +265,8 @@ async function generateDetailFeedback(submissionId) {
     }
 }
 
-// ======== NHẬN XÉT TỔNG QUÁT (KHÔNG ĐỔI) ========
+
+// ======== NHẬN XÉT TỔNG QUÁT ========
 async function generateProgressFeedback(studentId) {
     try {
         const submissions = await fetchSubmissionsByStudent(studentId);

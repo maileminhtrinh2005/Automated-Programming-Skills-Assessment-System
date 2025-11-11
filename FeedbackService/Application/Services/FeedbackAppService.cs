@@ -16,7 +16,7 @@ namespace FeedbackService.Application.Services
         private readonly AppDbContext _db;
         private readonly HttpClient _http;
         private readonly IConfiguration _cfg;
-        private readonly FeedbackPushService _pushService;  // ✅ thêm push service
+        private readonly FeedbackPushService _pushService;
 
         private const string MODEL = "models/gemini-2.0-flash";
 
@@ -25,7 +25,7 @@ namespace FeedbackService.Application.Services
             AppDbContext db,
             HttpClient http,
             IConfiguration cfg,
-            FeedbackPushService pushService) // ✅ inject push service
+            FeedbackPushService pushService)
         {
             _generator = generator;
             _db = db;
@@ -37,6 +37,9 @@ namespace FeedbackService.Application.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
+        // =====================================
+        // 🧠 Sinh nhận xét (AI) + Lưu DB chi tiết
+        // =====================================
         public async Task<FeedbackResponseDto> GenerateAsync(
             FeedbackRequestDto req,
             string systemPrompt,
@@ -44,7 +47,7 @@ namespace FeedbackService.Application.Services
         {
             FeedbackResponseDto result;
 
-            // 🧠 Không có test case -> gọi Gemini sinh NHẬN XÉT TỔNG QUÁT (không chấm điểm)
+            // Trường hợp không có test case → nhận xét tổng quát
             if (req.TestResults is null || req.TestResults.Count == 0)
             {
                 var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
@@ -94,16 +97,16 @@ namespace FeedbackService.Application.Services
                 var ai = JsonSerializer.Deserialize<FeedbackResponseDto>(
                     text!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                // Chuẩn hoá output: không chấm điểm, không rubric, không testcase
                 result = ai ?? new FeedbackResponseDto { Summary = "Không đọc được phản hồi từ AI." };
                 result.Score = 0;
                 result.RubricBreakdown = new List<RubricItemDto>();
                 result.TestCaseFeedback = null;
 
-                // ✅ Lưu DB
+                // 🔹 Lưu cả GeneratedFeedback và DetailedFeedback
                 await SaveFeedbackAsync(req, result, ct);
+                await SaveDetailedFeedbackAsync(req, result, ct);
 
-                // ✅ Push event qua RabbitMQ
+                // 🔹 Gửi thông báo realtime
                 await _pushService.PushFeedbackAsync(
                     req.StudentId,
                     req.SubmissionId,
@@ -115,13 +118,13 @@ namespace FeedbackService.Application.Services
                 return result;
             }
 
-            // ✅ Có test case -> dùng generator AI chi tiết
+            // Có test case → dùng generator riêng
             result = await _generator.GenerateAsync(req, ct);
 
-            // ✅ Lưu DB
+            // 🔹 Lưu cả hai bảng
             await SaveFeedbackAsync(req, result, ct);
+            await SaveDetailedFeedbackAsync(req, result, ct);
 
-            // ✅ Push qua RabbitMQ
             await _pushService.PushFeedbackAsync(
                 req.StudentId,
                 req.SubmissionId,
@@ -133,6 +136,9 @@ namespace FeedbackService.Application.Services
             return result;
         }
 
+        // =====================================
+        // 💾 Lưu feedback tổng quát (GeneratedFeedbacks)
+        // =====================================
         private async Task SaveFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
         {
             var record = new GeneratedFeedbackRecord
@@ -148,33 +154,37 @@ namespace FeedbackService.Application.Services
             _db.GeneratedFeedbacks.Add(record);
             await _db.SaveChangesAsync(ct);
 
-            Console.WriteLine($"[FeedbackAppService] 💾 Feedback đã được lưu vào DB cho Assignment '{req.AssignmentTitle}'.");
+            Console.WriteLine($"💾 [FeedbackAppService] Saved general feedback for '{req.AssignmentTitle}'.");
         }
 
-        public Task<GeneratedFeedbackDto> GenerateForStudentAssignmentAsync(
-            int studentId, int assignmentId, CancellationToken ct)
-            => throw new NotImplementedException();
+ // chi tiet
+        private async Task SaveDetailedFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
+        {
+            var detail = new DetailedFeedback
+            {
+                StudentId = req.StudentId,
+                SubmissionId = req.SubmissionId,
+                AssignmentTitle = req.AssignmentTitle ?? "(Không rõ bài tập)",
+                Summary = result.Summary,
+                CreatedAtUtc = DateTime.UtcNow
+            };
 
+            _db.DetailedFeedbacks.Add(detail);
+            await _db.SaveChangesAsync(ct);
+
+            Console.WriteLine($"💾 [FeedbackAppService] Saved detailed feedback Id={detail.Id} for student {req.StudentId}.");
+        }
+
+// tong quat
         public async Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
         {
             if (dto == null || dto.Submissions == null || dto.Submissions.Count == 0)
-            {
-                var empty = new
-                {
-                    summary = "Không có submission nào để nhận xét.",
-                    overallProgress = "Không xác định",
-                    perSubmissionFeedback = new object[0]
-                };
-                return empty;
-            }
+                return new { summary = "Không có submission nào để nhận xét.", overallProgress = "Không xác định" };
 
-            // 🔹 Lấy API Key Gemini
-            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
-                       ?? _cfg["Gemini:ApiKey"];
+            var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? _cfg["Gemini:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("Thiếu GEMINI_API_KEY.");
 
-            // 🔹 Chuẩn bị dữ liệu cho AI
             var studentSummaries = dto.Submissions.Select(s => new
             {
                 s.AssignmentTitle,
@@ -183,32 +193,25 @@ namespace FeedbackService.Application.Services
                 s.SubmissionId
             }).ToList();
 
-            var prompt = Prompt.ProgressFeedback;
-
-            // 🔹 Tạo nội dung gửi Gemini
             var body = new
             {
-                system_instruction = new
-                {
-                    parts = new[] { new { text = prompt } }
-                },
+                system_instruction = new { parts = new[] { new { text = Prompt.ProgressFeedback } } },
                 contents = new[]
                 {
-    new
-    {
-        role = "user",
-        parts = new[]
-        {
-            new { text = "Dưới đây là danh sách bài nộp của sinh viên, mỗi bài có tiêu đề và điểm số:" },
-            new { text = JsonSerializer.Serialize(studentSummaries) },
-            new { text = "Hãy nhận xét tổng quát tiến trình học tập của sinh viên dựa trên các bài này theo định dạng JSON của prompt." }
-        }
-    }
-},
+                    new
+                    {
+                        role = "user",
+                        parts = new[]
+                        {
+                            new { text = "Dưới đây là danh sách bài nộp của sinh viên, mỗi bài có tiêu đề và điểm số:" },
+                            new { text = JsonSerializer.Serialize(studentSummaries) },
+                            new { text = "Hãy nhận xét tổng quát tiến trình học tập của sinh viên theo định dạng JSON." }
+                        }
+                    }
+                },
                 generationConfig = new { response_mime_type = "application/json" }
             };
 
-            // 🔹 Gửi yêu cầu đến Gemini
             using var msg = new HttpRequestMessage(HttpMethod.Post, $"v1beta/{MODEL}:generateContent")
             {
                 Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
@@ -221,20 +224,42 @@ namespace FeedbackService.Application.Services
             if (!res.IsSuccessStatusCode)
                 throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
 
-            // 🔹 Giải mã phản hồi JSON của Gemini
             using var doc = JsonDocument.Parse(payload);
-            var text = doc.RootElement
-                .GetProperty("candidates")[0]
-                .GetProperty("content")
-                .GetProperty("parts")[0]
-                .GetProperty("text")
-                .GetString();
+            var text = doc.RootElement.GetProperty("candidates")[0]
+                .GetProperty("content").GetProperty("parts")[0]
+                .GetProperty("text").GetString();
 
-            // 🔹 Trả về phản hồi AI
-            var result = JsonSerializer.Deserialize<object>(text!,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var result = JsonSerializer.Deserialize<object>(text!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            string summary = "(Không có tóm tắt)";
+            try
+            {
+                using var jd = JsonDocument.Parse(text!);
+                if (jd.RootElement.TryGetProperty("summary", out var s)) summary = s.GetString() ?? summary;
+            }
+            catch { }
+
+            var record = new GeneratedFeedbackRecord
+            {
+                StudentId = dto.StudentId,
+                AssignmentTitle = "[Bulk] Tổng quát tiến trình học tập",
+                Summary = summary,
+                Score = 0,
+                RawJson = text!,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            _db.GeneratedFeedbacks.Add(record);
+            await _db.SaveChangesAsync(ct);
+
+            await _pushService.PushFeedbackAsync(dto.StudentId, 0, "[Bulk] Tổng quát tiến trình học tập", summary, 0);
 
             return result!;
+        }
+
+        public Task<GeneratedFeedbackDto> GenerateForStudentAssignmentAsync(int studentId, int assignmentId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
         }
     }
 }

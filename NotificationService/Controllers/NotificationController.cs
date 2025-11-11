@@ -29,9 +29,7 @@ public class NotificationController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int take = 50, CancellationToken ct = default)
         => Ok(await _app.GetAllAsync(take, ct));
-
-    // 🟢 Lấy thông báo chưa đọc
-  //  [Authorize]
+    // lay tb chua doc
     [HttpGet("unread")]
     public IActionResult GetUnread(int studentId)
     {
@@ -42,23 +40,16 @@ public class NotificationController : ControllerBase
 
         return Ok(unread);
     }
-
-    // 🟢 Đánh dấu là đã đọc
-   // [Authorize]
+    // danh dau da doc
     [HttpPost("markasread")]
     public async Task<IActionResult> MarkAsRead([FromQuery] Guid id)
     {
-        // ✅ Kiểm tra có tồn tại không
         var noti = await _db.GeneratedNotifications
             .FirstOrDefaultAsync(n => n.Id == id);
 
         if (noti == null)
             return NotFound($"Không tìm thấy thông báo với ID = {id}");
-
-        // ✅ Đánh dấu là đã đọc
         noti.IsRead = true;
-
-        // ✅ Ghi lại thay đổi
         _db.GeneratedNotifications.Update(noti);
         await _db.SaveChangesAsync();
 

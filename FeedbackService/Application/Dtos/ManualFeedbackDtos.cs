@@ -23,9 +23,7 @@ public class ManualFeedbackDto
 {
     public int SubmissionId { get; set; }
     public int StudentId { get; set; }
-    public string InstructorId { get; set; } = string.Empty; // ID giảng viên gửi nhận xét
-    public string AssignmentTitle { get; set; } = string.Empty; // Tên bài tập / bài thi
+    public string AssignmentTitle { get; set; } = string.Empty; // Tên bài tập 
     public string FeedbackText { get; set; } = string.Empty;    // Phần nhận xét chính
-    public string Comment { get; set; } = string.Empty;         // Ghi chú / bổ sung
-    public DateTime ReviewedAt { get; set; } = DateTime.UtcNow; // Thời gian gửi
+    public string Comment { get; set; } = string.Empty;       
 }
