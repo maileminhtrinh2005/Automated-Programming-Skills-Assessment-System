@@ -6,12 +6,12 @@ using UserService.Domain;
 
 namespace UserService.Infrastructure
 {
-    public class CRUD : ICRUD
+    public class UserRepository : IUserRepository
     {
         private readonly UserAppDbContext _dbcontext;
         private readonly PasswordHasher<User> _passwordHasher; // 🔹 thêm hasher
 
-        public CRUD(UserAppDbContext dbcontext)
+        public UserRepository(UserAppDbContext dbcontext)
         {
             _dbcontext = dbcontext;
             _passwordHasher = new PasswordHasher<User>(); // khởi tạo

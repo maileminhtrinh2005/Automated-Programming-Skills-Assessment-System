@@ -2,7 +2,7 @@
 using UserService.Domain;
 namespace UserService.Application.Interface
 {
-    public interface ICRUD
+    public interface IUserRepository
     {
         Task<bool> AddUser(UserDTO user); // Tạo mới User
 
