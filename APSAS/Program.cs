@@ -52,7 +52,9 @@ builder.Services.AddSwaggerGen();
 //builder.Configuration.AddJsonFile("Gateway/SubmissionOcelot.json", optional: false, reloadOnChange: true);// submission
 //builder.Configuration.AddJsonFile("Gateway/AssignmentOcelot.json", optional: false, reloadOnChange: true);// submission
 
-builder.Configuration.AddJsonFile("Gateway/ocelot.json", optional: false, reloadOnChange: true);
+var gateway = builder.Configuration["Gateway:DefaultGateway"] ?? "Gateway/ocelot.json";
+
+builder.Configuration.AddJsonFile(gateway, optional: false, reloadOnChange: true);
 
 
 

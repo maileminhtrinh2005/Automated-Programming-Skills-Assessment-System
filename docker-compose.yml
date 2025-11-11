@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  rabbitmq: 
+    image: rabbitmq:4.1.4-management
+    container_name: apsas-rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - apsas-net
+    restart: unless-stopped
+  
+  sqlserver: 
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: apsas-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+    ports:
+      - "1433:1433"
+    volumes:
+      - db-data:/var/opt/mssql
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
+  assignment-service:
+    build: 
+      context: .
+      dockerfile: AssignmentService/Dockerfile 
+    container_name: assignment-service
+    ports:
+      - "5267:5267"
+    depends_on:
+      - sqlserver
+      - rabbitmq
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5267
+      - ConnectionStrings__AssignmentDb=Server=apsas-db;Database=Assignment;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks: 
+      - apsas-net
+    restart: unless-stopped
+
+volumes:
+  rabbitmq-data:
+  db-data:
+
+networks:
+  apsas-net:
+    driver: bridge

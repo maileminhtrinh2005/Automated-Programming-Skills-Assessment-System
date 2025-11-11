@@ -34,15 +34,16 @@ builder.Services.AddScoped<ResourceManager>();
 builder.Services.AddScoped<TestCaseHandle>();
 
 
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
-       new ConnectionFactory()
-       {
-           HostName = "localhost", // 
-           Port = 5672,            // 
-           UserName = "guest",     //
-           Password = "guest"      // 
-       }
-);
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"] ?? "localhost",
+        UserName = builder.Configuration["RabbitMQ:UserName"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Password"] ?? "guest",
+        Port = int.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672")
+    });
 
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 // dang ki rabbit mq
@@ -89,5 +90,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AssignmentDbContext>();
+    db.Database.Migrate(); // 
+}
+
 
 app.Run();
