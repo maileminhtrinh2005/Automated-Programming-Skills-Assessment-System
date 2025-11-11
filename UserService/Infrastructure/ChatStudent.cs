@@ -3,11 +3,11 @@ using ShareLibrary.Event;
 using UserService.Application.Interface;
 namespace UserService.Infrastructure;
 
-public class ChatSv : IChat
+public class ChatStudent : IChat
 {
     private readonly IEventBus _eventBus;
 
-    public ChatSv(IEventBus eventBus)
+    public ChatStudent(IEventBus eventBus)
     {
         _eventBus = eventBus;
     }

@@ -8,9 +8,9 @@ namespace UserService.Infrastructure
     public class Login : ILogin
     {
         private readonly UserAppDbContext _dbcontext;
-        private readonly ICRUD _crud;
+        private readonly IUserRepository _crud;
         private readonly PasswordHasher<User> _passwordHasher;
-        public Login(UserAppDbContext dbcontext, ICRUD cRUD)
+        public Login(UserAppDbContext dbcontext, IUserRepository cRUD)
         {
             _dbcontext = dbcontext;
             _crud = cRUD;
