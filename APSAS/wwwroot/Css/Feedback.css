@@ -12,9 +12,9 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
-    padding: 20px;
+    padding: 40px 20px;
 }
 
 /* ===== KHUNG CHÍNH ===== */
@@ -40,14 +40,19 @@ main {
     }
 }
 
-/* ===== CÁC THẺ SECTION ===== */
+/* ===== CÁC KHUNG PHẦN (SECTION) ===== */
 .section-card {
     margin-bottom: 25px;
     border: 1px solid #e9ecef;
     padding: 20px;
     border-radius: 8px;
     background: #fff;
+    transition: 0.3s;
 }
+
+    .section-card:hover {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+    }
 
 /* ===== TIÊU ĐỀ ===== */
 h1 {
@@ -55,6 +60,7 @@ h1 {
     color: #0056b3;
     margin-bottom: 25px;
     font-size: 2.2rem;
+    font-weight: 700;
 }
 
 h2 {
@@ -63,6 +69,11 @@ h2 {
     margin-bottom: 15px;
     padding-bottom: 5px;
     border-bottom: 2px solid #007bff;
+}
+
+h3 {
+    color: #0056b3;
+    margin-bottom: 6px;
 }
 
 /* ===== BẢNG DỮ LIỆU ===== */
@@ -80,10 +91,12 @@ th, td {
 th {
     background-color: #f8f9fa;
     font-weight: 600;
+    color: #333;
 }
 
 tbody tr:hover {
     background-color: #f1f3f5;
+    transition: background-color 0.2s ease;
 }
 
 /* ===== BUTTON ===== */
@@ -108,11 +121,13 @@ button {
     }
 
     /* Nút phụ (Clear) */
-    button#btnClear, button#btnClear2 {
+    button#btnClear,
+    button#btnClear2 {
         background-color: #6c757d;
     }
 
-        button#btnClear:hover, button#btnClear2:hover {
+        button#btnClear:hover,
+        button#btnClear2:hover {
             background-color: #5a6268;
         }
 
@@ -130,6 +145,7 @@ textarea {
     border-radius: 4px;
     font-size: 1rem;
     margin-top: 5px;
+    resize: vertical;
 }
 
     textarea:focus {
@@ -140,16 +156,51 @@ textarea {
 
 /* ===== FEEDBACK TỔNG QUÁT ===== */
 .summary-card {
-    background-color: #e7f5ff;
-    border-left: 5px solid #007bff;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 5px;
+    background: #f8fbff;
+    border: 1px solid #cde3ff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    animation: fadeIn 0.5s ease;
 }
 
-    .summary-card p {
+    .summary-card h3 {
+        margin-top: 10px;
         margin-bottom: 5px;
+        color: #004085;
     }
+
+    .summary-card p {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+/* Tổng quát */
+#overviewText {
+    background: #eef6ff;
+    padding: 8px 12px;
+    border-left: 4px solid #1e88e5;
+    border-radius: 6px;
+    font-weight: 500;
+    margin: 8px 0;
+    color: #003d80;
+}
+
+/* ===== TIẾN ĐỘ (Progress màu) ===== */
+.progress-good {
+    color: green;
+    font-weight: bold;
+}
+
+.progress-medium {
+    color: orange;
+    font-weight: bold;
+}
+
+.progress-bad {
+    color: red;
+    font-weight: bold;
+}
 
 /* ===== MODAL HIỂN THỊ CHI TIẾT ===== */
 .modal {
@@ -218,22 +269,6 @@ textarea {
     line-height: 1.4;
 }
 
-/* ===== MÀU CHO TIẾN TRÌNH FEEDBACK ===== */
-.progress-good {
-    color: green;
-    font-weight: bold;
-}
-
-.progress-medium {
-    color: orange;
-    font-weight: bold;
-}
-
-.progress-bad {
-    color: red;
-    font-weight: bold;
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     main {
@@ -249,4 +284,76 @@ textarea {
     h1 {
         font-size: 1.8rem;
     }
+}
+
+#detailProgressBox {
+    background: #f9fbff;
+    border: 1px solid #cde3ff;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 15px;
+    animation: fadeIn 0.4s ease-in;
+}
+
+    #detailProgressBox h3 {
+        color: #004085;
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+    }
+
+#detailProgressText {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+/* ===== MÀU TRẠNG THÁI TIẾN BỘ ===== */
+.progress-good {
+    color: #1b5e20;
+    background: #e8f5e9;
+    border-left: 4px solid #28a745;
+    font-weight: 700;
+}
+
+.progress-medium {
+    color: #856404;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    font-weight: 700;
+}
+
+.progress-bad {
+    color: #721c24;
+    background: #f8d7da;
+    border-left: 4px solid #dc3545;
+    font-weight: 700;
+}
+
+/* ===== HIỆU ỨNG HIỂN THỊ MƯỢT ===== */
+#detailProgressBox {
+    transition: all 0.4s ease-in-out;
+}
+
+    #detailProgressBox.show {
+        animation: fadeInUp 0.5s ease-in-out;
+    }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== ICON 📈 TRƯỚC DÒNG TIẾN BỘ ===== */
+#detailProgressText::before {
+    content: "📈 ";
 }

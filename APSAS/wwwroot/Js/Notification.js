@@ -15,7 +15,7 @@ let count = 0;
 function checkAccess() {
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "DN.html";
+        window.location.href = "Login.html";
         return false;
     }
     return true;
@@ -27,9 +27,7 @@ function checkAccess() {
 function addNotification(id, title, message, time) {
     // Xóa thông báo "Không có" nếu nó đang tồn tại
     const noNotificationMsg = document.getElementById("noNotificationMsg");
-    if (noNotificationMsg) {
-        noNotificationMsg.remove();
-    }
+    if (noNotificationMsg) noNotificationMsg.remove();
 
     const div = document.createElement("div");
     div.className = "notification";
@@ -45,7 +43,7 @@ function addNotification(id, title, message, time) {
 
     count++;
     badge.textContent = count;
-    badge.style.display = 'block'; // Hiện badge
+    badge.style.display = 'block';
 
     bell.classList.add("shake");
     sound.play().catch(() => { });
@@ -59,10 +57,10 @@ const HUB_URL = "http://localhost:5216/notificationhub";
 const API_BASE = "http://localhost:5261/api/Notification";
 
 // =============================
-// ⚙️ KẾT NỐI SIGNALR
+// ⚙️ TẠO KẾT NỐI SIGNALR
 // =============================
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl(HUB_URL, { accessTokenFactory: () => localStorage.getItem("token") })
+let connection = new signalR.HubConnectionBuilder()
+    .withUrl(HUB_URL)
     .configureLogging(signalR.LogLevel.Information)
     .withAutomaticReconnect()
     .build();
@@ -92,13 +90,13 @@ async function loadUnreadNotifications() {
         if (!res.ok) throw new Error(`Server error ${res.status}`);
 
         const data = await res.json();
-        notificationsDiv.innerHTML = ""; // Xóa nội dung cũ
-        count = 0; // Reset bộ đếm
+        notificationsDiv.innerHTML = "";
+        count = 0;
 
         if (!data.length) {
             notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
             badge.textContent = 0;
-            badge.style.display = 'none'; // Ẩn badge nếu không có thông báo
+            badge.style.display = 'none';
             return;
         }
 
@@ -158,25 +156,19 @@ document.getElementById("markAllBtn").addEventListener("click", async () => {
     }
 });
 
-
 // =============================
-// 🧭 SỬA LỖI: LOGIC MỞ/ĐÓNG POPUP
+// 🧭 LOGIC MỞ/ĐÓNG POPUP
 // =============================
 bell.addEventListener("click", (event) => {
-    // Ngăn sự kiện click bị lan ra ngoài (tới document)
     event.stopPropagation();
-    // Bật/tắt class 'visible' để hiện/ẩn popup
     notificationsPopup.classList.toggle("visible");
 });
 
-// Đóng popup khi người dùng click vào bất cứ đâu bên ngoài
 document.addEventListener("click", (event) => {
-    // Chỉ đóng nếu popup đang mở VÀ nơi click không nằm trong bellContainer
     if (notificationsPopup.classList.contains("visible") && !bellContainer.contains(event.target)) {
         notificationsPopup.classList.remove("visible");
     }
 });
-
 
 // =============================
 // 🔌 AUTO KẾT NỐI KHI LOAD
@@ -184,16 +176,28 @@ document.addEventListener("click", (event) => {
 window.addEventListener("DOMContentLoaded", async () => {
     if (!checkAccess()) return;
 
-    const studentId = localStorage.getItem("studentId");
+    // 🕓 Chờ studentId xuất hiện (tối đa 5 giây)
+    let studentId = null;
+    for (let i = 0; i < 50; i++) {
+        studentId = localStorage.getItem("studentId");
+        if (studentId) break;
+        await new Promise(r => setTimeout(r, 100));
+    }
+
     if (!studentId) {
-        console.warn("⚠️ Chưa có studentId, chưa join group!");
+        console.warn("⚠️ Không tìm thấy studentId sau khi chờ, bỏ qua SignalR join.");
         return;
     }
 
     try {
+        if (connection.state === signalR.HubConnectionState.Connected)
+            await connection.stop();
+
+        // Kết nối lại SignalR
         await connection.start();
         await connection.invoke("JoinGroup", studentId);
-        console.log(`✅ Joined SignalR group ${studentId}`);
+        console.log(`✅ Đã kết nối SignalR và join group ${studentId}`);
+
         await loadUnreadNotifications();
     } catch (err) {
         console.error("❌ Không kết nối được SignalR:", err);

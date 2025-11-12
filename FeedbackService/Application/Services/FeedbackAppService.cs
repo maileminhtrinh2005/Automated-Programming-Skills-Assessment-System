@@ -98,8 +98,10 @@ namespace FeedbackService.Application.Services
                     text!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 result = ai ?? new FeedbackResponseDto { Summary = "Không đọc được phản hồi từ AI." };
-                result.Score = 0;
-                result.RubricBreakdown = new List<RubricItemDto>();
+
+                // ✅ đảm bảo Score không null
+                result.Score ??= 0.0;
+                result.RubricBreakdown ??= new List<RubricItemDto>();
                 result.TestCaseFeedback = null;
 
                 // 🔹 Lưu cả GeneratedFeedback và DetailedFeedback
@@ -112,7 +114,7 @@ namespace FeedbackService.Application.Services
                     req.SubmissionId,
                     req.AssignmentTitle ?? "Bài nộp không rõ",
                     result.Summary ?? "(Không có nội dung phản hồi)",
-                    result.Score
+                    result.Score ?? 0.0   // ✅ ép nullable
                 );
 
                 return result;
@@ -120,6 +122,9 @@ namespace FeedbackService.Application.Services
 
             // Có test case → dùng generator riêng
             result = await _generator.GenerateAsync(req, ct);
+
+            // ✅ đảm bảo Score không null
+            result.Score ??= 0.0;
 
             // 🔹 Lưu cả hai bảng
             await SaveFeedbackAsync(req, result, ct);
@@ -130,7 +135,7 @@ namespace FeedbackService.Application.Services
                 req.SubmissionId,
                 req.AssignmentTitle ?? "Bài nộp không rõ",
                 result.Summary ?? "(Không có nội dung phản hồi)",
-                result.Score
+                result.Score ?? 0.0    // ✅ ép nullable
             );
 
             return result;
@@ -146,7 +151,8 @@ namespace FeedbackService.Application.Services
                 StudentId = req.StudentId,
                 AssignmentTitle = req.AssignmentTitle,
                 Summary = result.Summary ?? "(no summary)",
-                Score = result.Score,
+                // ✅ Ép kiểu rõ ràng
+                Score = (int?)Math.Round(result.Score ?? 0),
                 RawJson = JsonSerializer.Serialize(result),
                 CreatedAtUtc = DateTime.UtcNow
             };
@@ -157,7 +163,9 @@ namespace FeedbackService.Application.Services
             Console.WriteLine($"💾 [FeedbackAppService] Saved general feedback for '{req.AssignmentTitle}'.");
         }
 
- // chi tiet
+        // =====================================
+        // 💾 Lưu feedback chi tiết (DetailedFeedbacks)
+        // =====================================
         private async Task SaveDetailedFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
         {
             var detail = new DetailedFeedback
@@ -175,7 +183,9 @@ namespace FeedbackService.Application.Services
             Console.WriteLine($"💾 [FeedbackAppService] Saved detailed feedback Id={detail.Id} for student {req.StudentId}.");
         }
 
-// tong quat
+        // =====================================
+        // 📊 Nhận xét tổng quát (Bulk)
+        // =====================================
         public async Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
         {
             if (dto == null || dto.Submissions == null || dto.Submissions.Count == 0)
@@ -252,7 +262,7 @@ namespace FeedbackService.Application.Services
             _db.GeneratedFeedbacks.Add(record);
             await _db.SaveChangesAsync(ct);
 
-            await _pushService.PushFeedbackAsync(dto.StudentId, 0, "[Bulk] Tổng quát tiến trình học tập", summary, 0);
+            await _pushService.PushFeedbackAsync(dto.StudentId, 0, "[Bulk] Tổng quát tiến trình học tập", summary, 0.0);
 
             return result!;
         }
