@@ -32,14 +32,15 @@
             </table>
         </section>
 
-        <!-- 📈 Nhận xét tổng quát -->
         <section class="section-card">
             <h2>📈 Nhận xét tổng quát</h2>
 
             <div id="feedbackCard" class="summary-card" style="display:none;">
-                <h3>📘 Nhận xét AI</h3>
+                <h3>🧠 Nhận xét AI</h3>
                 <p id="summaryText">(Chưa có nhận xét...)</p>
-                <p><b>📊 Tiến bộ:</b> <span id="progressText">(Chưa có dữ liệu)</span></p>
+
+                <h3>🚀 Tiến bộ:</h3>
+                <p id="progressText" class="progress-bad">(Chưa có dữ liệu)</p>
             </div>
 
             <div class="btn-group top-btns">
@@ -51,6 +52,8 @@
         <!-- 📊 Chi tiết từng Test Case -->
         <section id="detailSection" class="section-card" style="display:none;">
             <h2>🧩 Chi tiết từng Test Case</h2>
+            <div id="detailProgress" style="margin-bottom:10px;">
+            </div>
             <table id="tblDetails">
                 <thead>
                     <tr>
@@ -64,6 +67,7 @@
                 <tbody></tbody>
             </table>
         </section>
+
 
         <!-- ✉️ Gửi nhận xét -->
         <section class="section-card">

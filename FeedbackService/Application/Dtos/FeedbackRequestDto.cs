@@ -28,7 +28,10 @@ public class TestcaseItem
     public string Status { get; set; } = "Unknown"; 
     public string? Input { get; set; }
     public string? ExpectedOutput { get; set; }
- 
+    public double? Score { get; set; }
+    public string? Name { get; set; }
+    public string? Comment { get; set; }
+
 }
 public class TestcaseFeedbackRequestDto
 {
@@ -38,5 +41,7 @@ public class TestcaseFeedbackRequestDto
     public string? AssignmentTitle { get; set; }
     public List<TestcaseItem> TestResults { get; set; } = new();
     public string? SourceCode { get; set; }
+    public double? Score { get; set; }
+
    
 }

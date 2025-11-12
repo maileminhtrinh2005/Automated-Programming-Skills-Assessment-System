@@ -27,7 +27,7 @@ builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
-builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
+//builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
 //builder.Services.AddHostedService<NotificationBackgroundWorker>();
 
 

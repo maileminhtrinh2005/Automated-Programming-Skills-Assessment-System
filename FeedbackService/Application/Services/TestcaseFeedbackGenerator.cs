@@ -37,7 +37,7 @@ namespace FeedbackService.Application.Services
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("Thiếu GEMINI_API_KEY.");
 
-            // 🧩 Chuẩn hóa dữ liệu test case (để Gemini dễ hiểu)
+            // 🧩 Chuẩn hóa dữ liệu test case
             var testResultsJson = JsonSerializer.Serialize(req.TestResults,
                 new JsonSerializerOptions { WriteIndented = true });
 
@@ -46,7 +46,20 @@ namespace FeedbackService.Application.Services
             {
                 system_instruction = new
                 {
-                    parts = new[] { new { text = prompt ?? Prompt.PerTestcaseFeedback } }
+                    parts = new[] {
+                        new {
+                            text = prompt ??
+                            $"{Prompt.PerTestcaseFeedback}\n" +
+                            "Hãy sinh phản hồi JSON có dạng:\n" +
+                            "{\n" +
+                            "  \"summary\": string,\n" +
+                            "  \"score\": number,\n" +
+                            "  \"rubricBreakdown\": [{\"criterion\": string, \"score\": number, \"max\": number}],\n" +
+                            "  \"testCaseFeedback\": [{\"name\": string, \"comment\": string, \"score\": number, \"status\": string}]\n" +
+                            "}\n" +
+                            "⚠️ Bắt buộc phải có 'testCaseFeedback' chứa nhận xét cho từng test case, và sử dụng tiếng Việt."
+                        }
+                    }
                 },
                 contents = new[]
                 {
@@ -58,7 +71,7 @@ namespace FeedbackService.Application.Services
                             new { text = $"Assignment: {req.AssignmentTitle}" },
                             new { text = $"SourceCode:\n```{req.SourceCode ?? ""}```" },
                             new { text = $"Dưới đây là danh sách test case và kết quả:\n{testResultsJson}" },
-                            new { text = "Hãy viết nhận xét JSON theo hướng dẫn trong prompt." }
+                            new { text = "Hãy trả lời đúng theo cấu trúc JSON ở trên, và mô tả bằng tiếng Việt." }
                         }
                     }
                 },
@@ -95,21 +108,52 @@ namespace FeedbackService.Application.Services
                 };
             }
 
+            // 🩵 Nếu không có testCaseFeedback → tạo mặc định
+            if (ai.TestCaseFeedback == null || ai.TestCaseFeedback.Count == 0)
+            {
+                ai.TestCaseFeedback = req.TestResults.Select((t, i) => new TestCaseFeedbackDto
+                {
+                    Name = $"Test case {i + 1}",
+                    Comment = "(Không có nhận xét)",
+                    Status = t.Status ?? "Chưa chạy",
+                    Input = t.Input ?? "Không có",
+                    ExpectedOutput = t.ExpectedOutput ?? "—"
+                }).ToList();
+            }
+
             Console.WriteLine("✅ [Gemini] Sinh nhận xét chi tiết hoàn tất!");
             Console.WriteLine(text);
-            if (req.TestResults != null && ai.TestCaseFeedback != null)
-            {
-                for (int i = 0; i < ai.TestCaseFeedback.Count; i++)
-                {
-                    var src = req.TestResults.ElementAtOrDefault(i);
-                    var dst = ai.TestCaseFeedback[i];
 
-                    if (src != null)
-                    {
-                        dst.Input = src.Input ?? "(Không có)";
-                        dst.ExpectedOutput = src.ExpectedOutput ?? "(Không có)";
-                        dst.Status ??= src.Status ?? "Chưa chạy";
-                    }
+            // 🩵 Đồng bộ thông tin input/output/status
+            for (int i = 0; i < ai.TestCaseFeedback.Count; i++)
+            {
+                var src = req.TestResults.ElementAtOrDefault(i);
+                var dst = ai.TestCaseFeedback[i];
+
+                if (src != null)
+                {
+                    dst.Input = src.Input ?? "(Không có)";
+                    dst.ExpectedOutput = src.ExpectedOutput ?? "(Không có)";
+                }
+
+                var comment = dst.Comment?.ToLower() ?? "";
+
+                if (comment.Contains("pass") || comment.Contains("thành công") || comment.Contains("đúng"))
+                    dst.Status = "Đúng";
+                else if (comment.Contains("fail") || comment.Contains("lỗi") || comment.Contains("sai"))
+                    dst.Status = "Sai";
+                else
+                    dst.Status ??= src?.Status ?? "Chưa chạy";
+            }
+
+            // 🔧 FIX BỔ SUNG: nếu AI không trả status thì gán từ TestResults
+            for (int i = 0; i < ai.TestCaseFeedback.Count; i++)
+            {
+                var src = req.TestResults.ElementAtOrDefault(i);
+                var dst = ai.TestCaseFeedback[i];
+                if (dst != null && string.IsNullOrWhiteSpace(dst.Status))
+                {
+                    dst.Status = src?.Status ?? "Chưa chạy";
                 }
             }
 
