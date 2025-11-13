@@ -14,13 +14,14 @@ namespace SubmissionService.Infrastructure
             _event = eventBus;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _event.Subscribe<TestCaseFetchEvent, RunCodeHandle>();
 
+           
 
-
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
     }
 }

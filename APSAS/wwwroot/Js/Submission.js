@@ -77,6 +77,10 @@ async function loadLanguages() {
                 document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 selectedLanguageId = lang.languageId;
+
+                if (typeof setEditorLanguage === "function") {
+                    setEditorLanguage(lang.languageName);
+                }
             });
 
             container.appendChild(btn);
@@ -94,7 +98,7 @@ async function submitCode() {
     const id = document.getElementById("assignmentId").value;
     const body = {
         assignmentId: parseInt(id),
-        sourceCode: document.getElementById("codeArea").value,
+        sourceCode: getCode(),
         languageId: selectedLanguageId
     };
 
@@ -122,7 +126,7 @@ async function runCode() {
     const id = document.getElementById("assignmentId").value;
     const body = {
         assignmentId: parseInt(id),
-        sourceCode: document.getElementById("codeArea").value,
+        sourceCode: getCode(),
         languageId: selectedLanguageId,
         stdin:""
     };
@@ -159,7 +163,7 @@ async function runWithTestcase() {
 
     const body = {
         assignmentId: parseInt(id),
-        sourceCode: document.getElementById("codeArea").value,
+        sourceCode: getCode(),
         languageId: selectedLanguageId,
         stdin: testcaseExample
     };

@@ -65,15 +65,16 @@ builder.Services.AddAuthorization();
 
 //
 
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
-       new ConnectionFactory()
-       {
-           HostName = "localhost", // 
-           Port = 5672,            // 
-           UserName = "guest",     //
-           Password = "guest"      // 
-       }
-);
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"] ?? "localhost",
+        UserName = builder.Configuration["RabbitMQ:UserName"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Password"] ?? "guest",
+        Port = int.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672")
+    });
 
 
 
@@ -94,7 +95,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    //db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 app.MapControllers();

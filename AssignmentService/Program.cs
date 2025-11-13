@@ -47,7 +47,6 @@ builder.Services.AddSingleton<IConnectionFactory>(sp =>
 
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 // dang ki rabbit mq
-builder.Services.AddSingleton<RabbitMQEventBus>();
 builder.Services.AddHostedService<RabbitMqSubscriberService>();
 
 
@@ -67,8 +66,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOptions?.Issuer,
-            ValidAudience = jwtOptions?.Audience,
+            ValidIssuer = jwtOptions!.Issuer,
+            ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SecretKey??""))
         };
     });
@@ -91,11 +90,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AssignmentDbContext>();
-    db.Database.Migrate(); // 
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<AssignmentDbContext>();
+//    db.Database.Migrate(); // 
+//}
 
 
 app.Run();

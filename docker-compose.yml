@@ -15,7 +15,12 @@ services:
     networks:
       - apsas-net
     restart: unless-stopped
-  
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   sqlserver: 
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: apsas-db
@@ -29,17 +34,64 @@ services:
     networks:
       - apsas-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'YourStrong!Passw0rd' -C -Q 'SELECT 1' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
 
+  apsas:
+    image: apsas
+    container_name: apsas
+    ports:
+      - "5261:5261"
+    depends_on:
+      - user-service
+      - assignment-service
+      - submission-service
+      - feedback-service
+      - notification-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5261
+      - Gateway__DefaultGateway=Gateway/ocelotdocker.json
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
+  user-service:
+    image: user-service
+    container_name: user-service
+    ports:
+      - "5239:5239"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5239
+      - ConnectionStrings__DefaultConnection=Server=apsas-db;Database=Users;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
+# Assignment Service
   assignment-service:
-    build: 
-      context: .
-      dockerfile: AssignmentService/Dockerfile 
+    image: assignment-service
     container_name: assignment-service
     ports:
       - "5267:5267"
     depends_on:
-      - sqlserver
-      - rabbitmq
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5267
@@ -49,6 +101,73 @@ services:
       - RabbitMQ__Password=guest
       - RabbitMQ__Port=5672
     networks: 
+      - apsas-net
+    restart: unless-stopped
+
+# Submission Service
+  submission-service:
+    image: submission-service
+    container_name: submission-service
+    ports:
+      - "5090:5090"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5090
+      - ConnectionStrings__DefaultConnection=Server=apsas-db;Database=Submission;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
+  feedback-service:
+    image: feedback-service
+    container_name: feedback-service
+    ports:
+      - "5064:5064"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5064
+      - ConnectionStrings__Default=Server=apsas-db;Database=Feedback;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
+  notification-service:
+    image: notification-service
+    container_name: notification-service
+    ports:
+      - "5216:5216"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5216
+      - ConnectionStrings__Default=Server=apsas-db;Database=Notification;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks:
       - apsas-net
     restart: unless-stopped
 

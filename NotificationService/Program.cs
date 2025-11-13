@@ -27,7 +27,7 @@ builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddHostedService<NotificationCreatedSubscriberService>();
 builder.Services.AddTransient<NotificationEventHandler>();
 builder.Services.AddSignalR();
-builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
+//builder.Services.AddTransient<IEventHandler<DeadlineNotification>, DeadlineNotificationHandler>();
 //builder.Services.AddHostedService<NotificationBackgroundWorker>();
 
 
@@ -59,15 +59,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
-       new ConnectionFactory()
-       {
-           HostName = "localhost", // 
-           Port = 5672,            // 
-           UserName = "guest",     //
-           Password = "guest"      // 
-       }
-);
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"] ?? "localhost",
+        UserName = builder.Configuration["RabbitMQ:UserName"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Password"] ?? "guest",
+        Port = int.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672")
+    });
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowGateway", policy =>
@@ -89,11 +90,11 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//    db.Database.EnsureCreated();
+//}
 
 if (app.Environment.IsDevelopment())
 {
@@ -108,5 +109,11 @@ app.UseCors("AllowGateway");
 app.UseAuthorization();
 app.MapHub<NotificationHub>("/notificationhub");
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); // 
+}
 
 app.Run();

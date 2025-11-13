@@ -202,6 +202,21 @@ pre {
     font-family: "Consolas", monospace;
     font-size: 0.9rem;
 }
+    /* ========== CODE BLOCK ========== */
+    pre.code-block {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        font-family: "Consolas", monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap; /* Giữ format, nhưng cho phép xuống dòng khi dài */
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 600px) {

@@ -94,11 +94,21 @@ namespace ShareLibrary
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    await ProcessEvent(eventName, message);
+                    try
+                    {
+                        await ProcessEvent(eventName, message);
+                        _channel.BasicAck(ea.DeliveryTag, multiple: false); // ✅ Xác nhận đã xử lý thành công
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Lỗi xử lý event {eventName}: {ex.Message}");
+                        // Nếu muốn, có thể requeue message:
+                        // _channel.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
+                    }
                 };
 
                 _channel.BasicConsume(queue: eventName,
-                                     autoAck: true,
+                                     autoAck: false,
                                      consumer: consumer);
             }
 

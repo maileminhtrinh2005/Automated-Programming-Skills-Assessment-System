@@ -15,12 +15,13 @@ namespace NotificationService.Infrastructure
             _eventBus = eventBus;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
            
             _eventBus.Subscribe<FeedbackGeneratedEvent, NotificationEventHandler>();
             Console.WriteLine("[NotificationService] ✅ Subscribed to FeedbackGeneratedEvent & FeedbackReviewedEvent");
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
     }
 }

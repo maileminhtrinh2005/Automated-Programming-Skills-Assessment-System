@@ -7,30 +7,31 @@ using Microsoft.IdentityModel.Tokens;
 using UserService.Application.Interface;
 using UserService.Infrastructure;
 using System.Text;
+using UserService.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// C?u hình RabbitMQ t? appsettings.json
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
-       new ConnectionFactory()
-       {
-           HostName = "localhost", // 
-           Port = 5672,            // 
-           UserName = "guest",     //
-           Password = "guest"      // 
-       }
-);
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"] ?? "localhost",
+        UserName = builder.Configuration["RabbitMQ:UserName"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Password"] ?? "guest",
+        Port = int.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672")
+    });
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddSingleton<RabbitMQEventBus>();
 
-// L?y c?u hình JWT t? appsettings.json
+
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JwtOptions"));
 
-// ??ng ký JwtService ?? Inject vào controller
+
 builder.Services.AddSingleton<IJwtService, JwtService>();
 
-// ? C?u hình Authentication dùng JWT
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -96,5 +97,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<UserAppDbContext>();
+//    db.Database.Migrate(); // 
+//    if (!db.role.Any())
+//    {
+//        db.role.AddRange(
+//            new Role { RoleName = "Admin", Description = "Qu?n tr? h? th?ng" },
+//            new Role { RoleName = "Lecturer", Description ="Gi?ng viên" },
+//            new Role { RoleName ="Student", Description = "Sinh viên"}
+//        );
+//        db.SaveChanges();
+//    }
+//}
 
 app.Run();

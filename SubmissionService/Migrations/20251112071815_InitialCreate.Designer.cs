@@ -12,8 +12,8 @@ using SubmissionService.Infrastructure.Persistence;
 namespace SubmissionService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251030145100_ReSyncSchema")]
-    partial class ReSyncSchema
+    [Migration("20251112071815_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

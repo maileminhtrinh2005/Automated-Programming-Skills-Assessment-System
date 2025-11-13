@@ -4,42 +4,42 @@ using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 //--------------------------------------------------------------------------------------------------------------
-var gatewayFolder = Path.Combine(Directory.GetCurrentDirectory(), "Gateway");
-var ocelotFiles = Directory.GetFiles(gatewayFolder, "*.json", SearchOption.TopDirectoryOnly)
-                           .Where(f => !f.EndsWith("ocelot.json")); // 
+//var gatewayFolder = Path.Combine(Directory.GetCurrentDirectory(), "Gateway");
+//var ocelotFiles = Directory.GetFiles(gatewayFolder, "*.json", SearchOption.TopDirectoryOnly)
+//                           .Where(f => !f.EndsWith("ocelot.json")); // 
 
-var allRoutes = new JArray();
+//var allRoutes = new JArray();
 
-foreach (var file in ocelotFiles)
-{
-    // var json = JObject.Parse(File.ReadAllText(file));
-    //   if (json["Routes"] is JArray routes)
-    //    allRoutes.Merge(routes);
-    try
-    {
-        var json = JObject.Parse(File.ReadAllText(file));
-        if (json["Routes"] is JArray routes)
-            allRoutes.Merge(routes);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Lỗi đọc file {file}: {ex.Message}");
-    }
+//foreach (var file in ocelotFiles)
+//{
+//    // var json = JObject.Parse(File.ReadAllText(file));
+//    //   if (json["Routes"] is JArray routes)
+//    //    allRoutes.Merge(routes);
+//    try
+//    {
+//        var json = JObject.Parse(File.ReadAllText(file));
+//        if (json["Routes"] is JArray routes)
+//            allRoutes.Merge(routes);
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"❌ Lỗi đọc file {file}: {ex.Message}");
+//    }
 
-}
+//}
 
-// 
-var uniqueRoutes = allRoutes
-    .GroupBy(r => r["UpstreamPathTemplate"]?.ToString())
-    .Select(g => g.First());
+//// 
+//var uniqueRoutes = allRoutes
+//    .GroupBy(r => r["UpstreamPathTemplate"]?.ToString())
+//    .Select(g => g.First());
 
-var mergedConfig = new JObject
-{
-    ["Routes"] = new JArray(uniqueRoutes),
-    ["GlobalConfiguration"] = JObject.FromObject(new { BaseUrl = "http://localhost:5261" })
-};
+//var mergedConfig = new JObject
+//{
+//    ["Routes"] = new JArray(uniqueRoutes),
+//    ["GlobalConfiguration"] = JObject.FromObject(new { BaseUrl = "http://localhost:5261" })
+//};
 
-File.WriteAllText(Path.Combine(gatewayFolder, "ocelot.json"), mergedConfig.ToString());
+//File.WriteAllText(Path.Combine(gatewayFolder, "ocelot.json"), mergedConfig.ToString());
 //------------------------------------------------------------------------------------------------------------------
 
 // Add services to the container.

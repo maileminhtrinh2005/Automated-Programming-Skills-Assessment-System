@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>Online Code</title>
     <link rel="stylesheet" href="Css/Submission.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 </head>
 <body>
     <h2>Online Code</h2>
@@ -29,7 +30,7 @@
     <div class="workspace">
         <!-- Khung bên trái: code -->
         <div class="editor">
-            <textarea id="codeArea" rows="18" placeholder="Nhập mã nguồn tại đây..."></textarea>
+            <div id="editor" style="height: 400px; border: 1px solid #ccc; border-radius: 6px;"></div>
         </div>
 
 
@@ -45,6 +46,46 @@
         <button onclick="submitCode()">✅ Submit</button>
     </div>
 
+
+
+    <script>
+        let editor; // để dùng lại trong JS
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: "// Viết code của bạn tại đây\n",
+                language: "c", // mặc định, có thể đổi sang 'cpp', 'python', ...
+                theme: "vs-light",
+                fontSize: 14,
+                automaticLayout: true,
+                minimap: { enabled: false },
+                suggestOnTriggerCharacters: true,   // gợi ý khi gõ ký tự đặc biệt
+                quickSuggestions: { other: true, comments: false, strings: true }, // gợi ý ngay khi gõ
+                parameterHints: { enabled: true },
+            });
+        });
+
+
+        function getCode() {
+            return editor ? editor.getValue() : "";
+        }
+
+        function setEditorLanguage(lang) {
+            if (!editor) return;
+            const langMap = {
+                "c": "c", "cpp": "cpp", "python": "python",
+                "java": "java", "javascript": "javascript", "c#": "csharp"
+            };
+            monaco.editor.setModelLanguage(editor.getModel(), langMap[lang.toLowerCase()] || "plaintext");
+        }
+
+    </script>
+
+
     <script src="Js/Submission.js"></script>
+
+
+
+
 </body>
 </html>
