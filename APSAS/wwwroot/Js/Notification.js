@@ -7,7 +7,9 @@ const notificationsDiv = document.getElementById("notifications");
 const badge = document.getElementById("badge");
 const bell = document.getElementById("bell");
 const sound = document.getElementById("notifSound");
+
 let count = 0;
+let currentGroup = null;
 
 // =============================
 // ⚙️ KIỂM TRA TRUY CẬP
@@ -25,19 +27,18 @@ function checkAccess() {
 // 📩 HIỂN THỊ THÔNG BÁO
 // =============================
 function addNotification(id, title, message, time) {
-    // Xóa thông báo "Không có" nếu nó đang tồn tại
     const noNotificationMsg = document.getElementById("noNotificationMsg");
     if (noNotificationMsg) noNotificationMsg.remove();
 
     const div = document.createElement("div");
     div.className = "notification";
-    div.setAttribute("data-id", id);
+    div.dataset.id = id;
 
     div.innerHTML = `
-      <b>${title}</b><br>
-      <p>${(message ?? "(Không có nội dung)").replace(/\n/g, "<br>")}</p>
-      <time>${new Date(time).toLocaleString()}</time><br>
-      <button class="mark-btn" onclick="markAsRead('${id}', this)">✅ Đã xem</button>
+        <b>${title}</b><br>
+        <p>${(message ?? "(Không có nội dung)").replace(/\n/g, "<br>")}</p>
+        <time>${new Date(time).toLocaleString()}</time><br>
+        <button class="mark-btn" onclick="markAsRead('${id}', this)">✅ Đã xem</button>
     `;
     notificationsDiv.prepend(div);
 
@@ -57,9 +58,9 @@ const HUB_URL = "http://localhost:5216/notificationhub";
 const API_BASE = "http://localhost:5261/api/Notification";
 
 // =============================
-// ⚙️ TẠO KẾT NỐI SIGNALR
+// 🔌 KẾT NỐI SIGNALR
 // =============================
-let connection = new signalR.HubConnectionBuilder()
+const connection = new signalR.HubConnectionBuilder()
     .withUrl(HUB_URL)
     .configureLogging(signalR.LogLevel.Information)
     .withAutomaticReconnect()
@@ -68,28 +69,47 @@ let connection = new signalR.HubConnectionBuilder()
 // Nhận thông báo mới
 connection.on("NotifyNew", (dto) => {
     console.log("📩 Received notification:", dto);
-    const id = dto.id ?? dto.Id ?? crypto.randomUUID();
-    const title = dto.title ?? dto.Title ?? "(Không có tiêu đề)";
-    const message = dto.message ?? dto.Message ?? "(Không có nội dung)";
-    const time = dto.createdAtUtc ?? dto.CreatedAtUtc ?? new Date().toISOString();
+    const id = dto.id ?? crypto.randomUUID();
+    const title = dto.title ?? "(Không có tiêu đề)";
+    const message = dto.message ?? "(Không có nội dung)";
+    const time = dto.createdAtUtc ?? new Date().toISOString();
     addNotification(id, title, message, time);
 });
 
 // =============================
+// 🔌 JOIN GROUP THEO USERID
+// =============================
+async function joinSignalRGroup(userId) {
+    if (!userId) return;
+    if (currentGroup === userId) return; // đã join
+
+    if (connection.state === signalR.HubConnectionState.Connected) {
+        await connection.stop();
+    }
+
+    await connection.start();
+    await connection.invoke("JoinGroup", userId.toString());
+    currentGroup = userId;
+    console.log(`✅ Joined SignalR group by userId ${userId}`);
+
+    await loadUnreadNotifications(userId);
+}
+
+// =============================
 // 📤 LOAD THÔNG BÁO CHƯA ĐỌC
 // =============================
-async function loadUnreadNotifications() {
-    const studentId = localStorage.getItem("studentId");
-    if (!studentId) return console.warn("⚠️ Không có studentId!");
+async function loadUnreadNotifications(userId) {
+    if (!userId) return console.warn("⚠️ Không có userId!");
 
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/unread?studentId=${studentId}`, {
+        const res = await fetch(`${API_BASE}/unread?userId=${userId}`, {
             headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
 
+        if (!res.ok) throw new Error(`Server error ${res.status}`);
         const data = await res.json();
+
         notificationsDiv.innerHTML = "";
         count = 0;
 
@@ -118,6 +138,7 @@ async function markAsRead(id, btn) {
             method: "POST",
             headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
+
         if (res.ok) {
             btn.parentElement.remove();
             count--;
@@ -132,12 +153,14 @@ async function markAsRead(id, btn) {
     }
 }
 
+// =============================
 // ✅ MARK ALL
+// =============================
 document.getElementById("markAllBtn").addEventListener("click", async () => {
-    const token = localStorage.getItem("token");
     const all = document.querySelectorAll(".notification");
     if (!all.length) return alert("✅ Không còn thông báo chưa đọc.");
 
+    const token = localStorage.getItem("token");
     const ids = Array.from(all).map(n => n.dataset.id);
 
     try {
@@ -147,12 +170,13 @@ document.getElementById("markAllBtn").addEventListener("click", async () => {
                 headers: token ? { "Authorization": `Bearer ${token}` } : {}
             });
         }
+
         notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
         count = 0;
         badge.textContent = 0;
         badge.style.display = 'none';
     } catch (err) {
-        console.error("❌ Lỗi khi đánh dấu đã đọc tất cả:", err);
+        console.error("❌ Lỗi khi mark all:", err);
     }
 });
 
@@ -176,30 +200,11 @@ document.addEventListener("click", (event) => {
 window.addEventListener("DOMContentLoaded", async () => {
     if (!checkAccess()) return;
 
-    // 🕓 Chờ studentId xuất hiện (tối đa 5 giây)
-    let studentId = null;
-    for (let i = 0; i < 50; i++) {
-        studentId = localStorage.getItem("studentId");
-        if (studentId) break;
-        await new Promise(r => setTimeout(r, 100));
-    }
-
-    if (!studentId) {
-        console.warn("⚠️ Không tìm thấy studentId sau khi chờ, bỏ qua SignalR join.");
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+        console.warn("⚠️ Không tìm thấy userId trong localStorage, bỏ qua SignalR join.");
         return;
     }
 
-    try {
-        if (connection.state === signalR.HubConnectionState.Connected)
-            await connection.stop();
-
-        // Kết nối lại SignalR
-        await connection.start();
-        await connection.invoke("JoinGroup", studentId);
-        console.log(`✅ Đã kết nối SignalR và join group ${studentId}`);
-
-        await loadUnreadNotifications();
-    } catch (err) {
-        console.error("❌ Không kết nối được SignalR:", err);
-    }
+    await joinSignalRGroup(userId);
 });

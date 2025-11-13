@@ -33,27 +33,30 @@ $("loginBtn").addEventListener("click", async (e) => {
         localStorage.setItem("username", data.username);
         // trinh them
         if (data.roleName === "Student") {
-            
-            let studentId =
-                data.studentId ??
-                data.id ??
-                data.userId ??
-                data.user_id ??
-                data.user?.id ??
-                data.user?.studentId;
+            let studentId = data.studentId ?? data.user?.studentId ?? data.username;
 
-            
             if (!studentId && /^\d+$/.test(data.username)) {
                 studentId = data.username;
             }
 
-            if (studentId) {
-                localStorage.setItem("studentId", studentId);
-                console.log("✅ Đã lưu studentId =", studentId);
+            if (!studentId) {
+                studentId = `pseudo_${data.username}`;
+                console.warn(`⚠️ Không thấy studentId, dùng fallback: ${studentId}`);
+            }
+
+            localStorage.setItem("studentId", studentId);
+            console.log("✅ Đã lưu studentId =", studentId);
+
+            // ===== Lưu userId thực sự (quan trọng cho SignalR) =====
+            const realId = data.id ?? data.user?.id;
+            if (!realId) {
+                console.error("❌ Không tìm thấy realId của user!");
             } else {
-                console.warn("⚠️ Không thấy studentId trong response:", data);
+                localStorage.setItem("userId", realId);
+                console.log("✅ Đã lưu userId (realId) =", realId);
             }
         }
+
         await new Promise(r => setTimeout(r, 500));
         console.log("✅ Đã lưu studentId, chuẩn bị điều hướng...");
         // hết trinh them
