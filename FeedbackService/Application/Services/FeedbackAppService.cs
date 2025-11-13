@@ -109,13 +109,13 @@ namespace FeedbackService.Application.Services
                 await SaveDetailedFeedbackAsync(req, result, ct);
 
                 // 🔹 Gửi thông báo realtime
-                await _pushService.PushFeedbackAsync(
-                    req.StudentId,
-                    req.SubmissionId,
-                    req.AssignmentTitle ?? "Bài nộp không rõ",
-                    result.Summary ?? "(Không có nội dung phản hồi)",
-                    result.Score ?? 0.0   // ✅ ép nullable
-                );
+                //await _pushService.PushFeedbackAsync(
+                //    req.StudentId,
+                //    req.SubmissionId,
+                //    req.AssignmentTitle ?? "Bài nộp không rõ",
+                ////    result.Summary ?? "(Không có nội dung phản hồi)",
+                ////    result.Score ?? 0.0   // ✅ ép nullable
+                //);
 
                 return result;
             }
@@ -130,13 +130,13 @@ namespace FeedbackService.Application.Services
             await SaveFeedbackAsync(req, result, ct);
             await SaveDetailedFeedbackAsync(req, result, ct);
 
-            await _pushService.PushFeedbackAsync(
-                req.StudentId,
-                req.SubmissionId,
-                req.AssignmentTitle ?? "Bài nộp không rõ",
-                result.Summary ?? "(Không có nội dung phản hồi)",
-                result.Score ?? 0.0    // ✅ ép nullable
-            );
+            //await _pushService.PushFeedbackAsync(
+            //    req.StudentId,
+            //    req.SubmissionId,
+            //    req.AssignmentTitle ?? "Bài nộp không rõ",
+            //    result.Summary ?? "(Không có nội dung phản hồi)",
+            //    result.Score ?? 0.0    // ✅ ép nullable
+            //);
 
             return result;
         }

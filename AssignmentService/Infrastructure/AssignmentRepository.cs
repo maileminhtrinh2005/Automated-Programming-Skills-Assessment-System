@@ -33,9 +33,10 @@ namespace AssignmentService.Infrastructure
             _context.assignments.Add(assignment);
             await _context.SaveChangesAsync();
 
-            return new AssignmentDTO
+            return new AssignmentDTO 
             {
-                AssignmentId = assignment.AssignmentId
+                AssignmentId = assignment.AssignmentId, 
+                Deadline = assignment.Deadline
             };
         }
 

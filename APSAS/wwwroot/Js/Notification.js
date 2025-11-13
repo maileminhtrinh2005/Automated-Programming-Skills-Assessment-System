@@ -1,6 +1,4 @@
-﻿// =============================
-// 🔔 BIẾN TOÀN CỤC
-// =============================
+﻿// bien toan cuc
 const bellContainer = document.getElementById("bellContainer");
 const notificationsPopup = document.getElementById("notificationsPopup");
 const notificationsDiv = document.getElementById("notifications");
@@ -11,9 +9,7 @@ const sound = document.getElementById("notifSound");
 let count = 0;
 let currentGroup = null;
 
-// =============================
-// ⚙️ KIỂM TRA TRUY CẬP
-// =============================
+//kiem tra token
 function checkAccess() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -23,12 +19,10 @@ function checkAccess() {
     return true;
 }
 
-// =============================
-// 📩 HIỂN THỊ THÔNG BÁO
-// =============================
+// hien thi thong bao moi
 function addNotification(id, title, message, time) {
-    const noNotificationMsg = document.getElementById("noNotificationMsg");
-    if (noNotificationMsg) noNotificationMsg.remove();
+    const noMsg = document.getElementById("noNotificationMsg");
+    if (noMsg) noMsg.remove();
 
     const div = document.createElement("div");
     div.className = "notification";
@@ -40,72 +34,50 @@ function addNotification(id, title, message, time) {
         <time>${new Date(time).toLocaleString()}</time><br>
         <button class="mark-btn" onclick="markAsRead('${id}', this)">✅ Đã xem</button>
     `;
-    notificationsDiv.prepend(div);
 
+    notificationsDiv.prepend(div);
     count++;
     badge.textContent = count;
-    badge.style.display = 'block';
+    badge.style.display = "block";
 
     bell.classList.add("shake");
     sound.play().catch(() => { });
     setTimeout(() => bell.classList.remove("shake"), 800);
 }
 
-// =============================
-// ⚙️ CẤU HÌNH SERVER
-// =============================
+// cau hinh SignalR va API
 const HUB_URL = "http://localhost:5216/notificationhub";
 const API_BASE = "http://localhost:5261/api/Notification";
 
-// =============================
-// 🔌 KẾT NỐI SIGNALR
-// =============================
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl(HUB_URL)
+// connect to signalR
+let connection = new signalR.HubConnectionBuilder()
+    .withUrl(HUB_URL, {
+        accessTokenFactory: () => localStorage.getItem("token")
+    })
     .configureLogging(signalR.LogLevel.Information)
     .withAutomaticReconnect()
     .build();
 
-// Nhận thông báo mới
 connection.on("NotifyNew", (dto) => {
-    console.log("📩 Received notification:", dto);
-    const id = dto.id ?? crypto.randomUUID();
-    const title = dto.title ?? "(Không có tiêu đề)";
-    const message = dto.message ?? "(Không có nội dung)";
-    const time = dto.createdAtUtc ?? new Date().toISOString();
-    addNotification(id, title, message, time);
+    console.log("📩 Realtime:", dto);
+    addNotification(
+        dto.id ?? dto.Id,
+        dto.title ?? dto.Title,
+        dto.message ?? dto.Message,
+        dto.createdAtUtc ?? dto.CreatedAtUtc
+    );
 });
 
-// =============================
-// 🔌 JOIN GROUP THEO USERID
-// =============================
-async function joinSignalRGroup(userId) {
-    if (!userId) return;
-    if (currentGroup === userId) return; // đã join
-
-    if (connection.state === signalR.HubConnectionState.Connected) {
-        await connection.stop();
-    }
-
-    await connection.start();
-    await connection.invoke("JoinGroup", userId.toString());
-    currentGroup = userId;
-    console.log(`✅ Joined SignalR group by userId ${userId}`);
-
-    await loadUnreadNotifications(userId);
-}
-
-// =============================
-// 📤 LOAD THÔNG BÁO CHƯA ĐỌC
-// =============================
-async function loadUnreadNotifications(userId) {
-    if (!userId) return console.warn("⚠️ Không có userId!");
-
+// load thong bao chua doc
+async function loadUnreadNotifications() {
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/unread?userId=${userId}`, {
-            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+
+        const res = await fetch(`${API_BASE}/unread`, {
+            headers: { "Authorization": `Bearer ${token}` }
         });
+
+        if (!res.ok) throw new Error("Lỗi API unread");
 
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         const data = await res.json();
@@ -113,98 +85,99 @@ async function loadUnreadNotifications(userId) {
         notificationsDiv.innerHTML = "";
         count = 0;
 
-        if (!data.length) {
-            notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
-            badge.textContent = 0;
-            badge.style.display = 'none';
+        if (data.length === 0) {
+            notificationsDiv.innerHTML = `<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>`;
+            badge.style.display = "none";
             return;
         }
 
         data.forEach(n => addNotification(n.id, n.title, n.message, n.createdAtUtc));
-        console.log(`📬 Loaded ${data.length} unread notifications`);
+
     } catch (err) {
         console.error("❌ Lỗi load unread:", err);
-        notificationsDiv.innerHTML = '<p id="noNotificationMsg">Lỗi khi tải thông báo.</p>';
     }
 }
 
-// =============================
-// ✅ MARK AS READ
-// =============================
+// xem thong bao
 async function markAsRead(id, btn) {
     try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/markasread?id=${id}`, {
+
+        await fetch(`${API_BASE}/markasread?id=${id}`, {
             method: "POST",
-            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (res.ok) {
-            btn.parentElement.remove();
-            count--;
-            badge.textContent = Math.max(count, 0);
-            if (count === 0) {
-                badge.style.display = 'none';
-                notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
-            }
+        const div = btn.closest(".notification");
+        if (div) div.remove();
+
+        count--;
+        badge.textContent = Math.max(count, 0);
+
+        if (count <= 0) {
+            badge.style.display = "none";
+            notificationsDiv.innerHTML =
+                '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
+
         }
     } catch (err) {
-        console.error("❌ Lỗi khi markAsRead:", err);
+        console.error("❌ markAsRead error:", err);
     }
 }
 
-// =============================
-// ✅ MARK ALL
-// =============================
+
 document.getElementById("markAllBtn").addEventListener("click", async () => {
     const all = document.querySelectorAll(".notification");
-    if (!all.length) return alert("✅ Không còn thông báo chưa đọc.");
 
-    const token = localStorage.getItem("token");
-    const ids = Array.from(all).map(n => n.dataset.id);
 
-    try {
-        for (const id of ids) {
-            await fetch(`${API_BASE}/markasread?id=${id}`, {
-                method: "POST",
-                headers: token ? { "Authorization": `Bearer ${token}` } : {}
-            });
-        }
-
-        notificationsDiv.innerHTML = '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
-        count = 0;
-        badge.textContent = 0;
-        badge.style.display = 'none';
-    } catch (err) {
-        console.error("❌ Lỗi khi mark all:", err);
+    if (all.length === 0) {
+        alert("Không còn thông báo chưa đọc.");
+        return;
     }
+
+    for (const n of all) {
+        const id = n.dataset.id;
+        await fetch(`${API_BASE}/markasread?id=${id}`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        n.remove();
+    }
+
+    count = 0;
+    badge.style.display = "none";
+    notificationsDiv.innerHTML =
+        '<p id="noNotificationMsg">Không có thông báo chưa đọc.</p>';
 });
 
-// =============================
-// 🧭 LOGIC MỞ/ĐÓNG POPUP
-// =============================
-bell.addEventListener("click", (event) => {
-    event.stopPropagation();
+// pop up cai chuong
+bell.addEventListener("click", (e) => {
+    e.stopPropagation();
     notificationsPopup.classList.toggle("visible");
 });
 
-document.addEventListener("click", (event) => {
-    if (notificationsPopup.classList.contains("visible") && !bellContainer.contains(event.target)) {
+document.addEventListener("click", (e) => {
+    if (notificationsPopup.classList.contains("visible") &&
+        !bellContainer.contains(e.target)) {
         notificationsPopup.classList.remove("visible");
     }
 });
 
-// =============================
-// 🔌 AUTO KẾT NỐI KHI LOAD
-// =============================
+// auto ket noi lai neu mat ket noi
+async function startSignalR() {
+    try {
+        await connection.start();
+        console.log("🔌 SignalR connected");
+    } catch (err) {
+        console.error("❌ Cannot connect SignalR:", err);
+        setTimeout(startSignalR, 2000);
+    }
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
     if (!checkAccess()) return;
 
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-        console.warn("⚠️ Không tìm thấy userId trong localStorage, bỏ qua SignalR join.");
-        return;
-    }
 
-    await joinSignalRGroup(userId);
+    await startSignalR();
+    await loadUnreadNotifications();
 });
