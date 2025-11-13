@@ -14,7 +14,7 @@ namespace FeedbackService.Infrastructure
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //_eventBus.Subscribe<TestCaseFetchEvent, GenerateFeedbackHandler>();
+
             Console.WriteLine("[FeedbackService] Subscribed to TestCaseFetchEvent");
             //return Task.CompletedTask;
             await Task.Delay(Timeout.Infinite, stoppingToken);
