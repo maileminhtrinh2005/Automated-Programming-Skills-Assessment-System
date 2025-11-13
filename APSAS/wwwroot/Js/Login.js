@@ -31,32 +31,7 @@ $("loginBtn").addEventListener("click", async (e) => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.roleName);
         localStorage.setItem("username", data.username);
-        // trinh them
-        if (data.roleName === "Student") {
-            
-            let studentId =
-                data.studentId ??
-                data.id ??
-                data.userId ??
-                data.user_id ??
-                data.user?.id ??
-                data.user?.studentId;
-
-            
-            if (!studentId && /^\d+$/.test(data.username)) {
-                studentId = data.username;
-            }
-
-            if (studentId) {
-                localStorage.setItem("studentId", studentId);
-                console.log("✅ Đã lưu studentId =", studentId);
-            } else {
-                console.warn("⚠️ Không thấy studentId trong response:", data);
-            }
-        }
-        await new Promise(r => setTimeout(r, 500));
-        console.log("✅ Đã lưu studentId, chuẩn bị điều hướng...");
-        // hết trinh them
+       
 
         // ✅ Điều hướng theo role
         setTimeout(() => {

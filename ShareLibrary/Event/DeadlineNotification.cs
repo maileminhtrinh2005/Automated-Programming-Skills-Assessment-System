@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ShareLibrary.Event
 {
-    public class DeadlineNotification
+    public class DeadlineNotification 
     {
-        public string Message { get; set; } = string.Empty;
-        public DateTime Deadline {  get; set; }
-
+        public string Message { get; set; } = "";
+        public DateTime Deadline { get; set; }
+        
     }
 }

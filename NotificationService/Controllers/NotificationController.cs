@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Dtos;
 using NotificationService.Application.Interfaces;
 using NotificationService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Claims;
 
 namespace NotificationService.Controllers;
 
@@ -29,18 +30,40 @@ public class NotificationController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int take = 50, CancellationToken ct = default)
         => Ok(await _app.GetAllAsync(take, ct));
-    // lay tb chua doc
+
+    //  LẤY THÔNG BÁO CHƯA ĐỌC dựa vào TOKEN
+    [Authorize]
     [HttpGet("unread")]
-    public IActionResult GetUnread(int studentId)
+    public IActionResult GetUnread()
     {
+        var userIdClaim =
+            User.FindFirst("userId") ??
+            User.FindFirst("nameid") ??
+            User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null)
+            return Unauthorized(new { message = "Token không hợp lệ: không có userId." });
+
+        int userId = int.Parse(userIdClaim.Value);
+
         var unread = _db.GeneratedNotifications
-            .Where(n => n.StudentId == studentId && !n.IsRead)
+            .Where(n =>
+                (n.StudentId == userId || n.StudentId == 0) &&
+                !n.IsRead &&
+                //loai bo cac thong bao ko lien quan
+                !n.Message.Contains("Assignment:") &&
+                !n.Message.Contains("Submission:") &&
+                !n.Message.Contains("TestCases:") &&
+                !n.Message.Contains("LanguageId")
+            )
             .OrderByDescending(n => n.CreatedAtUtc)
             .ToList();
 
         return Ok(unread);
     }
-    // danh dau da doc
+
+    // ĐÁNH DẤU ĐÃ ĐỌC
+    [Authorize]
     [HttpPost("markasread")]
     public async Task<IActionResult> MarkAsRead([FromQuery] Guid id)
     {
@@ -49,6 +72,7 @@ public class NotificationController : ControllerBase
 
         if (noti == null)
             return NotFound($"Không tìm thấy thông báo với ID = {id}");
+
         noti.IsRead = true;
         _db.GeneratedNotifications.Update(noti);
         await _db.SaveChangesAsync();
@@ -56,3 +80,4 @@ public class NotificationController : ControllerBase
         return Ok(new { message = "Đã đánh dấu là đã đọc", id });
     }
 }
+
