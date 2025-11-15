@@ -190,50 +190,51 @@ async function generateProgressFeedback(studentId) {
         // 🧩 Nếu API có overallProgress thì dùng luôn
         let progressText = data.overallProgress?.trim() || "";
 
-        // 🧠 Nếu không có thì phân tích summary
         if (!progressText) {
-            // Chuẩn hóa bỏ dấu tiếng Việt
+
             const normalizeVietnamese = str => str
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .toLowerCase();
 
-            const summaryNorm = normalizeVietnamese(summary);
+            const s = normalizeVietnamese(summary);
 
-            if (
-                summaryNorm.includes("tot") ||
-                summaryNorm.includes("chinh xac") ||
-                summaryNorm.includes("dung") ||
-                summaryNorm.includes("hoat dong dung") ||
-                summaryNorm.includes("thanh cong") ||
-                summaryNorm.includes("dat yeu cau") ||
-                summaryNorm.includes("dat diem toi da") ||
-                summaryNorm.includes("tuyet doi") ||
-                summaryNorm.includes("hoan thanh") ||
-                summaryNorm.includes("nam vung") ||
-                summaryNorm.includes("ap dung tot") ||
-                summaryNorm.includes("xuat sac")
-            ) {
+            const positiveWords = [
+                "tot", "hieu qua", "on dinh", "chinh xac hoan toan",
+                "chinh xac 100", "dung hoan toan", "lam tot", "nam vung",
+                "tien bo ro ret", "ap dung tot", "hoan thanh tot"
+            ];
+
+            const mediumWords = [
+                "can cai thien", "chua toi uu", "chua hoan thien",
+                "thieu", "gap kho khan", "can bo sung", "mot phan dung"
+            ];
+
+            const negativeWords = [
+                "sai", "khong dung", "chua dung", "loi",
+                "kem", "yeu", "chua hieu", "sai nhieu",
+                "sai hoan toan", "khong chinh xac", "te"
+            ];
+
+            let pos = positiveWords.some(w => s.includes(w));
+            let med = mediumWords.some(w => s.includes(w));
+            let neg = negativeWords.some(w => s.includes(w));
+
+            // ★ QUY TẮC ƯU TIÊN
+            if (pos && !neg && !med) {
                 progressText = "Đạt tiến bộ tốt";
             }
-            else if (
-                summaryNorm.includes("cai thien") ||
-                summaryNorm.includes("chua hoan thien") ||
-                summaryNorm.includes("thieu") ||
-                summaryNorm.includes("can xu ly") ||
-                summaryNorm.includes("mot phan") ||
-                summaryNorm.includes("gan dat") ||
-                summaryNorm.includes("can nang cao") ||
-                summaryNorm.includes("chua toi uu") ||
-                summaryNorm.includes("loi nho") ||
-                summaryNorm.includes("han che")
-            ) {
+            else if ((pos && med) || med) {
                 progressText = "Có tiến bộ nhưng cần cải thiện";
             }
-            else {
+            else if (neg && !pos) {
                 progressText = "Không có tiến bộ";
             }
+            else {
+                progressText = "Có tiến bộ nhưng cần cải thiện"; // fallback
+            }
         }
+
 
         // 🚀 Cập nhật UI
         const prog = $("progressText");
@@ -360,32 +361,30 @@ async function generateDetailFeedback(submissionId) {
         $("summaryText").textContent = summary;
         $("manualFeedback").value = summary;
 
-        // 🚀 Tự động xác định tiến bộ
-        const summaryLower = summary.toLowerCase();
+        // === XÁC ĐỊNH TIẾN BỘ THEO TỶ LỆ TEST PASS ===
         const prog = $("progressText");
-        let progressLabel = "";
         prog.className = "";
 
-        if (
-            summaryLower.includes("tốt") ||
-            summaryLower.includes("chính xác") ||
-            summaryLower.includes("đúng") ||
-            summaryLower.includes("hoạt động đúng") ||
-            summaryLower.includes("đạt yêu cầu") ||
-            summaryLower.includes("thành công")
-        ) {
+        // Lấy danh sách test case đã chuẩn hóa
+        const total = normalizedResults.length;
+        const passCount = normalizedResults.filter(r => r.status === "Đúng").length;
+
+        const ratio = total > 0 ? passCount / total : 0;
+
+        let progressLabel = "";
+
+        // >= 80% pass → tiến bộ tốt
+        if (ratio >= 0.8) {
             progressLabel = "Đạt tiến bộ tốt";
             prog.classList.add("progress-good");
-        } else if (
-            summaryLower.includes("cải thiện") ||
-            summaryLower.includes("chưa hoàn thiện") ||
-            summaryLower.includes("thiếu") ||
-            summaryLower.includes("cần xử lý") ||
-            summaryLower.includes("một phần")
-        ) {
+        }
+        // 30% - 79% pass → cần cải thiện
+        else if (ratio >= 0.3) {
             progressLabel = "Có tiến bộ nhưng cần cải thiện";
             prog.classList.add("progress-medium");
-        } else {
+        }
+        // < 30% → không có tiến bộ
+        else {
             progressLabel = "Không có tiến bộ";
             prog.classList.add("progress-bad");
         }
