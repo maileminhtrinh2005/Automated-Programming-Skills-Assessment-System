@@ -182,13 +182,13 @@ async function generateProgressFeedback(studentId) {
 
         // ======== HIỂN THỊ LÊN GIAO DIỆN ========
         $("feedbackCard").style.display = "block";
-
-        const summary = data.summary || "(Không có nhận xét)";
+        const first = Array.isArray(data) ? data[0] : data;
+        const summary = first?.summary || "(Không có nhận xét)";
         $("summaryText").textContent = summary;
         $("manualFeedback").value = summary;
 
         // 🧩 Nếu API có overallProgress thì dùng luôn
-        let progressText = data.overallProgress?.trim() || "";
+        let progressText = first?.overallProgress?.trim() || "";
 
         if (!progressText) {
 
