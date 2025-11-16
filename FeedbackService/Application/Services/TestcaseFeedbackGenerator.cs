@@ -37,11 +37,11 @@ namespace FeedbackService.Application.Services
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("Thiếu GEMINI_API_KEY.");
 
-            // 🧩 Chuẩn hóa dữ liệu test case
+
             var testResultsJson = JsonSerializer.Serialize(req.TestResults,
                 new JsonSerializerOptions { WriteIndented = true });
 
-            // 🧠 Prompt gửi sang Gemini
+   
             var body = new
             {
                 system_instruction = new
@@ -78,7 +78,6 @@ namespace FeedbackService.Application.Services
                 generationConfig = new { response_mime_type = "application/json" }
             };
 
-            // 📤 Gọi Gemini API
             using var msg = new HttpRequestMessage(HttpMethod.Post, $"v1beta/{MODEL}:generateContent")
             {
                 Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
@@ -91,7 +90,7 @@ namespace FeedbackService.Application.Services
             if (!res.IsSuccessStatusCode)
                 throw new HttpRequestException($"Gemini error {res.StatusCode}: {payload}");
 
-            // 🧩 Phân tích phản hồi từ Gemini
+
             using var doc = JsonDocument.Parse(payload);
             var text = doc.RootElement.GetProperty("candidates")[0]
                 .GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
@@ -108,7 +107,7 @@ namespace FeedbackService.Application.Services
                 };
             }
 
-            // 🩵 Nếu không có testCaseFeedback → tạo mặc định
+ 
             if (ai.TestCaseFeedback == null || ai.TestCaseFeedback.Count == 0)
             {
                 ai.TestCaseFeedback = req.TestResults.Select((t, i) => new TestCaseFeedbackDto
@@ -124,7 +123,6 @@ namespace FeedbackService.Application.Services
             Console.WriteLine("✅ [Gemini] Sinh nhận xét chi tiết hoàn tất!");
             Console.WriteLine(text);
 
-            // 🩵 Đồng bộ thông tin input/output/status
             for (int i = 0; i < ai.TestCaseFeedback.Count; i++)
             {
                 var src = req.TestResults.ElementAtOrDefault(i);
@@ -146,7 +144,7 @@ namespace FeedbackService.Application.Services
                     dst.Status ??= src?.Status ?? "Chưa chạy";
             }
 
-            // 🔧 FIX BỔ SUNG: nếu AI không trả status thì gán từ TestResults
+            
             for (int i = 0; i < ai.TestCaseFeedback.Count; i++)
             {
                 var src = req.TestResults.ElementAtOrDefault(i);

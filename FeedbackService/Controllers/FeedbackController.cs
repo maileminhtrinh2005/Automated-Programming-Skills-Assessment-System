@@ -27,7 +27,7 @@ public class FeedbackController : ControllerBase
     {
         try
         {
-            // ❗ Không có test case -> FeedbackAppService sẽ tự hiểu là chấm tổng quát
+
             dto.TestResults = null;
 
             var result = await _ai.GenerateAsync(dto, Prompt.ProgressFeedback, ct);
@@ -39,7 +39,7 @@ public class FeedbackController : ControllerBase
         }
     }
 
-    // ✍️ [2] FEEDBACK THỦ CÔNG — giảng viên nhập tay
+
     [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("manual")]// luu db
     public async Task<IActionResult> Manual([FromBody] ManualFeedbackRequestDto dto, CancellationToken ct)
@@ -55,7 +55,7 @@ public class FeedbackController : ControllerBase
         }
     }
     [Authorize(Roles = "Lecturer, Admin")]
-    [HttpPost("manual/sendreviewed")]// gui feedback da duoc review
+    [HttpPost("manual/sendreviewed")]
     public async Task<IActionResult> SendReviewedFeedback([FromBody] ManualFeedbackDto dto)
     {
         try
@@ -76,7 +76,7 @@ public class FeedbackController : ControllerBase
     {
         try
         {
-            // 🔹 Kiểm tra dữ liệu đầu vào
+    
             if (req.StudentId <= 0)
                 return BadRequest("Thiếu StudentId.");
             if (string.IsNullOrWhiteSpace(req.AssignmentTitle))
@@ -86,12 +86,11 @@ public class FeedbackController : ControllerBase
             if (string.IsNullOrWhiteSpace(req.SourceCode))
                 return BadRequest("Thiếu SourceCode.");
 
-            // ✅ Chọn prompt phù hợp
+
             string prompt = (req.TestResults != null && req.TestResults.Count > 0)
                 ? Prompt.ProgressFeedback
                 : Prompt.GeneralFeedback;
 
-            // ✅ Gọi AI sinh phản hồi (Gemini)
             var result = await _ai.GenerateAsync(req, prompt, ct);
 
             return Ok(result);
@@ -111,7 +110,7 @@ public class FeedbackController : ControllerBase
         var result = await _ai.GenerateBulkFeedbackAsync(request, ct); //
         return Ok(result);
     }
-    // feedback chi tiết 
+
     [Authorize(Roles = "Lecturer, Admin")]
     [HttpPost("testcasesubmit")]
     public async Task<IActionResult> GenerateDetailed([FromBody] FeedbackRequestDto req, CancellationToken ct)
@@ -124,7 +123,7 @@ public class FeedbackController : ControllerBase
             if (req.TestResults == null || req.TestResults.Count == 0)
                 return BadRequest("Thiếu dữ liệu test case.");
 
-            // Gọi AI sinh feedback chi tiết và lưu vào DB
+
             var result = await _ai.GenerateAsync(req, Prompt.PerTestcaseFeedback, ct);
 
             return Ok(result);

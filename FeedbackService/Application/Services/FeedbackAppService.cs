@@ -37,9 +37,7 @@ namespace FeedbackService.Application.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        // =====================================
-        // 🧠 Sinh nhận xét (AI) + Lưu DB chi tiết
-        // =====================================
+        
         public async Task<FeedbackResponseDto> GenerateAsync(
             FeedbackRequestDto req,
             string systemPrompt,
@@ -47,7 +45,7 @@ namespace FeedbackService.Application.Services
         {
             FeedbackResponseDto result;
 
-            // Trường hợp không có test case → nhận xét tổng quát
+          
             if (req.TestResults is null || req.TestResults.Count == 0)
             {
                 var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
@@ -99,51 +97,35 @@ namespace FeedbackService.Application.Services
 
                 result = ai ?? new FeedbackResponseDto { Summary = "Không đọc được phản hồi từ AI." };
 
-                // ✅ đảm bảo Score không null
+            
                 result.Score ??= 0.0;
                 result.RubricBreakdown ??= new List<RubricItemDto>();
                 result.TestCaseFeedback = null;
 
-                // 🔹 Lưu cả GeneratedFeedback và DetailedFeedback
+             
                 await SaveFeedbackAsync(req, result, ct);
                 await SaveDetailedFeedbackAsync(req, result, ct);
 
-                // 🔹 Gửi thông báo realtime
-                //await _pushService.PushFeedbackAsync(
-                //    req.StudentId,
-                //    req.SubmissionId,
-                //    req.AssignmentTitle ?? "Bài nộp không rõ",
-                ////    result.Summary ?? "(Không có nội dung phản hồi)",
-                ////    result.Score ?? 0.0   // ✅ ép nullable
-                //);
+          
 
                 return result;
             }
 
-            // Có test case → dùng generator riêng
+         
             result = await _generator.GenerateAsync(req, ct);
 
-            // ✅ đảm bảo Score không null
+           
             result.Score ??= 0.0;
 
-            // 🔹 Lưu cả hai bảng
+         
             await SaveFeedbackAsync(req, result, ct);
             await SaveDetailedFeedbackAsync(req, result, ct);
 
-            //await _pushService.PushFeedbackAsync(
-            //    req.StudentId,
-            //    req.SubmissionId,
-            //    req.AssignmentTitle ?? "Bài nộp không rõ",
-            //    result.Summary ?? "(Không có nội dung phản hồi)",
-            //    result.Score ?? 0.0    // ✅ ép nullable
-            //);
+        
 
             return result;
         }
 
-        // =====================================
-        // 💾 Lưu feedback tổng quát (GeneratedFeedbacks)
-        // =====================================
         private async Task SaveFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
         {
             var record = new GeneratedFeedbackRecord
@@ -151,7 +133,7 @@ namespace FeedbackService.Application.Services
                 StudentId = req.StudentId,
                 AssignmentTitle = req.AssignmentTitle,
                 Summary = result.Summary ?? "(no summary)",
-                // ✅ Ép kiểu rõ ràng
+              
                 Score = (int?)Math.Round(result.Score ?? 0),
                 RawJson = JsonSerializer.Serialize(result),
                 CreatedAtUtc = DateTime.UtcNow
@@ -163,9 +145,8 @@ namespace FeedbackService.Application.Services
             Console.WriteLine($"💾 [FeedbackAppService] Saved general feedback for '{req.AssignmentTitle}'.");
         }
 
-        // =====================================
-        // 💾 Lưu feedback chi tiết (DetailedFeedbacks)
-        // =====================================
+     
+        // chi tiet
         private async Task SaveDetailedFeedbackAsync(FeedbackRequestDto req, FeedbackResponseDto result, CancellationToken ct)
         {
             var detail = new DetailedFeedback
@@ -183,9 +164,7 @@ namespace FeedbackService.Application.Services
             Console.WriteLine($"💾 [FeedbackAppService] Saved detailed feedback Id={detail.Id} for student {req.StudentId}.");
         }
 
-        // =====================================
-        // 📊 Nhận xét tổng quát (Bulk)
-        // =====================================
+  // tong quat
         public async Task<object> GenerateBulkFeedbackAsync(BulkFeedbackRequestDto dto, CancellationToken ct)
         {
             if (dto == null || dto.Submissions == null || dto.Submissions.Count == 0)
@@ -256,7 +235,7 @@ namespace FeedbackService.Application.Services
                 Summary = summary,
                 Score = 0,
                 RawJson = text!,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = DateTime.Now
             };
 
             _db.GeneratedFeedbacks.Add(record);

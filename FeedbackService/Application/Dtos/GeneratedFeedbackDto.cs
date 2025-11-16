@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace FeedbackService.Application.Dtos
 {
-    // DTO trả về cho frontend Feedback
     public class GeneratedFeedbackDto
     {
         public string? AssignmentTitle { get; set; }

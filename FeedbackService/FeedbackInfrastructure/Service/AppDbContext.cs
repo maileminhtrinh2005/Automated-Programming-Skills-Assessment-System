@@ -13,7 +13,7 @@ namespace FeedbackService.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder b)
         {
-            // ===== Manual Feedback =====
+    
             b.Entity<ManualFeedback>(e =>
             {
                 e.ToTable("ManualFeedbacks");
@@ -24,7 +24,7 @@ namespace FeedbackService.Infrastructure.Persistence
                 e.Property(x => x.Content).HasMaxLength(4000).IsRequired();
             });
 
-            // ===== Generated Feedback =====
+ 
             b.Entity<GeneratedFeedbackRecord>(e =>
             {
                 e.ToTable("GeneratedFeedbacks");
@@ -37,7 +37,7 @@ namespace FeedbackService.Infrastructure.Persistence
                 e.Property(x => x.CreatedAtUtc).HasDefaultValueSql("SYSUTCDATETIME()");
             });
 
-            // ===== Detailed Feedback (Bảng mới) =====
+
             b.Entity<DetailedFeedback>(e =>
             {
                 e.ToTable("DetailedFeedbacks");

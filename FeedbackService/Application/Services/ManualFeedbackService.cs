@@ -18,7 +18,7 @@ namespace FeedbackService.Application.Services
             _eventBus = eventBus;
         }
 
-        // 🧾 [1] Lưu feedback nhập tay vào DB
+
         public async Task<ManualFeedbackResponseDto> CreateAsync(ManualFeedbackRequestDto dto, CancellationToken ct = default)
         {
             var entity = new ManualFeedback
@@ -47,7 +47,7 @@ namespace FeedbackService.Application.Services
             };
         }
 
-        // 📤 [2] Gửi feedback thủ công sang NotificationService qua RabbitMQ (và lưu DB)
+  
         public async Task SendReviewedFeedbackAsync(ManualFeedbackDto dto)
         {
             Console.WriteLine("=== [FeedbackService] Preparing Manual Feedback ===");
@@ -57,7 +57,7 @@ namespace FeedbackService.Application.Services
             Console.WriteLine($"Comment: {dto.Comment}");
             Console.WriteLine("===================================================");
 
-            // 🔹 Lưu vào DB
+  
             var manualEntity = new ManualFeedback
             {
                 AssignmentTitle = dto.AssignmentTitle ?? "(Không rõ bài tập)",
@@ -71,7 +71,7 @@ namespace FeedbackService.Application.Services
 
             Console.WriteLine($"💾 [FeedbackService] Manual feedback saved (Id={manualEntity.Id})");
 
-            // 🔹 Sau đó publish sự kiện qua RabbitMQ
+
             var ev = new FeedbackGeneratedEvent
             {
                 StudentId = dto.StudentId,

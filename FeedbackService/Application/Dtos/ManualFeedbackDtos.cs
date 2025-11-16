@@ -23,7 +23,7 @@ public class ManualFeedbackDto
 {
     public int SubmissionId { get; set; }
     public int StudentId { get; set; }
-    public string AssignmentTitle { get; set; } = string.Empty; // Tên bài tập 
-    public string FeedbackText { get; set; } = string.Empty;    // Phần nhận xét chính
+    public string AssignmentTitle { get; set; } = string.Empty; 
+    public string FeedbackText { get; set; } = string.Empty;    
     public string Comment { get; set; } = string.Empty;       
 }

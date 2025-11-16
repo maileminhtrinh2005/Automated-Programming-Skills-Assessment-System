@@ -7,7 +7,7 @@ public class FeedbackRequestDto
     public string? Rubric { get; set; }
     public string SourceCode { get; set; } = string.Empty;
     public int LanguageId { get; set; }
-    public List<TestResultDto> TestResults { get; set; } = new(); // BẮT BUỘC
+    public List<TestResultDto> TestResults { get; set; } = new(); 
     public int SubmissionId { get; set; }
 }
 
@@ -28,9 +28,7 @@ public class TestcaseItem
     public string Status { get; set; } = "Unknown"; 
     public string? Input { get; set; }
     public string? ExpectedOutput { get; set; }
-    public double? Score { get; set; }
-    public string? Name { get; set; }
-    public string? Comment { get; set; }
+  
 
 }
 public class TestcaseFeedbackRequestDto
@@ -41,7 +39,7 @@ public class TestcaseFeedbackRequestDto
     public string? AssignmentTitle { get; set; }
     public List<TestcaseItem> TestResults { get; set; } = new();
     public string? SourceCode { get; set; }
-    public double? Score { get; set; }
+
 
    
 }

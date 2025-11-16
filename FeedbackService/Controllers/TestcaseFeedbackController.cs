@@ -17,7 +17,7 @@ namespace FeedbackService.Controllers
             _gen = gen;
         }
 
-        // 🧩 CHẤM CHI TIẾT — từng test case
+        // CHẤM CHI TIẾT
         [Authorize(Roles = "Lecturer, Admin")]
         [HttpPost("testcasesubmit")]
         public async Task<IActionResult> Submit([FromBody] TestcaseFeedbackRequestDto req, CancellationToken ct)
@@ -27,7 +27,7 @@ namespace FeedbackService.Controllers
                 if (req.TestResults == null || req.TestResults.Count == 0)
                     return BadRequest(new { error = "Thiếu TestResults để chấm chi tiết." });
 
-                // ✅ Gọi AI sinh nhận xét chi tiết theo Prompt.PerTestcaseFeedback
+
                 var result = await _gen.GenerateAsync(req, Prompt.PerTestcaseFeedback, ct);
 
                 return Ok(result);
