@@ -31,7 +31,6 @@ public class NotificationController : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] int take = 50, CancellationToken ct = default)
         => Ok(await _app.GetAllAsync(take, ct));
 
-    //  LẤY THÔNG BÁO CHƯA ĐỌC dựa vào TOKEN
     [Authorize]
     [HttpGet("unread")]
     public IActionResult GetUnread()

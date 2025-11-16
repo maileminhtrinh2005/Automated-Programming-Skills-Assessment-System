@@ -22,10 +22,9 @@ namespace NotificationService.Infrastructure.Handlers
         {
             Console.WriteLine("📌 [NotificationService] DeadlineNotification received!");
 
-            // ✏️ Lưu DB
             var rec = new GeneratedNotificationRecord
             {
-                StudentId = 0, // broadcast
+                StudentId = 0,
                 Title = "📘 Bài tập mới",
                 Message = $"{e.Message}\nDeadline: {e.Deadline:dd/MM/yyyy HH:mm}",
                 CreatedAtUtc = DateTime.UtcNow,
@@ -35,7 +34,7 @@ namespace NotificationService.Infrastructure.Handlers
             await _db.GeneratedNotifications.AddAsync(rec);
             await _db.SaveChangesAsync();
 
-            // 🔥 Gửi tới TẤT CẢ người dùng
+
             await _hub.Clients.All.NotifyNew(
                 new NotificationDto(rec.Id, rec.Title, rec.Message, rec.CreatedAtUtc)
             );

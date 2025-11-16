@@ -4,6 +4,9 @@ namespace FeedbackService.Application.Interfaces;
 
 public interface IFeedbackGenerator
 {
-    Task<FeedbackResponseDto> GenerateAsync(FeedbackRequestDto request, CancellationToken ct = default);
-
+    Task<FeedbackResponseDto> GenerateAsync(
+        FeedbackRequestDto req,
+        string prompt,
+        CancellationToken ct);
 }
+

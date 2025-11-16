@@ -147,6 +147,7 @@ async function openSubmissionModal(submissionId) {
 
 
 // ======== NHẬN XÉT TỔNG QUÁT ========
+
 async function generateProgressFeedback(studentId) {
     try {
         const submissions = await fetchSubmissionsByStudent(studentId);
@@ -180,73 +181,32 @@ async function generateProgressFeedback(studentId) {
         const data = await res.json();
         console.log("✅ Kết quả nhận xét tổng quát từ AI:", data);
 
-        // ======== HIỂN THỊ LÊN GIAO DIỆN ========
         $("feedbackCard").style.display = "block";
         const first = Array.isArray(data) ? data[0] : data;
+
+        // ⬅️ LẤY SUMMARY TỪ AI
         const summary = first?.summary || "(Không có nhận xét)";
         $("summaryText").textContent = summary;
         $("manualFeedback").value = summary;
 
-        // 🧩 Nếu API có overallProgress thì dùng luôn
-        let progressText = first?.overallProgress?.trim() || "";
-
-        if (!progressText) {
-
-            const normalizeVietnamese = str => str
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase();
-
-            const s = normalizeVietnamese(summary);
-
-            const positiveWords = [
-                "tot", "hieu qua", "on dinh", "chinh xac hoan toan",
-                "chinh xac 100", "dung hoan toan", "lam tot", "nam vung",
-                "tien bo ro ret", "ap dung tot", "hoan thanh tot"
-            ];
-
-            const mediumWords = [
-                "can cai thien", "chua toi uu", "chua hoan thien",
-                "thieu", "gap kho khan", "can bo sung", "mot phan dung"
-            ];
-
-            const negativeWords = [
-                "sai", "khong dung", "chua dung", "loi",
-                "kem", "yeu", "chua hieu", "sai nhieu",
-                "sai hoan toan", "khong chinh xac", "te"
-            ];
-
-            let pos = positiveWords.some(w => s.includes(w));
-            let med = mediumWords.some(w => s.includes(w));
-            let neg = negativeWords.some(w => s.includes(w));
-
-            // ★ QUY TẮC ƯU TIÊN
-            if (pos && !neg && !med) {
-                progressText = "Đạt tiến bộ tốt";
-            }
-            else if ((pos && med) || med) {
-                progressText = "Có tiến bộ nhưng cần cải thiện";
-            }
-            else if (neg && !pos) {
-                progressText = "Không có tiến bộ";
-            }
-            else {
-                progressText = "Có tiến bộ nhưng cần cải thiện"; // fallback
-            }
-        }
-
+       
+        // FE KHÔNG TỰ TÍNH NỮA → DÙNG ĐÚNG overallProgress TỪ AI
+        let progressText = first?.overallProgress?.trim() || "Không có dữ liệu tiến bộ";
 
         // 🚀 Cập nhật UI
         const prog = $("progressText");
-        prog.className = "";
+        prog.className = ""; // reset màu
 
-        if (progressText.includes("tốt"))
+        // tô màu phù hợp
+        const t = progressText.toLowerCase();
+        if (t.includes("tốt"))
             prog.classList.add("progress-good");
-        else if (progressText.includes("cải thiện"))
+        else if (t.includes("cải thiện"))
             prog.classList.add("progress-medium");
         else
             prog.classList.add("progress-bad");
 
+        // hiển thị text
         prog.textContent = progressText;
 
     } catch (err) {
@@ -254,7 +214,6 @@ async function generateProgressFeedback(studentId) {
         console.error("🔥 Chi tiết lỗi:", err);
     }
 }
-
 
 
 
@@ -361,35 +320,22 @@ async function generateDetailFeedback(submissionId) {
         $("summaryText").textContent = summary;
         $("manualFeedback").value = summary;
 
-        // === XÁC ĐỊNH TIẾN BỘ THEO TỶ LỆ TEST PASS ===
+        // ⭐ LẤY TRỰC TIẾP overallProgress TỪ AI ⭐
+        let progressText = data?.overallProgress?.trim() || "Không có dữ liệu tiến bộ";
+
         const prog = $("progressText");
         prog.className = "";
 
-        // Lấy danh sách test case đã chuẩn hóa
-        const total = normalizedResults.length;
-        const passCount = normalizedResults.filter(r => r.status === "Đúng").length;
-
-        const ratio = total > 0 ? passCount / total : 0;
-
-        let progressLabel = "";
-
-        // >= 80% pass → tiến bộ tốt
-        if (ratio >= 0.8) {
-            progressLabel = "Đạt tiến bộ tốt";
+        const t = progressText.toLowerCase();
+        if (t.includes("tốt"))
             prog.classList.add("progress-good");
-        }
-        // 30% - 79% pass → cần cải thiện
-        else if (ratio >= 0.3) {
-            progressLabel = "Có tiến bộ nhưng cần cải thiện";
+        else if (t.includes("cải thiện"))
             prog.classList.add("progress-medium");
-        }
-        // < 30% → không có tiến bộ
-        else {
-            progressLabel = "Không có tiến bộ";
+        else
             prog.classList.add("progress-bad");
-        }
 
-        prog.textContent = progressLabel;
+        prog.textContent = progressText;
+
 
         // ======== HIỂN THỊ BẢNG TEST CASE ========
         const detailSection = $("detailSection");
@@ -415,12 +361,12 @@ async function generateDetailFeedback(submissionId) {
             // Chi tiết từng test
             testFeedback.forEach((tc, i) => {
                 const status = (tc.status || "Chưa chạy").toLowerCase();
-                const emoji = status.includes("đúng")
-                    ? "✅"
-                    : status.includes("sai")
-                        ? "❌"
-                        : "⚠️";
-
+                const emoji =
+                    status.includes("đúng") || status.includes("passed")
+                        ? "✅"
+                        : status.includes("sai") || status.includes("failed")
+                            ? "❌"
+                            : "⚠️";
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${i + 1}</td>

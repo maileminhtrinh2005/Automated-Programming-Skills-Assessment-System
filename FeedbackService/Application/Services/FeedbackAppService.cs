@@ -111,10 +111,11 @@ namespace FeedbackService.Application.Services
                 return result;
             }
 
-         
-            result = await _generator.GenerateAsync(req, ct);
 
-           
+            result = await _generator.GenerateAsync(req, Prompt.PerTestcaseFeedback, ct);
+
+
+
             result.Score ??= 0.0;
 
          

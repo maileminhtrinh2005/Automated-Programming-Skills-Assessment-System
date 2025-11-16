@@ -36,7 +36,7 @@ namespace FeedbackService.Infrastructure
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public async Task<FeedbackResponseDto> GenerateAsync(FeedbackRequestDto req, CancellationToken ct = default)
+        public async Task<FeedbackResponseDto> GenerateAsync(FeedbackRequestDto req,string Prompt ,CancellationToken ct = default)
         {
             // 🔹 Lấy API key
             var apiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY")
@@ -59,13 +59,7 @@ namespace FeedbackService.Infrastructure
             {
                 parts = new[]
                 {
-                    new { text =
-                        "You are an APSAS grading assistant. Analyze ONLY the provided input data (source code, test results, and rubric). " +
-                        "Give structured, factual feedback in Vietnamese and return ONLY JSON:\n" +
-                        "{ \"summary\": string, \"score\": number, " +
-                        "\"rubricBreakdown\": [ {\"criterion\": string, \"score\": number, \"max\": number} ], " +
-                        "\"testCaseFeedback\": [ {\"name\": string, \"comment\": string} ], " +
-                        "\"suggestions\": [string], \"nextSteps\": [string] }" }
+                      new { text = Prompt }
                 }
             };
 
@@ -75,6 +69,7 @@ namespace FeedbackService.Infrastructure
                 parts = new object[]
                 {
                     new { text = $"Student: {req.StudentId}\nAssignment: {req.AssignmentTitle}\nLanguageId: {req.LanguageId}\nRubric: {req.Rubric ?? "(none)"}" },
+                    new { text = $"SCORE: {req.Score}" },
                     new { text = "SOURCE CODE:\n```" + (req.SourceCode ?? "") + "```" },
                     new { text = "TEST RESULTS:\n" + testResultsJson },
                     new { text = "Hãy đưa ra nhận xét tổng quan, điểm số và gợi ý cải thiện (JSON format như schema trên)." }
@@ -181,5 +176,7 @@ namespace FeedbackService.Infrastructure
             Suggestions = new() { "Thử gửi lại sau ít phút", "Kiểm tra kết nối mạng hoặc limit API" },
             NextSteps = new() { "Hệ thống sẽ thử lại khi AI ổn định" }
         };
+
+       
     }
 }

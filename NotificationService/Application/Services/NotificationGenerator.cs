@@ -10,9 +10,8 @@ public class NotificationGenerator : INotificationGenerator
     {
       
 
-        await Task.Delay(200, ct); // mô phỏng xử lý async
+        await Task.Delay(200, ct); 
 
-        // Tạo thông báo đơn giản dựa trên yêu cầu
         var title = $"Feedback cho bài: {req.AssignmentTitle}";
         var message = $"Sinh viên {req.StudentId} đã gửi bài.\n"
                     + $"Ngôn ngữ: {req.LanguageId}\n"

@@ -20,10 +20,10 @@ public class NotificationAppService : INotificationAppService
     public async Task<NotificationResponseDto> CreateFromFeedbackAsync(
         NotificationRequestDto req, CancellationToken ct = default)
     {
-        // 1️⃣ Gọi generator để tạo thông báo từ Feedback
+
         var result = await _generator.GenerateFromFeedbackAsync(req, ct);
 
-        // 2️⃣ Lưu record lại DB (giống FeedbackAppService)
+
         var record = new GeneratedNotificationRecord
         {
             StudentId = req.StudentId,
@@ -38,7 +38,6 @@ public class NotificationAppService : INotificationAppService
         _db.GeneratedNotifications.Add(record);
         await _db.SaveChangesAsync(ct);
 
-        // 3️⃣ Trả về DTO cho client
         return result;
     }
 

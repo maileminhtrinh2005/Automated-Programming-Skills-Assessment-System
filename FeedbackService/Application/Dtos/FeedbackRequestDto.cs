@@ -9,6 +9,7 @@ public class FeedbackRequestDto
     public int LanguageId { get; set; }
     public List<TestResultDto> TestResults { get; set; } = new(); 
     public int SubmissionId { get; set; }
+    public int? Score { get; set; }
 }
 
 public class TestResultDto
