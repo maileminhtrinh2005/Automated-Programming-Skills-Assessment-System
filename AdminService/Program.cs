@@ -23,15 +23,17 @@ builder.Services.AddCors(options =>
 
 
 
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+
 builder.Services.AddSingleton<IConnectionFactory>(sp =>
-       new ConnectionFactory()
-       {
-           HostName = "localhost", // 
-           Port = 5672,            // 
-           UserName = "guest",     //
-           Password = "guest"      // 
-       }
-);
+    new ConnectionFactory()
+    {
+        HostName = builder.Configuration["RabbitMQ:HostName"] ?? "localhost",
+        UserName = builder.Configuration["RabbitMQ:UserName"] ?? "guest",
+        Password = builder.Configuration["RabbitMQ:Password"] ?? "guest",
+        Port = int.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672")
+    });
+
 
 builder.Services.AddSingleton<IEventBus, RabbitMQEventBus>();
 builder.Services.AddSingleton<RabbitMQEventBus>();
@@ -100,5 +102,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chathub");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AdminAppDbContext>();
+    db.Database.Migrate(); // 
+}
+
 
 app.Run();
