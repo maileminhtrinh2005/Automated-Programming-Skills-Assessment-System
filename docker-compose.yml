@@ -59,6 +59,28 @@ services:
       - apsas-net
     restart: unless-stopped
 
+  admin-service:
+    image: admin-service
+    container_name: admin-service
+    ports:
+      - "5140:5140"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5140
+      - ConnectionStrings__DefaultConnection=Server=apsas-db;Database=Admin;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__Port=5672
+    networks:
+      - apsas-net
+    restart: unless-stopped
+
   user-service:
     image: user-service
     container_name: user-service
